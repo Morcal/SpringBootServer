@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="nasMapping" class="cn.com.xinli.portal.configuration.NasMapping" init-method="init">
+        <property name="configured">
+            <map>
+                <entry key="nas-01">
+                    <bean id="nas01" class="cn.com.xinli.portal.configuration.Nas">
+                        <property name="id" value="nas-01"/>
+                        <property name="name" value="测试NAS 01"/>
+                        <property name="ipv4Address" value=""/>
+                        <property name="ipv6Address" value=""/>
+                        <property name="authType" value=""/>
+                    </bean>
+                </entry>
+                <entry key="nas-02">
+                    <bean id="nas02" class="cn.com.xinli.portal.configuration.Nas">
+                        <property name="id" value="nas-02"/>
+                        <property name="name" value="测试NAS 01"/>
+                        <property name="ipv4Address" value=""/>
+                        <property name="ipv6Address" value=""/>
+                        <property name="authType" value=""/>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+</beans>

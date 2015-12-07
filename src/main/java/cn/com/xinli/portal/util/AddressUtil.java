@@ -18,6 +18,7 @@ public class AddressUtil {
 
     public static String getRemoteAddress(HttpServletRequest request) {
         //TODO implement get remote address.
+        request.getRemoteAddr();
         return null;
     }
 

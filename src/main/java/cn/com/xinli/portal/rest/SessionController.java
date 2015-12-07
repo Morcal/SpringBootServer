@@ -7,7 +7,6 @@ import cn.com.xinli.portal.util.AddressUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
@@ -21,13 +20,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/v1.0/session")
-public class PortalController {
+public class SessionController {
 
     @Autowired
     public SessionService service;
 
-    @RequestMapping(method = RequestMethod.PUT)
-    public Result create(@RequestParam String credential, Map<String, Object> model, HttpServletRequest request) {
+    @RequestMapping(method = RequestMethod.POST)
+    public Result connect(@RequestParam String credential, Map<String, Object> model, HttpServletRequest request) {
         //TODO implement create session process.
         String addr = AddressUtil.getRemoteAddress(request);
         String mac = (String) model.get(Parameter.IP_ADDRESS);
@@ -48,8 +47,15 @@ public class PortalController {
         return null;
     }
 
+
+    @RequestMapping(value = "{id}", method = RequestMethod.POST)
+    public Result update(@PathVariable String id) {
+        //TODO implement get session information.
+        return null;
+    }
+
     @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    public Result remove(@PathVariable String id) {
+    public Result disconnect(@PathVariable String id) {
         //TODO implement remove session process.
         return null;
     }
