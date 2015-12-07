@@ -1,12 +1,11 @@
-package cn.com.xinli.portal.web;
+package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.Constants;
-import cn.com.xinli.portal.configuration.ApiProvider;
 import cn.com.xinli.portal.configuration.ConfigurationException;
 import cn.com.xinli.portal.configuration.NasMapping;
+import cn.com.xinli.portal.rest.api.RestApiProvider;
 import cn.com.xinli.portal.util.SignatureUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,15 +60,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/portal")
-public class PortalController {
+public class PortalRestController {
 
-    @Autowired
+//    @Autowired
     private NasMapping nasMapping;
 
-    @Autowired
-    private ApiProvider apiProvider;
+//    @Autowired
+    private RestApiProvider restApiProvider;
 
-    @Autowired
+//    @Autowired
     private String privateKey;
 
     /**
@@ -82,7 +81,7 @@ public class PortalController {
      * @return springframework mvc result.
      */
     @RequestMapping(method = RequestMethod.GET)
-    public Object redirect(@RequestHeader(value="X-Real-Ip") String realIp,
+    public Object main(@RequestHeader(value="X-Real-Ip") String realIp,
                            @RequestHeader(value="Authentication") String credential,
                            @RequestParam String sourceIp,
                            @RequestParam String sourceMac,
@@ -99,12 +98,12 @@ public class PortalController {
                 || StringUtils.isEmpty(sourceMac)
                 || StringUtils.isEmpty(signature)) {
             /* Invalid redirection, forward to main page. */
-            return "main";
+            return "forward:main";
         }
 
         if (!isValidateIp(realIp, sourceIp, request)) {
             if (!verifySignature(credential, model)) {
-                return "main";
+                return "forward:main";
             }
         }
 
@@ -112,10 +111,10 @@ public class PortalController {
             nasMapping.map(sourceIp, sourceMac, nasIp);
         } catch (ConfigurationException e) {
             /* map failed, invalid nas ip, forward to main page. */
-            return "main";
+            return "forward:main";
         }
 
-        return apiProvider;
+        return restApiProvider;
     }
 
     /**
@@ -169,6 +168,7 @@ public class PortalController {
 
     @RequestMapping(method = RequestMethod.POST)
     public Object post() {
-        return "main";
+        return "forward:main";
     }
+
 }

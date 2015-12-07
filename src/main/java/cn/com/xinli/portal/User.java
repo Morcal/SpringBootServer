@@ -15,35 +15,21 @@ import java.net.UnknownHostException;
  */
 public class User {
 
-    /** INET Address. */
-    private InetAddress address;
+    /** IP Address. */
+    private final String address;
 
     private final String mac;
 
-    User(InetAddress address, String mac) {
+    User(String address, String mac) {
         this.address = address;
         this.mac = mac;
     }
 
-    public InetAddress getAddress() {
+    public String getAddress() {
         return address;
     }
 
     public String getMac() {
         return mac;
-    }
-
-    private Credential credential;
-
-
-    public static User create(String address, String mac) {
-        StringUtils.isEmpty(address);
-        //TODO validate ip address and mac
-        try {
-            return new User(AddressUtil.toInetAddress(address), mac);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

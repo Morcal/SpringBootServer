@@ -11,26 +11,27 @@ public interface SessionService {
     /**
      * Create a new portal session.
      *
-     * @param user user.
+     * @param ip user ip address.
+     * @param mac user mac address.
      * @return session
      * @throws PortalException
      */
-    Session createSession(User user) throws PortalException;
+    Session createSession(String ip, String mac, String nasId) throws PortalException;
 
     /**
      * Get session by id.
      *
-     * @param sessionId session id.
+     * @param id session id.
      * @return session
      * @throws PortalException
      */
-    Session getSession(String sessionId) throws PortalException;
+    Session getSession(String id) throws PortalException;
 
     /**
      * Remove session by id.
-     * @param sessionId session id.
+     * @param id session id.
      * @return session
      * @throws PortalException
      */
-    boolean removeSession(String sessionId) throws PortalException;
+    boolean removeSession(String id) throws PortalException;
 }

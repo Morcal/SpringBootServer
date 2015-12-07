@@ -1,4 +1,6 @@
-package cn.com.xinli.portal.configuration;
+package cn.com.xinli.portal.rest.api;
+
+import cn.com.xinli.portal.configuration.ConfigurationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +12,13 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/6.
  */
-public class ApiProvider {
-    /** Api provider vendor. */
+public class RestApiProvider {
+    /** RestApi provider vendor. */
     private final String vendor;
 
-    private final List<ApiRegistration> registrations = new ArrayList<>();
+    private final List<RestApiRegistration> registrations = new ArrayList<>();
 
-    public ApiProvider(String vendor) {
+    public RestApiProvider(String vendor) {
         this.vendor = vendor;
     }
 
@@ -24,17 +26,17 @@ public class ApiProvider {
         return vendor;
     }
 
-    public List<ApiRegistration> getRegistrations() {
+    public List<RestApiRegistration> getRegistrations() {
         return registrations;
     }
 
     /**
      * Add a registration to provider.
      *
-     * @param registration Api registration.
+     * @param registration RestApi registration.
      * @throws ConfigurationException
      */
-    public synchronized void addRegistration(ApiRegistration registration)
+    public synchronized void addRegistration(RestApiRegistration registration)
             throws ConfigurationException {
         if (registrations.contains(registration)) {
             throw new ConfigurationException("Registration already exists.");

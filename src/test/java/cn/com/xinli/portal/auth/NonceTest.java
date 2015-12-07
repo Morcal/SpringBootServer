@@ -18,7 +18,7 @@ public class NonceTest {
         ApplicationAuthorization auth = new ApplicationAuthorization("key", "s3cr3t");
         Nonce nonce = new Nonce(auth, challenge, 10);
         long now = System.currentTimeMillis(), willExpire = now + 20 * 1000L;
-        Assert.assertTrue(nonce.isExpiredAt(willExpire));
+        Assert.assertTrue(nonce.expired());
 
         Nonce n2 = new Nonce(null, null, 10);
     }

@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.configuration;
+package cn.com.xinli.portal.rest.api;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author zhoupeng 2015/12/6.
  */
-public class Api {
+public class RestApi {
     private final String scope;
     private final String action;
     private final String url;
@@ -17,7 +17,7 @@ public class Api {
     private final String response;
 
     /**
-     * Construct an Api.
+     * Construct an RestApi.
      *
      * @param scope    api scope.
      * @param action   api action.
@@ -25,11 +25,11 @@ public class Api {
      * @param method   api HTTP method.
      * @param response api HTTP response format.
      */
-    public Api(@NotNull String scope,
-               @NotNull String action,
-               @NotNull String url,
-               @NotNull String method,
-               @NotNull String response) {
+    public RestApi(@NotNull String scope,
+                   @NotNull String action,
+                   @NotNull String url,
+                   @NotNull String method,
+                   @NotNull String response) {
         this.scope = scope;
         this.action = action;
         this.url = url;
@@ -65,9 +65,9 @@ public class Api {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Api)) return false;
+        if (!(o instanceof RestApi)) return false;
 
-        Api api = (Api) o;
+        RestApi api = (RestApi) o;
         return scope.equals(api.getScope())
                 && action.equals(api.getAction())
                 && url.equals(api.getUrl())

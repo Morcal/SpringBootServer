@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.configuration;
 
+import cn.com.xinli.portal.rest.api.RestApiProvider;
+import cn.com.xinli.portal.rest.api.RestApi;
+import cn.com.xinli.portal.rest.api.RestApiRegistration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +16,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author zhoupeng 2015/12/6.
  */
 @Configuration
-public class ApiProviderConfig {
+public class RestApiProviderConfig {
+    //public static final String
+
     @Autowired
-    private ApiRegistration restApiRegistration;
+    private RestApiRegistration restRestApiRegistration;
 
     @Bean
-    public ApiProvider apiProvider() {
-        ApiProvider provider = new ApiProvider("Xinli Software Technology ltd., co.");
+    public RestApiProvider apiProvider() {
+        RestApiProvider provider = new RestApiProvider("Xinli Software Technology ltd., co.");
         try {
-            provider.addRegistration(restApiRegistration);
+            provider.addRegistration(restRestApiRegistration);
         } catch (ConfigurationException e) {
             e.printStackTrace();
         }
@@ -30,25 +35,25 @@ public class ApiProviderConfig {
 }
 
 @Configuration
-class ApiRegistrationConfig {
+class RestApiRegistrationConfig {
     /** Log. */
-    private static final Log log = LogFactory.getLog(ApiRegistrationConfig.class);
+    private static final Log log = LogFactory.getLog(RestApiRegistrationConfig.class);
 
     @Autowired
-    private Api connect;
+    private RestApi connect;
 
     @Autowired
-    private Api disconnect;
+    private RestApi disconnect;
 
     @Autowired
-    private Api get;
+    private RestApi get;
 
     @Autowired
-    private Api update;
+    private RestApi update;
 
     @Bean
-    public ApiRegistration restApiRegistration() {
-        ApiRegistration registration = new ApiRegistration("REST", "1.0", "/authorize");
+    public RestApiRegistration restApiRegistration() {
+        RestApiRegistration registration = new RestApiRegistration("REST", "1.0", "/authorize");
         log.debug("creating: " + registration.toString());
 
         try {
@@ -65,13 +70,13 @@ class ApiRegistrationConfig {
 }
 
 @Configuration
-class ApiConfig {
+class RestApiConfig {
     /** Log. */
-    private static final Log log = LogFactory.getLog(ApiConfig.class);
+    private static final Log log = LogFactory.getLog(RestApiConfig.class);
 
     @Bean
-    public Api connect() {
-        Api api = new Api(
+    public RestApi connect() {
+        RestApi api = new RestApi(
                 "portal-session",
                 "connect",
                 "/sessions",
@@ -83,8 +88,8 @@ class ApiConfig {
     }
 
     @Bean
-    public Api disconnect() {
-        Api api = new Api(
+    public RestApi disconnect() {
+        RestApi api = new RestApi(
                 "portal-session",
                 "disconnect",
                 "/session",
@@ -96,8 +101,8 @@ class ApiConfig {
     }
 
     @Bean
-    public Api get() {
-        Api api = new Api(
+    public RestApi get() {
+        RestApi api = new RestApi(
                 "portal-session",
                 "get-session",
                 "/session",
@@ -109,8 +114,8 @@ class ApiConfig {
     }
 
     @Bean
-    public Api update() {
-        Api api = new Api(
+    public RestApi update() {
+        RestApi api = new RestApi(
                 "portal-session",
                 "update-session",
                 "/session",

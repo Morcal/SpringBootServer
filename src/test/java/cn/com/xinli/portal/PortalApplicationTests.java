@@ -53,4 +53,12 @@ public class PortalApplicationTests {
 		assertEquals("Hello World", entity.getBody());
 	}
 
+    @Test
+    public void testRedirectPage() throws Exception {
+        ResponseEntity<String> entity = new TestRestTemplate().getForEntity(
+                "http://localhost:" + this.port + "/portal/redirect", String.class);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals("Hello World", entity.getBody());
+    }
+
 }

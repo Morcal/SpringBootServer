@@ -7,6 +7,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -29,8 +33,19 @@ public class PortalApplication {
         SpringApplication.run(PortalApplication.class, args);
     }
 
+//    @Bean
+//    protected ViewResolver viewResolver() {
+//        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+//        viewResolver.setPrefix("/public");
+//        viewResolver.setSuffix(".html");
+//        viewResolver.setOrder(2);
+//        logger.warn(">>>> create view resolver. <<<<");
+//        return viewResolver;
+//    }
+
     @Bean
     protected ServletContextListener listener() {
+        logger.warn(">>>> create servlet context listener. <<<<");
         return new ServletContextListener() {
             @Override
             public void contextInitialized(ServletContextEvent sce) {

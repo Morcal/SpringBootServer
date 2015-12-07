@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.auth;
 
+import cn.com.xinli.portal.util.TimeLimited;
+
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -8,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author zhoupeng 2015/12/5.
  */
-public class Nonce {
+public class Nonce implements TimeLimited {
     /** Sequence. */
     private static AtomicLong sequence = new AtomicLong(0);
 
@@ -18,7 +20,7 @@ public class Nonce {
 
     @NotNull private final String challenge;
 
-    private final long timestamp;
+    private final long createTime;
 
     /** Expire time in seconds. */
     private final long expire;
@@ -37,15 +39,12 @@ public class Nonce {
         id = sequence.incrementAndGet();
         this.auth = auth;
         this.challenge = challenge;
-        this.timestamp = System.currentTimeMillis();
+        this.createTime = System.currentTimeMillis();
         this.expire = expire * 1000L;
     }
 
-    public boolean isExpiredAt(long time) {
-        if (expired)
-            return false;
-
-        long diff = time - timestamp;
-        return diff < 0 || diff > expire;
+    @Override
+    public boolean expired() {
+        return System.currentTimeMillis() >= createTime + expire;
     }
 }
