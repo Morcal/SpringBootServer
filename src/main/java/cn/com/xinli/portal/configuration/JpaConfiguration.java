@@ -6,8 +6,11 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaDialect;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -15,7 +18,9 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -33,7 +38,7 @@ public class JpaConfiguration implements BeanFactoryAware {
     private BeanFactory beanFactory;
 
     @Bean
-    private DataSource dataSource() {
+    public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(EmbeddedDriver.class.getName());
         dataSource.setUrl("jdbc:derby:PWS;create=true");
@@ -41,12 +46,12 @@ public class JpaConfiguration implements BeanFactoryAware {
     }
 
     @Bean
-    private JpaTransactionManager transactionManager() {
-       return new JpaTransactionManager(entityManagerFactory());
+    public PlatformTransactionManager transactionManager(EntityManagerFactory factory) {
+        return new JpaTransactionManager(factory);
     }
 
     @Bean
-    private JpaVendorAdapter jpaVendorAdapter() {
+    public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(true);
         vendorAdapter.setShowSql(true);
@@ -54,24 +59,35 @@ public class JpaConfiguration implements BeanFactoryAware {
     }
 
     @Bean
-    private JpaDialect jpaDialect() {
+    public JpaDialect jpaDialect() {
         HibernateJpaDialect dialect = new HibernateJpaDialect();
         dialect.setPrepareConnection(true);
         return dialect;
     }
 
     @Bean
-    EntityManagerFactory entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
-        bean.setDataSource(dataSource());
+    public BeanPostProcessor exceptionProcessor() {
+        return new PersistenceExceptionTranslationPostProcessor();
+    }
+
+    @Bean
+    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setDataSource(dataSource());
         //TODO create persistence unit manager.
         // bean.setPersistenceUnitManager();
-        bean.setJpaVendorAdapter(jpaVendorAdapter());
-        bean.setJpaDialect(jpaDialect());
-        bean.setBeanFactory(beanFactory);
+        factory.setPackagesToScan("cn.com.xinli.portal.persist");
+        factory.setJpaVendorAdapter(jpaVendorAdapter());
+        factory.setJpaDialect(jpaDialect());
+        factory.setBeanFactory(beanFactory);
         //TODO create jpa property map.
         // bean.setJpaPropertyMap();
-        return bean.getNativeEntityManagerFactory();
+        return factory;
+    }
+
+    @Bean
+    public EntityManager entityManager(EntityManagerFactory factory) {
+        return factory.createEntityManager();
     }
 
     @Override

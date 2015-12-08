@@ -14,14 +14,14 @@ import java.util.List;
  */
 @Repository
 @Transactional
-public interface SessionRepository extends CrudRepository<Session, String> {
+public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.
      * @param ip ip address.
      * @param mac mac address.
      * @return session if found, or null.
      */
-    Session findByIpAndMac(String ip, String mac);
+    SessionEntity findByIpAndMac(String ip, String mac);
 
     /**
      * Find session by usr.
@@ -29,5 +29,5 @@ public interface SessionRepository extends CrudRepository<Session, String> {
      * @param username user name.
      * @return session list.
      */
-    List<Session> findByUsername(String username);
+    List<SessionEntity> findByUsername(String username);
 }

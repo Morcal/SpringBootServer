@@ -25,7 +25,7 @@ public interface SessionService {
      * @return session
      * @throws PortalException
      */
-    Session getSession(String id) throws PortalException;
+    Session getSession(long id) throws PortalException;
 
     /**
      * Remove session by id.
@@ -33,5 +33,5 @@ public interface SessionService {
      * @return session
      * @throws PortalException
      */
-    boolean removeSession(String id) throws PortalException;
+    boolean removeSession(long id) throws PortalException;
 }

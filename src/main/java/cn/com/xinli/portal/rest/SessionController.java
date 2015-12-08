@@ -3,7 +3,6 @@ package cn.com.xinli.portal.rest;
 import cn.com.xinli.portal.PortalException;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.SessionService;
-import cn.com.xinli.portal.User;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.auth.AuthorizationServerImpl;
 import cn.com.xinli.portal.auth.SessionToken;
@@ -13,12 +12,9 @@ import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.Http401AuthenticationEntryPoint;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 
 /**
  * Portal web server session REST APIs controller.

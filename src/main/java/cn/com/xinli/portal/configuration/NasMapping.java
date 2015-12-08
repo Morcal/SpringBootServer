@@ -20,8 +20,8 @@ public class NasMapping {
     /** Log. */
     private static final Log log = LogFactory.getLog(NasMapping.class);
 
-    @Autowired
-    private Map<String, Nas> configured = null;
+    //@Autowired
+    private final Map<String, Nas> configured = Collections.synchronizedMap(new HashMap<>());;
 
     /** NAS/BRAS devices, key: nas id, value: nas configuration. */
     private final Map<String, Nas> devices = Collections.synchronizedMap(new HashMap<>());
@@ -34,6 +34,20 @@ public class NasMapping {
             log.debug("Initialize configured nas, count: " + configured.size());
             devices.putAll(configured);
         }
+    }
+
+    public void setConfigured(Map<String, Nas.Config> configured) {
+        configured.values().stream().forEach(cfg -> {
+            synchronized (configured) {
+                try {
+                    this.configured.put(cfg.getId(), Nas.fromConfig(cfg));
+                } catch (ConfigurationException e) {
+                    e.printStackTrace();
+                    log.fatal("系统配置错误，NAS配置错误: " + cfg);
+                    System.exit(1);
+                }
+            }
+        });
     }
 
     /**

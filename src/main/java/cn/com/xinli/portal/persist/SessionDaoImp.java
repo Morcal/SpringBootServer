@@ -12,10 +12,10 @@ import org.springframework.stereotype.Repository;
  *
  * @author zhoupeng 2015/12/7.
  */
-@Repository
+//@Repository
 public class SessionDaoImp implements SessionDao {
     /** JDBC template. */
-    @Autowired
+//    @Autowired
     private NamedParameterJdbcDaoSupport jdbcDao;
 
     private JdbcTemplate getJdbcTemplate() {

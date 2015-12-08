@@ -11,7 +11,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  *
  * @author zhoupeng 2015/12/7.
  */
-@Configuration
+//@Configuration
 public class DaoConfiguration {
 
     @Bean

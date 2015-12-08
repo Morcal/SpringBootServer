@@ -18,7 +18,7 @@ public class Nas {
     public static final String DEFAULT_NAS_AUTHTYPE = "CHAP";
 
     /** NAS id. */
-    private final String id;
+    private String id;
 
     /** IPv4 Address. */
     private final String ipv4Address;
@@ -40,10 +40,7 @@ public class Nas {
                String ipv6Address,
                String type,
                int listenPort,
-               String authType) throws ConfigurationException {
-        if (StringUtils.isEmpty(ipv4Address) && StringUtils.isEmpty(ipv6Address)) {
-            throw new ConfigurationException("NAS must has ipv4 or ipv6 address at lest.");
-        }
+               String authType) {
         this.id = id;
         this.ipv4Address = StringUtils.isEmpty(ipv4Address) ? "" : ipv4Address;
         this.ipv6Address = StringUtils.isEmpty(ipv6Address) ? "" : ipv6Address;
@@ -74,5 +71,103 @@ public class Nas {
 
     public String getAuthType() {
         return authType;
+    }
+
+    /**
+     * Create an unmodifiable NAS from configuration.
+     * @param config nas config.
+     * @return NAS.
+     * @throws ConfigurationException
+     */
+    public static Nas fromConfig(Config config) throws ConfigurationException {
+        if (StringUtils.isEmpty(config.getIpv4Address())
+                && StringUtils.isEmpty(config.getIpv6Address())) {
+            throw new ConfigurationException("NAS must has ipv4 or ipv6 address at lest.");
+        }
+        return new Nas(config.getId(),
+                config.getIpv4Address(),
+                config.getIpv6Address(),
+                config.getType(),
+                config.getListenPort(),
+                config.getAuthType().toUpperCase());
+    }
+
+    public static class Config {
+        private String id;
+        private String name;
+        private String ipv4Address;
+        private String ipv6Address;
+        private String type;
+        private int listenPort;
+        private String authType;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getIpv4Address() {
+            return ipv4Address;
+        }
+
+        public void setIpv4Address(String ipv4Address) {
+            this.ipv4Address = ipv4Address;
+        }
+
+        public String getIpv6Address() {
+            return ipv6Address;
+        }
+
+        public void setIpv6Address(String ipv6Address) {
+            this.ipv6Address = ipv6Address;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public int getListenPort() {
+            return listenPort;
+        }
+
+        public void setListenPort(int listenPort) {
+            this.listenPort = listenPort;
+        }
+
+        public String getAuthType() {
+            return authType;
+        }
+
+        public void setAuthType(String authType) {
+            this.authType = authType;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "Config{" +
+                    "id='" + id + '\'' +
+                    ", name='" + name + '\'' +
+                    ", ipv4Address='" + ipv4Address + '\'' +
+                    ", ipv6Address='" + ipv6Address + '\'' +
+                    ", type='" + type + '\'' +
+                    ", listenPort=" + listenPort +
+                    ", authType='" + authType + '\'' +
+                    '}';
+        }
     }
 }

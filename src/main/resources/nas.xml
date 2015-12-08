@@ -7,21 +7,23 @@
         <property name="configured">
             <map>
                 <entry key="nas-01">
-                    <bean id="nas01" class="cn.com.xinli.portal.configuration.Nas">
+                    <bean id="nas01" class="cn.com.xinli.portal.configuration.Nas.Config">
                         <property name="id" value="nas-01"/>
                         <property name="name" value="测试NAS 01"/>
-                        <property name="ipv4Address" value=""/>
+                        <property name="ipv4Address" value="10.1.0.5"/>
                         <property name="ipv6Address" value=""/>
-                        <property name="authType" value=""/>
+                        <property name="type" value="Huawei"/>
+                        <property name="authType" value="CHAP"/>
                     </bean>
                 </entry>
                 <entry key="nas-02">
-                    <bean id="nas02" class="cn.com.xinli.portal.configuration.Nas">
+                    <bean id="nas02" class="cn.com.xinli.portal.configuration.Nas.Config">
                         <property name="id" value="nas-02"/>
                         <property name="name" value="测试NAS 01"/>
-                        <property name="ipv4Address" value=""/>
+                        <property name="ipv4Address" value="10.1.0.10"/>
                         <property name="ipv6Address" value=""/>
-                        <property name="authType" value=""/>
+                        <property name="type" value="Huawei"/>
+                        <property name="authType" value="CHAP"/>
                     </bean>
                 </entry>
             </map>

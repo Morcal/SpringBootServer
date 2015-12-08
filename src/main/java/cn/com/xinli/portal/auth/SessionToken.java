@@ -9,9 +9,9 @@ import cn.com.xinli.portal.util.AbstractTimeLimitedToken;
  */
 public class SessionToken extends AbstractTimeLimitedToken {
     /** Associated session id. */
-    private final String sessionId;
+    private final long sessionId;
 
-    public SessionToken(String sessionId, String value, long expire) {
+    public SessionToken(long sessionId, String value, long expire) {
         super(value, expire);
         this.sessionId = sessionId;
     }
@@ -21,7 +21,7 @@ public class SessionToken extends AbstractTimeLimitedToken {
         return false;
     }
 
-    public String getSessionId() {
+    public long getSessionId() {
         return sessionId;
     }
 
