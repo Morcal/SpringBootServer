@@ -151,19 +151,18 @@ public class PortalRestController {
 
     /**
      * Check if incoming request ip is valid.
+     *
+     * If realIp exists, then nginx detected.
      * @param realIp nginx header real ip.
      * @param sourceIp source ip in parameters.
      * @param request HTTP request.
      * @return true valid.
      */
     private boolean isValidateIp(String realIp, String sourceIp, HttpServletRequest request) {
-        String remoteAddr = request.getRemoteAddr();
-        if (!StringUtils.isEmpty(realIp)) {
-            /* nginx detected. */
-            return StringUtils.equals(realIp, sourceIp);
-        } else {
-            return StringUtils.equals(remoteAddr, sourceIp);
-        }
+        String remote = request.getRemoteAddr();
+        return StringUtils.isEmpty(realIp) ?
+                StringUtils.equals(remote, sourceIp) :
+                StringUtils.equals(realIp, sourceIp);
     }
 
     @RequestMapping(method = RequestMethod.POST)

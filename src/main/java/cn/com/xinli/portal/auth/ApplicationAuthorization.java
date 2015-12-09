@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.auth;
 
-import org.springframework.util.StringUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import javax.validation.constraints.NotNull;
 
 /**

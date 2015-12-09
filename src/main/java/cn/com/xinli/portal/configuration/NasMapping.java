@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.configuration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class NasMapping {
     /** Log. */
     private static final Log log = LogFactory.getLog(NasMapping.class);
 
-    //@Autowired
+    /** Configured NAS devices. in nas.xml */
     private final Map<String, Nas> configured = Collections.synchronizedMap(new HashMap<>());;
 
     /** NAS/BRAS devices, key: nas id, value: nas configuration. */
@@ -29,6 +30,11 @@ public class NasMapping {
     /** User, Nas mapping, key: user info pair, value: nas id. */
     private final Map<String, String> userNasMapping = new ConcurrentHashMap<>();
 
+    /**
+     * Initialize NAS Mapping.
+     *
+     * Add all configured NAS devices to running devices.
+     */
     public void init() {
         synchronized (devices) {
             log.debug("Initialize configured nas, count: " + configured.size());
@@ -36,6 +42,11 @@ public class NasMapping {
         }
     }
 
+    /**
+     *  Inject pre-configured nas devices.
+     *
+     * @param configured nas pre-configured.
+     */
     public void setConfigured(Map<String, Nas.Config> configured) {
         configured.values().stream().forEach(cfg -> {
             synchronized (configured) {
@@ -57,8 +68,8 @@ public class NasMapping {
      * @return paired string.
      */
     private static String pair(String ip, String mac) {
-        //FIXME return StringUtils.join(ip, " ", mac);
-        return ip + " " + mac;
+        String tarmac = StringUtils.defaultString(mac, " " + mac);
+        return StringUtils.join(ip, tarmac);
     }
 
     /**

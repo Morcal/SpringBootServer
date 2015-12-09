@@ -23,5 +23,7 @@ public class Constants {
 
     public static final String DEFAULT_CHAR_ENCODING = CharEncoding.UTF_8;
 
-    public static final String DEFAULT_KEY_SPEC = "HmacSHA1";
+    public static final String HMAC_SHA1 = "HmacSHA1";
+
+    public static final String DEFAULT_KEY_SPEC = HMAC_SHA1;
 }
