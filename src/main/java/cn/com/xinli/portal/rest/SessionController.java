@@ -23,9 +23,8 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author zhoupeng 2015/12/2.
  */
-
 @RestController
-@RequestMapping("/portal/v1.0/session")
+@RequestMapping("/portal/v1.0")
 public class SessionController {
     /** Log. */
     private static final Log log = LogFactory.getLog(SessionController.class);
@@ -39,8 +38,7 @@ public class SessionController {
     @Autowired
     private NasMapping nasMapping;
 
-
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/sessions", method = RequestMethod.POST)
     public Object connect(@RequestParam String username,
                           @RequestParam String password,
                           @RequestParam String user_ip,
@@ -55,7 +53,8 @@ public class SessionController {
         Nas nas = nasMapping.findNas(user_ip, user_mac);
         if (nas == null) {
             /* NAS not found. */
-            return ErrorResponse.newBuilder().setError(ErrorResponse.INVALID_PORTAL_REQUEST)
+            return RestResponseBuilders.errorBuilder().setError(
+                    RestResponse.ERROR_INVALID_PORTAL_REQUEST)
                     .setDescription("nas not found for ip: " + user_ip + ", mac: " + user_mac)
                     .build();
         }
@@ -69,7 +68,7 @@ public class SessionController {
             SessionToken token = authorizationServer.generateSessionToken(session);
             log.info(token.toString() + " created.");
 
-            return ResponseBuilders.newSessionResponseBuilder()
+            return RestResponseBuilders.sessionResponseBuilder()
                     .setSession(session)
                     .setExpiresIn(AuthorizationServerImpl.DEFAULT_SESSION_TOKEN_EXPIRE)
                     .setToken(token.text())
@@ -79,27 +78,27 @@ public class SessionController {
             // other exceptions.
             e.printStackTrace();
 
-            return ErrorResponse.newBuilder()
-                    .setError(ErrorResponse.SERVER_ERROR)
+            return RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_SERVER_ERROR)
                     .build();
         }
     }
 
-    @RequestMapping(value = "{id}", method = RequestMethod.GET)
-    public Result get(@PathVariable String id) {
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.GET)
+    public Object get(@PathVariable String id) {
         //TODO implement get session information.
         return null;
     }
 
 
-    @RequestMapping(value = "{id}", method = RequestMethod.POST)
-    public Result update(@PathVariable String id) {
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.POST)
+    public Object update(@PathVariable String id) {
         //TODO implement get session information.
         return null;
     }
 
-    @RequestMapping(value = "{id}", method = RequestMethod.DELETE)
-    public Result disconnect(@PathVariable String id) {
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.DELETE)
+    public Object disconnect(@PathVariable String id) {
         //TODO implement remove session process.
         return null;
     }

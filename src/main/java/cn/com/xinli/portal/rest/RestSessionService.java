@@ -4,6 +4,7 @@ import cn.com.xinli.portal.PortalException;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.util.AbstractSessionService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -23,6 +24,7 @@ public class RestSessionService extends AbstractSessionService {
         session.setMac(mac);
         session.setNasId(nasId);
         session.setStartDate(Calendar.getInstance().getTime());
+        session.setUsername(StringUtils.join(ip, " ", mac));
 
         return getSessionRepository().save(session);
     }

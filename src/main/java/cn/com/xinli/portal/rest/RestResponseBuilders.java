@@ -12,10 +12,42 @@ import java.util.Map;
  *
  * @author zhoupeng 2015/12/8.
  */
-public class ResponseBuilders {
+public class RestResponseBuilders {
 
-    public static SessionResponseBuilder newSessionResponseBuilder() {
+    public static SessionResponseBuilder sessionResponseBuilder() {
         return new SessionResponseBuilder();
+    }
+
+    public static ErrorBuilder errorBuilder() {
+        return new ErrorBuilder();
+    }
+
+    static class ErrorBuilder {
+        private String error;
+        private String description;
+        private String url;
+
+        public ErrorBuilder setError(String error) {
+            this.error = error;
+            return this;
+        }
+
+        public ErrorBuilder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public ErrorBuilder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public RestResponse.Error build() {
+            return new RestResponse.Error(
+                    StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR),
+                    StringUtils.defaultString(description),
+                    StringUtils.defaultString(url));
+        }
     }
 
     static class SessionResponseBuilder {
@@ -57,11 +89,11 @@ public class ResponseBuilders {
             }
 
             Map<String, Object> accounting = new HashMap<>();
-            accounting.put("starttime", calendar.getTimeInMillis());
+            accounting.put("started_at", calendar.getTimeInMillis());
 
             map.put("accounting", accounting);
 
-            return null;
+            return map;
         }
     }
 }

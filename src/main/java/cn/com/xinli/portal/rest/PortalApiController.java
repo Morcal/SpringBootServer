@@ -48,8 +48,9 @@ public class PortalApiController {
         });
 
         if (!op.isPresent()) {
-            return ErrorResponse.newBuilder()
-                    .setError(ErrorResponse.INVALID_REQUEST).build();
+            return RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_INVALID_REQUEST)
+                    .build();
         }
 
         //FIXME implementation missing.
