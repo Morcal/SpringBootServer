@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.auth;
 
 import cn.com.xinli.portal.Session;
+import org.springframework.security.authentication.AuthenticationManager;
 
 /**
  * Authorization Server.
@@ -10,6 +11,7 @@ import cn.com.xinli.portal.Session;
  * @author zhoupeng 2015/11/30.
  */
 public interface AuthorizationServer {
+//    AuthenticationManager getAuthenticationManager();
     /**
      * Generate a new session token.
      * @param session session.

@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.persist;
 
-import cn.com.xinli.portal.Session;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,6 @@ import java.util.List;
  * @author zhoupeng 2015/12/7.
  */
 @Repository
-@Transactional
 public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.

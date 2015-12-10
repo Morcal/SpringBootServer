@@ -11,6 +11,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.data.jpa.support.ClasspathScanningPersistenceUnitPostProcessor;
+import org.springframework.data.jpa.support.MergingPersistenceUnitManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaDialect;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -74,13 +76,15 @@ public class JpaConfiguration implements BeanFactoryAware {
     public FactoryBean<EntityManagerFactory> entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());
-        //TODO create persistence unit manager.
-        // bean.setPersistenceUnitManager();
-        factory.setPackagesToScan("cn.com.xinli.portal.persist");
+        /* Employee spring merging persistence unit manager. */
+//        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
+//        manager.setPackagesToScan("cn.com.xinli.portal.persist");
+//        factory.setPersistenceUnitManager(manager);
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
         factory.setBeanFactory(beanFactory);
-        //TODO create jpa property map.
+        factory.setPackagesToScan("cn.com.xinli.portal.persist");
+        // TODO create jpa property map.
         // bean.setJpaPropertyMap();
         return factory;
     }
@@ -92,7 +96,6 @@ public class JpaConfiguration implements BeanFactoryAware {
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        log.warn("setting bean factory.");
         this.beanFactory = beanFactory;
     }
 }

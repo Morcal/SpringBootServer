@@ -23,7 +23,7 @@ public class RestApiProviderConfig {
     private RestApiRegistration restRestApiRegistration;
 
     @Bean
-    public RestApiProvider apiProvider() {
+    public RestApiProvider restApiProvider() {
         RestApiProvider provider = new RestApiProvider("Xinli Software Technology ltd., co.");
         try {
             provider.addRegistration(restRestApiRegistration);

@@ -1,10 +1,8 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
-import cn.com.xinli.portal.auth.AuthorizationServerImpl;
 import cn.com.xinli.portal.rest.api.RestApiProvider;
-import cn.com.xinli.portal.rest.RestSessionService;
+import cn.com.xinli.portal.rest.api.v1.RestAuthorizationServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,22 +17,15 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @ImportResource("classpath:nas.xml")
-@PropertySource("pws.properties")
 public class PortalConfig {
     @Autowired
     private RestApiProvider restApiProvider;
 
-    @Value("${pws.private_key}") private String privateKey;
+    @Value("${private_key}") private String privateKey;
 
     @Bean
     public AuthorizationServer authorizationServer() {
-        return new AuthorizationServerImpl();
-    }
-
-    @Bean
-    public SessionService sessionService() {
-        RestSessionService service = new RestSessionService();
-        return service;
+        return new RestAuthorizationServer();
     }
 
     @Bean

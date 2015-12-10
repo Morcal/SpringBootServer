@@ -1,6 +1,9 @@
-package cn.com.xinli.portal.auth;
+package cn.com.xinli.portal.rest.api.v1;
 
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.auth.AccessToken;
+import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.auth.SessionToken;
 import cn.com.xinli.portal.persist.SessionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -17,9 +20,9 @@ import java.util.*;
  *
  * @author zhoupeng 2015/12/7.
  */
-public class AuthorizationServerImpl implements AuthorizationServer {
+public class RestAuthorizationServer implements AuthorizationServer {
     /** Log. */
-    private static final Log log = LogFactory.getLog(AuthorizationServerImpl.class);
+    private static final Log log = LogFactory.getLog(RestAuthorizationServer.class);
 
     /** Default session token expire time (in seconds). */
     public static final long DEFAULT_SESSION_TOKEN_EXPIRE = 3600;
@@ -42,13 +45,14 @@ public class AuthorizationServerImpl implements AuthorizationServer {
     @Autowired
     private SessionRepository sessionRepository;
 
-    public AuthorizationServerImpl() {
+    public RestAuthorizationServer() {
         try {
             random = SecureRandom.getInstance("SHA1PRNG");
         } catch (Exception e) {
             log.warn(e);
             random = new SecureRandom();
         }
+        org.springframework.security.authentication.UsernamePasswordAuthenticationToken token;
         random.setSeed(random.generateSeed(64));
     }
 
@@ -101,7 +105,7 @@ public class AuthorizationServerImpl implements AuthorizationServer {
             Session session = sessionRepository.findOne(sessionToken.getSessionId());
             log.debug("session with token: " + token + " found, -> " + session);
         } catch (EntityNotFoundException e) {
-            log.debug("session with token: " + token + " already gone.");
+            log.debug("session with token: " + token + " not found.");
             return false;
         }
 

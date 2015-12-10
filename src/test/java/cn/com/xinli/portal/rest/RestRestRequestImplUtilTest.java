@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.auth.HttpDigestAuthentication;
+import cn.com.xinli.portal.rest.api.v1.HttpDigestCredentials;
+import cn.com.xinli.portal.rest.api.v1.RestRequestImpl;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,11 +18,11 @@ import java.util.Map;
  *
  * @author zhoupeng 2015/12/9.
  */
-public class RestRequestUtilTest {
+public class RestRestRequestImplUtilTest {
     /** Log. */
-    private static final Log log = LogFactory.getLog(RestRequestUtilTest.class);
+    private static final Log log = LogFactory.getLog(RestRestRequestImplUtilTest.class);
 
-    static final String privateKey = "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg";
+    static final String secretKey = "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg";
 
     Map<String, String> parameters = new HashMap<>();
 
@@ -35,7 +36,7 @@ public class RestRequestUtilTest {
 
     @Test
     public void testRestRequest() {
-        RestRequest.Builder builder = RestRequest.builder().setUrl("http://www.baidu.com")
+        RestRequestImpl.Builder builder = RestRequestImpl.builder().setUrl("http://www.baidu.com")
                 .setMethod("GET")
                 .setAuthParam("nonce", "some-nonce")
                 .setAuthParam("response", "challenge-response")
@@ -52,16 +53,16 @@ public class RestRequestUtilTest {
 
         builder.setParameter("account", "东风不言");
 
-        RestRequest restRequest = builder.build();
+        RestRequestImpl restRequestImpl = builder.build();
 
-        Assert.assertNotNull(restRequest);
+        Assert.assertNotNull(restRequestImpl);
 
-        restRequest.sign(privateKey);
+        restRequestImpl.sign(secretKey);
 
-        String credentials = restRequest.getCredentials();
+        String credentials = restRequestImpl.getCredentials();
         Assert.assertThat(credentials, CoreMatchers.endsWith("\""));
-        Assert.assertThat(credentials, CoreMatchers.startsWith(HttpDigestAuthentication.SCHEME));
+        Assert.assertThat(credentials, CoreMatchers.startsWith(HttpDigestCredentials.SCHEME));
 
-        log.debug(restRequest);
+        log.debug(restRequestImpl);
     }
 }

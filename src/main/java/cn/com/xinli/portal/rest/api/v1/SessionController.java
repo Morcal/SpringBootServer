@@ -1,10 +1,11 @@
-package cn.com.xinli.portal.rest;
+package cn.com.xinli.portal.rest.api.v1;
 
 import cn.com.xinli.portal.PortalException;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
-import cn.com.xinli.portal.auth.AuthorizationServerImpl;
+import cn.com.xinli.portal.rest.RestResponse;
+import cn.com.xinli.portal.rest.RestResponseBuilders;
 import cn.com.xinli.portal.auth.SessionToken;
 import cn.com.xinli.portal.configuration.Nas;
 import cn.com.xinli.portal.configuration.NasMapping;
@@ -24,13 +25,13 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhoupeng 2015/12/2.
  */
 @RestController
-@RequestMapping("/portal/v1.0")
+@RequestMapping("/${application}/v1.0")
 public class SessionController {
     /** Log. */
     private static final Log log = LogFactory.getLog(SessionController.class);
 
     @Autowired
-    private SessionService sessionService;
+    private SessionService restSessionService;
 
     @Autowired
     private AuthorizationServer authorizationServer;
@@ -41,8 +42,8 @@ public class SessionController {
     @RequestMapping(value = "/sessions", method = RequestMethod.POST)
     public Object connect(@RequestParam String username,
                           @RequestParam String password,
-                          @RequestParam String user_ip,
-                          @RequestParam String user_mac,
+                          @RequestParam(name = "user_ip") String ip,
+                          @RequestParam(name = "user_mac") String mac,
                           @RequestParam String os,
                           @RequestParam String version,
                           HttpServletRequest request) {
@@ -50,27 +51,27 @@ public class SessionController {
         //TODO implement create session process.
         String addr = AddressUtil.getRemoteAddress(request);
 
-        Nas nas = nasMapping.findNas(user_ip, user_mac);
+        Nas nas = nasMapping.findNas(ip, mac);
         if (nas == null) {
             /* NAS not found. */
             return RestResponseBuilders.errorBuilder().setError(
                     RestResponse.ERROR_INVALID_PORTAL_REQUEST)
-                    .setDescription("nas not found for ip: " + user_ip + ", mac: " + user_mac)
+                    .setDescription("nas not found for ip: " + ip + ", mac: " + mac)
                     .build();
         }
 
         Session session;
         try {
-            session = sessionService.createSession(user_ip, user_mac, nas.getId());
+            session = restSessionService.createSession(ip, mac, nas.getId());
             log.info(session.toString() + " created.");
 
-            //FIXME session may be removed by other thread.
+            //FIXME session may be removed by other threads.
             SessionToken token = authorizationServer.generateSessionToken(session);
             log.info(token.toString() + " created.");
 
             return RestResponseBuilders.sessionResponseBuilder()
                     .setSession(session)
-                    .setExpiresIn(AuthorizationServerImpl.DEFAULT_SESSION_TOKEN_EXPIRE)
+                    .setExpiresIn(RestAuthorizationServer.DEFAULT_SESSION_TOKEN_EXPIRE)
                     .setToken(token.text())
                     .build();
         } catch (PortalException e) {
@@ -87,20 +88,20 @@ public class SessionController {
     @RequestMapping(value = "/session/{id}", method = RequestMethod.GET)
     public Object get(@PathVariable String id) {
         //TODO implement get session information.
-        return null;
+        return "redirect:main";
     }
 
 
     @RequestMapping(value = "/session/{id}", method = RequestMethod.POST)
     public Object update(@PathVariable String id) {
         //TODO implement get session information.
-        return null;
+        return "redirect:main";
     }
 
     @RequestMapping(value = "/session/{id}", method = RequestMethod.DELETE)
     public Object disconnect(@PathVariable String id) {
         //TODO implement remove session process.
-        return null;
+        return "redirect:main";
     }
 
 

@@ -6,6 +6,7 @@ import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.util.AbstractSessionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 
@@ -18,6 +19,7 @@ import java.util.Calendar;
 public class RestSessionService extends AbstractSessionService {
 
     @Override
+    @Transactional
     public Session createSession(String ip, String mac, String nasId) throws PortalException {
         SessionEntity session = new SessionEntity();
         session.setIp(ip);
@@ -30,11 +32,13 @@ public class RestSessionService extends AbstractSessionService {
     }
 
     @Override
+    @Transactional
     public Session getSession(long id) throws PortalException {
         return getSessionRepository().findOne(id);
     }
 
     @Override
+    @Transactional
     public boolean removeSession(long id) throws PortalException {
         getSessionRepository().delete(id);
         return true;

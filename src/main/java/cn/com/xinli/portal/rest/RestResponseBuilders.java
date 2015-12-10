@@ -22,7 +22,7 @@ public class RestResponseBuilders {
         return new ErrorBuilder();
     }
 
-    static class ErrorBuilder {
+    public static class ErrorBuilder {
         private String error;
         private String description;
         private String url;
@@ -50,7 +50,7 @@ public class RestResponseBuilders {
         }
     }
 
-    static class SessionResponseBuilder {
+    public static class SessionResponseBuilder {
         private Session session;
         private String token;
         private long expiresIn = 0L;

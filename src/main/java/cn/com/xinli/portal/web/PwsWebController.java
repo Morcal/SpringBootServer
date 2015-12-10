@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.rest;
+package cn.com.xinli.portal.web;
 
 import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.configuration.ConfigurationException;
@@ -6,12 +6,20 @@ import cn.com.xinli.portal.configuration.NasMapping;
 import cn.com.xinli.portal.rest.api.RestApiProvider;
 import cn.com.xinli.portal.util.SignatureUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
+
 
 /**
  * Portal web server root controller.
@@ -57,19 +65,17 @@ import java.util.Map;
  *
  * @author zhoupeng 2015/12/2.
  */
+@Controller
+@RequestMapping("/${application}")
+public class PwsWebController {
 
-@RestController
-@RequestMapping("/portal")
-public class PortalRestController {
-
-//    @Autowired
+    @Autowired
     private NasMapping nasMapping;
 
-//    @Autowired
+    @Autowired
     private RestApiProvider restApiProvider;
 
-//    @Autowired
-    private String privateKey;
+    @Value("{$pws.private_key}") private String privateKey;
 
     /**
      * Handle redirect.
@@ -82,14 +88,14 @@ public class PortalRestController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public Object main(@RequestHeader(value="X-Real-Ip") String realIp,
-                           @RequestHeader(value="Authentication") String credential,
-                           @RequestParam String sourceIp,
-                           @RequestParam String sourceMac,
-                           @RequestParam String nasIp,
-                           @RequestParam String basIp,
-                           @RequestParam String signature,
-                           Map<String, Object> model,
-                           HttpServletRequest request) {
+                       @RequestHeader(value="Authentication") String credential,
+                       @RequestParam String sourceIp,
+                       @RequestParam String sourceMac,
+                       @RequestParam String nasIp,
+                       @RequestParam String basIp,
+                       @RequestParam String signature,
+                       Map<String, Object> model,
+                       HttpServletRequest request) {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
 
@@ -98,12 +104,12 @@ public class PortalRestController {
                 || StringUtils.isEmpty(sourceMac)
                 || StringUtils.isEmpty(signature)) {
             /* Invalid redirection, forward to main page. */
-            return "forward:main";
+            return "redirect:main";
         }
 
         if (!isValidateIp(realIp, sourceIp, request)) {
             if (!verifySignature(credential, model)) {
-                return "forward:main";
+                return "redirect:main";
             }
         }
 
@@ -111,7 +117,7 @@ public class PortalRestController {
             nasMapping.map(sourceIp, sourceMac, nasIp);
         } catch (ConfigurationException e) {
             /* map failed, invalid nas ip, forward to main page. */
-            return "forward:main";
+            return "redirect:main";
         }
 
         return restApiProvider;
@@ -167,7 +173,6 @@ public class PortalRestController {
 
     @RequestMapping(method = RequestMethod.POST)
     public Object post() {
-        return "forward:main";
+        return "redirect:main";
     }
-
 }

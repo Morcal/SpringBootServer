@@ -7,7 +7,7 @@ package cn.com.xinli.portal.rest;
  *
  * @author zhoupeng 2015/12/9.
  */
-public class RestResponse {
+public abstract class RestResponse {
     public static final String ERROR_INVALID_CLIENT = "invalid_client";
     public static final String ERROR_INVALID_REQUEST = "invalid_request";
     public static final String ERROR_INVALID_SCOPE = "invalid_scope";

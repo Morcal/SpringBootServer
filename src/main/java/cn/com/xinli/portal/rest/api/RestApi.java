@@ -1,8 +1,7 @@
 package cn.com.xinli.portal.rest.api;
 
-import org.apache.commons.lang3.StringUtils;
-
 import javax.validation.constraints.NotNull;
+import java.util.StringJoiner;
 
 /**
  * Project: portal
@@ -58,8 +57,13 @@ public class RestApi {
     }
 
     private String getText() {
-        return StringUtils.join(
-                new Object[] { scope, action, url, method, response}, ", ");
+        StringJoiner joiner = new StringJoiner(", ");
+        joiner.add("scope=" + scope)
+                .add("action="+ action)
+                .add("url=" + url)
+                .add("method=" + method)
+                .add("response="+ response);
+        return joiner.toString();
     }
 
     @Override
