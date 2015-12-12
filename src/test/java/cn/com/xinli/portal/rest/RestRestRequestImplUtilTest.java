@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.rest.api.v1.HttpDigestCredentials;
+import cn.com.xinli.portal.rest.api.v1.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.rest.api.v1.RestRequestImpl;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;

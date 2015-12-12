@@ -28,7 +28,7 @@ public class PwsWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         log.warn(">>>>>>>>>>> configuring web security... ");
-        web.ignoring().antMatchers("/pub/**");
+        web.ignoring().antMatchers("/pub/**").and().ignoring().antMatchers("/**");
     }
 
     @Override

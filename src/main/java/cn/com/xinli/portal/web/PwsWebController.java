@@ -4,8 +4,11 @@ import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.configuration.ConfigurationException;
 import cn.com.xinli.portal.configuration.NasMapping;
 import cn.com.xinli.portal.rest.api.RestApiProvider;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.portal.util.SignatureUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -68,6 +71,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("/${application}")
 public class PwsWebController {
+    /** Log. */
+    private static final Log log = LogFactory.getLog(PwsWebController.class);
 
     @Autowired
     private NasMapping nasMapping;
@@ -88,7 +93,6 @@ public class PwsWebController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public Object main(@RequestHeader(value="X-Real-Ip") String realIp,
-                       @RequestHeader(value="Authentication") String credential,
                        @RequestParam String sourceIp,
                        @RequestParam String sourceMac,
                        @RequestParam String nasIp,
@@ -99,76 +103,30 @@ public class PwsWebController {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
 
-        if (StringUtils.isEmpty(deviceIp)
-                || StringUtils.isEmpty(sourceIp)
-                || StringUtils.isEmpty(sourceMac)
-                || StringUtils.isEmpty(signature)) {
-            /* Invalid redirection, forward to main page. */
-            return "redirect:main";
-        }
-
-        if (!isValidateIp(realIp, sourceIp, request)) {
-            if (!verifySignature(credential, model)) {
-                return "redirect:main";
+        while (true) {
+            if (StringUtils.isEmpty(deviceIp)
+                    || StringUtils.isEmpty(sourceIp)
+                    || StringUtils.isEmpty(sourceMac)
+                    || StringUtils.isEmpty(signature)) {
+                /* Invalid redirection, forward to main page. */
+                break;
             }
-        }
 
-        try {
-            nasMapping.map(sourceIp, sourceMac, nasIp);
-        } catch (ConfigurationException e) {
-            /* map failed, invalid nas ip, forward to main page. */
-            return "redirect:main";
-        }
+            if (!AddressUtil.isValidateIp(realIp, sourceIp, request)) {
+                break;
+            }
 
-        return restApiProvider;
-    }
-
-    /**
-     * Verify incoming request's signature.
-     * @param model HTTP request model.
-     * @return true signature verified.
-     */
-    private boolean verifySignature(String credential, Map<String, Object> model) {
-        StringBuilder builder = new StringBuilder();
-        model.keySet().stream().sorted().forEach(key -> {
-            String value = (String) model.get(key);
             try {
-                builder.append(URLEncoder.encode(key, Constants.DEFAULT_CHAR_ENCODING))
-                        .append("=")
-                        .append(URLEncoder.encode(value, Constants.DEFAULT_CHAR_ENCODING))
-                        .append(",");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                nasMapping.map(sourceIp, sourceMac, nasIp);
+            } catch (ConfigurationException e) {
+                /* map failed, invalid nas ip, forward to main page. */
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid mapping, ", e);
+                }
             }
-        });
-
-        if (builder.length() == 0) {
-            return false;
         }
 
-        /* Remove tail ','. */
-        builder.deleteCharAt(builder.length() - 1);
-
-        String signature = SignatureUtil.sign(builder.toString().getBytes(), privateKey, null);
-
-        //FIXME
-        return false;
-    }
-
-    /**
-     * Check if incoming request ip is valid.
-     *
-     * If realIp exists, then nginx detected.
-     * @param realIp nginx header real ip.
-     * @param sourceIp source ip in parameters.
-     * @param request HTTP request.
-     * @return true valid.
-     */
-    private boolean isValidateIp(String realIp, String sourceIp, HttpServletRequest request) {
-        String remote = request.getRemoteAddr();
-        return StringUtils.isEmpty(realIp) ?
-                StringUtils.equals(remote, sourceIp) :
-                StringUtils.equals(realIp, sourceIp);
+        return "redirect:main";
     }
 
     @RequestMapping(method = RequestMethod.POST)

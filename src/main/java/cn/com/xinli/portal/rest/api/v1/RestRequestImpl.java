@@ -2,6 +2,7 @@ package cn.com.xinli.portal.rest.api.v1;
 
 import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.rest.RestRequest;
+import cn.com.xinli.portal.rest.api.v1.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.util.SignatureUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;

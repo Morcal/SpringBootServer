@@ -22,6 +22,7 @@ public abstract class RestResponse {
     public static final String ERROR_PORT_NOT_ALLOWED = "port_not_allowed";
     public static final String ERROR_REQUEST_RATE_LIMITED = "request_rate_limited";
     public static final String ERROR_NOT_ALLOWED = "not_allowed";
+    public static final String ERROR_UNAUTHORIZED_REQUEST = "unauthorized_request";
     public static final String ERROR_UNKNOWN_ERROR = "unknown_error";
 
     /**
