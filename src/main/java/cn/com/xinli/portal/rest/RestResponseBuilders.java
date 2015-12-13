@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.rest.bean.Failure;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Calendar;
@@ -42,11 +43,12 @@ public class RestResponseBuilders {
             return this;
         }
 
-        public RestResponse.Error build() {
-            return new RestResponse.Error(
-                    StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR),
-                    StringUtils.defaultString(description),
-                    StringUtils.defaultString(url));
+        public Failure build() {
+            Failure failure = new Failure();
+            failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
+            failure.setDescription(StringUtils.defaultString(description));
+            failure.setUrl(StringUtils.defaultString(url));
+            return failure;
         }
     }
 

@@ -2,11 +2,15 @@ package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.PortalException;
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.persist.SessionEntity;
-import cn.com.xinli.portal.util.AbstractSessionService;
+import cn.com.xinli.portal.persist.SessionRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.Calendar;
 
@@ -16,7 +20,15 @@ import java.util.Calendar;
  * @author zhoupeng 2015/12/6.
  */
 @Service
-public class RestSessionService extends AbstractSessionService {
+public class RestSessionService implements SessionService, InitializingBean {
+
+    @Autowired
+    private SessionRepository sessionRepository;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(sessionRepository);
+    }
 
     @Override
     @Transactional
@@ -28,19 +40,19 @@ public class RestSessionService extends AbstractSessionService {
         session.setStartDate(Calendar.getInstance().getTime());
         session.setUsername(StringUtils.join(ip, " ", mac));
 
-        return getSessionRepository().save(session);
+        return sessionRepository.save(session);
     }
 
     @Override
     @Transactional
     public Session getSession(long id) throws PortalException {
-        return getSessionRepository().findOne(id);
+        return sessionRepository.findOne(id);
     }
 
     @Override
     @Transactional
     public boolean removeSession(long id) throws PortalException {
-        getSessionRepository().delete(id);
+        sessionRepository.delete(id);
         return true;
     }
 }

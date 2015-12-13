@@ -1,17 +1,14 @@
 package cn.com.xinli.portal.web;
 
-import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.configuration.ConfigurationException;
-import cn.com.xinli.portal.configuration.NasMapping;
-import cn.com.xinli.portal.rest.api.RestApiProvider;
+import cn.com.xinli.portal.NasMapping;
+import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.util.AddressUtil;
-import cn.com.xinli.portal.util.SignatureUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Map;
 
 
@@ -78,7 +73,7 @@ public class PwsWebController {
     private NasMapping nasMapping;
 
     @Autowired
-    private RestApiProvider restApiProvider;
+    private Provider restApiProvider;
 
     @Value("{$pws.private_key}") private String privateKey;
 

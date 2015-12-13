@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.rest.api.v1.auth.HttpDigestCredentials;
-import cn.com.xinli.portal.rest.api.v1.RestRequestImpl;
+import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +35,7 @@ public class RestRestRequestImplUtilTest {
 
     @Test
     public void testRestRequest() {
-        RestRequestImpl.Builder builder = RestRequestImpl.builder().setUrl("http://www.baidu.com")
+        RestRequestSupport.Builder builder = RestRequestSupport.builder().setUrl("http://www.baidu.com")
                 .setMethod("GET")
                 .setAuthParam("nonce", "some-nonce")
                 .setAuthParam("response", "challenge-response")
@@ -53,16 +52,16 @@ public class RestRestRequestImplUtilTest {
 
         builder.setParameter("account", "东风不言");
 
-        RestRequestImpl restRequestImpl = builder.build();
+        RestRequestSupport requst = builder.build();
 
-        Assert.assertNotNull(restRequestImpl);
+        Assert.assertNotNull(requst);
 
-        restRequestImpl.sign(secretKey);
+        requst.sign(secretKey);
 
-        String credentials = restRequestImpl.getCredentials();
+        String credentials = requst.getCredentials();
         Assert.assertThat(credentials, CoreMatchers.endsWith("\""));
         Assert.assertThat(credentials, CoreMatchers.startsWith(HttpDigestCredentials.SCHEME));
 
-        log.debug(restRequestImpl);
+        log.debug(requst);
     }
 }

@@ -3,11 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <bean id="nasMapping" class="cn.com.xinli.portal.configuration.NasMapping" init-method="init">
+    <bean id="nasMapping" class="cn.com.xinli.portal.NasMapping" init-method="init">
         <property name="configured">
             <map>
                 <entry key="nas-01">
-                    <bean id="nas01" class="cn.com.xinli.portal.configuration.Nas.Config">
+                    <bean id="nas01" class="cn.com.xinli.portal.Nas.Config">
                         <property name="id" value="nas-01"/>
                         <property name="name" value="测试NAS 01"/>
                         <property name="ipv4Address" value="10.1.0.5"/>
@@ -17,7 +17,7 @@
                     </bean>
                 </entry>
                 <entry key="nas-02">
-                    <bean id="nas02" class="cn.com.xinli.portal.configuration.Nas.Config">
+                    <bean id="nas02" class="cn.com.xinli.portal.Nas.Config">
                         <property name="id" value="nas-02"/>
                         <property name="name" value="测试NAS 01"/>
                         <property name="ipv4Address" value="10.1.0.10"/>

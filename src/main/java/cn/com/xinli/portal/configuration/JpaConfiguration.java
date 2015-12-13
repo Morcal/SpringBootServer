@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.jpa.support.ClasspathScanningPersistenceUnitPostProcessor;
 import org.springframework.data.jpa.support.MergingPersistenceUnitManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -32,6 +33,7 @@ import javax.sql.DataSource;
  * @author zhoupeng 2015/12/7.
  */
 @Configuration
+@EnableJpaRepositories(basePackages = "cn.com.xinli.portal.persist")
 public class JpaConfiguration implements BeanFactoryAware {
     /** Log. */
     private static final Log log = LogFactory.getLog(JpaConfiguration.class);
@@ -77,9 +79,10 @@ public class JpaConfiguration implements BeanFactoryAware {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());
         /* Employee spring merging persistence unit manager. */
-//        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
+        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
 //        manager.setPackagesToScan("cn.com.xinli.portal.persist");
 //        factory.setPersistenceUnitManager(manager);
+        factory.setPersistenceUnitName("portal");
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
         factory.setBeanFactory(beanFactory);

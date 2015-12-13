@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
  * Project: portal
@@ -27,13 +26,13 @@ public class PwsWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        log.warn(">>>>>>>>>>> configuring web security... ");
+        log.warn("> configuring web security... ");
         web.ignoring().antMatchers("/pub/**").and().ignoring().antMatchers("/**");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        log.warn(">>>>>>>>>>> configuring http security... ");
+        log.warn("> configuring http security... ");
         http.authorizeRequests().antMatchers("/" + application).permitAll();
     }
 }

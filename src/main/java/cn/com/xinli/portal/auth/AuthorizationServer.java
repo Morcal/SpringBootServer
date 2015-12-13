@@ -1,9 +1,8 @@
 package cn.com.xinli.portal.auth;
 
-import cn.com.xinli.portal.rest.api.v1.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.auth.Challenge;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.token.Token;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

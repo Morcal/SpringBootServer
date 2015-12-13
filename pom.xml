@@ -113,6 +113,12 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.8.7</version>
         </dependency>
+        <!-- Xinli portal rest api. -->
+        <dependency>
+            <groupId>cn.com.xinli</groupId>
+            <artifactId>portal-rest-api</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 	<build>
