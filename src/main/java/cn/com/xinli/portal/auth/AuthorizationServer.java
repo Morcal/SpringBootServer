@@ -23,9 +23,13 @@ public interface AuthorizationServer {
      * Handle unsuccessful authentication.
      * @param request request.
      * @param response response.
+     * @param authentication authentication failed to authenticate.
      * @param failed authentication exception.
      */
-    void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed);
+    void unsuccessfulAuthentication(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    Authentication authentication,
+                                    AuthenticationException failed);
 
 
     /**
@@ -35,8 +39,8 @@ public interface AuthorizationServer {
      * @param authResult result.
      */
     void successfulAuthentication(HttpServletRequest request,
-                                            HttpServletResponse response,
-                                            Authentication authResult);
+                                  HttpServletResponse response,
+                                  Authentication authResult);
 
 
 //    AuthenticationManager getAuthenticationManager();

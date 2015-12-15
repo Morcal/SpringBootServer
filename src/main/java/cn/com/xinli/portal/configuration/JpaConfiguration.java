@@ -7,14 +7,15 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.jpa.support.ClasspathScanningPersistenceUnitPostProcessor;
 import org.springframework.data.jpa.support.MergingPersistenceUnitManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.embedded.*;
 import org.springframework.orm.jpa.JpaDialect;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -41,17 +42,24 @@ public class JpaConfiguration implements BeanFactoryAware {
     /** Bean factory. */
     private BeanFactory beanFactory;
 
+    @Value("${database.derby.scheme}") private String derbyScheme;
+
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(EmbeddedDriver.class.getName());
         dataSource.setUrl("jdbc:derby:PWS;create=true");
+        //DataSourceFactory
+//        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+//        return builder.setType(EmbeddedDatabaseType.DERBY)
+//                .setName(derbyScheme)
+//                .build();
         return dataSource;
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory factory) {
-        return new JpaTransactionManager(factory);
+    public PlatformTransactionManager transactionManager() {
+        return new JpaTransactionManager(entityManagerFactory().getObject());
     }
 
     @Bean
@@ -75,11 +83,11 @@ public class JpaConfiguration implements BeanFactoryAware {
     }
 
     @Bean
-    public FactoryBean<EntityManagerFactory> entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());
         /* Employee spring merging persistence unit manager. */
-        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
+//        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
 //        manager.setPackagesToScan("cn.com.xinli.portal.persist");
 //        factory.setPersistenceUnitManager(manager);
         factory.setPersistenceUnitName("portal");
@@ -89,13 +97,15 @@ public class JpaConfiguration implements BeanFactoryAware {
         factory.setPackagesToScan("cn.com.xinli.portal.persist");
         // TODO create jpa property map.
         // bean.setJpaPropertyMap();
+
         return factory;
     }
 
-    @Bean
-    public EntityManager entityManager(EntityManagerFactory factory) {
-        return factory.createEntityManager();
-    }
+//    @Bean
+//    public EntityManager entityManager() {
+//        return entityManagerFactory().createEntityManager();
+//        return factory.createEntityManager();
+//    }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

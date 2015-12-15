@@ -27,12 +27,13 @@ public class PwsWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         log.warn("> configuring web security... ");
-        web.ignoring().antMatchers("/pub/**").and().ignoring().antMatchers("/**");
+        web.ignoring().antMatchers("/public/**").and().ignoring().antMatchers("/**");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         log.warn("> configuring http security... ");
-        http.authorizeRequests().antMatchers("/" + application).permitAll();
+        http.authorizeRequests().antMatchers("/" + application).permitAll()
+                .and().authorizeRequests().antMatchers("/" + application + "/api").permitAll();
     }
 }

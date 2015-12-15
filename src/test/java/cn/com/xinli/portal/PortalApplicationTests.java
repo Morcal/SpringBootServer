@@ -45,7 +45,7 @@ public class PortalApplicationTests {
 	@Value("${local.server.port}")
 	private int port;
 
-	@Test
+	//@Test
 	public void testHome() throws Exception {
 		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(
 				"http://localhost:" + this.port, String.class);
@@ -53,7 +53,7 @@ public class PortalApplicationTests {
 		assertEquals("Hello World", entity.getBody());
 	}
 
-    @Test
+    //@Test
     public void testRedirectPage() throws Exception {
         ResponseEntity<String> entity = new TestRestTemplate().getForEntity(
                 "http://localhost:" + this.port + "/portal/redirect", String.class);

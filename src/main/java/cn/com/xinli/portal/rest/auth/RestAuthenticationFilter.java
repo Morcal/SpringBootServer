@@ -1,12 +1,17 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.rest.RestResponse;
+import cn.com.xinli.portal.rest.bean.Failure;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -14,7 +19,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Rest Authentication Filter.
@@ -33,7 +40,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private boolean continueFilterChainOnUnsuccessful = false;
 
     /** Inclusive path array. */
-    private String[] filterPathMatches = null;
+    private final List<String> filterPathMatches = new ArrayList<>();
 
     @Autowired
     private AuthorizationServer authorizationServer;
@@ -45,8 +52,8 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         Assert.notNull(authorizationServer);
     }
 
-    public void setFilterPathMatches(String[] filterPathMatches) {
-        this.filterPathMatches = filterPathMatches;
+    public void setFilterPathMatches(Collection<String> filterPathMatches) {
+        this.filterPathMatches.addAll(filterPathMatches);
     }
 
     /**
@@ -59,31 +66,38 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean requiresAuthentication(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return Stream.of(filterPathMatches).anyMatch(uri::startsWith);
+        return filterPathMatches.stream().anyMatch(uri::startsWith);
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-        if (log.isDebugEnabled()) {
-            log.debug("Checking secure context token: " +
-                    SecurityContextHolder.getContext().getAuthentication());
-        }
-
         if (!requiresAuthentication(request)) {
             filterChain.doFilter(request, response);
         } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Checking secure context token: " +
+                        SecurityContextHolder.getContext().getAuthentication());
+            }
+
+            Authentication result = AbstractRestAuthentication.empty();
             try {
-                authorizationServer.authenticate(request, response);
+                result = authorizationServer.authenticate(request, response);
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException e) {
-                authorizationServer.unsuccessfulAuthentication(request, response, e);
+                authorizationServer.unsuccessfulAuthentication(request, response, result, e);
                 if (continueFilterChainOnUnsuccessful) {
                     filterChain.doFilter(request, response);
                 }
             }
         }
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Failure> handleAuthenticationException(AuthenticationException e) {
+        Failure failure = new Failure();
+        failure.setError(RestResponse.ERROR_UNAUTHORIZED_REQUEST);
+        return ResponseEntity.ok(failure);
     }
 }

@@ -3,6 +3,7 @@ package cn.com.xinli.portal.rest.auth;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
+import cn.com.xinli.portal.rest.configuration.RestApiConfiguration;
 import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.logging.Log;
@@ -21,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhoupeng 2015/12/8.
  */
 @Controller
-@RequestMapping("/${application}/" + RestSecurityConfiguration.REST_API_VERSION)
+@RequestMapping("/${application}/" + RestApiConfiguration.REST_API_VERSION)
 public class AuthorizeController {
     /** Log. */
     private static final Log log = LogFactory.getLog(RestAuthorizationServer.class);
@@ -33,7 +34,7 @@ public class AuthorizeController {
     private AuthorizationServer authorizationServer;
 
 
-    @RequestMapping("/" + RestSecurityConfiguration.REST_API_AUTHORIZE)
+    @RequestMapping("/" + RestApiConfiguration.REST_API_AUTHORIZE)
     public Object authorize(@RequestHeader(value="X-Real-Ip") String realIp,
                             @RequestHeader(value=HttpDigestCredentials.HEADER_NAME) String credentials,
                             @RequestParam(name = "response_type") String responseType,

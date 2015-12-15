@@ -1,22 +1,24 @@
 package cn.com.xinli.portal.web;
 
-import cn.com.xinli.portal.configuration.ConfigurationException;
 import cn.com.xinli.portal.NasMapping;
-import cn.com.xinli.portal.rest.api.Provider;
+import cn.com.xinli.portal.configuration.ConfigurationException;
+import cn.com.xinli.portal.rest.RestResponse;
+import cn.com.xinli.portal.rest.bean.Failure;
 import cn.com.xinli.portal.util.AddressUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
 /**
@@ -64,7 +66,6 @@ import java.util.Map;
  * @author zhoupeng 2015/12/2.
  */
 @Controller
-@RequestMapping("/${application}")
 public class PwsWebController {
     /** Log. */
     private static final Log log = LogFactory.getLog(PwsWebController.class);
@@ -73,7 +74,7 @@ public class PwsWebController {
     private NasMapping nasMapping;
 
     @Autowired
-    private Provider restApiProvider;
+    private String pwsRestApiLocationHeader;
 
     @Value("{$pws.private_key}") private String privateKey;
 
@@ -86,15 +87,15 @@ public class PwsWebController {
      * @param basIp bas ip.
      * @return springframework mvc result.
      */
-    @RequestMapping(method = RequestMethod.GET)
-    public Object main(@RequestHeader(value="X-Real-Ip") String realIp,
+    @RequestMapping(value = "/${application}", method = RequestMethod.GET)
+    public Object main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
                        @RequestParam String sourceIp,
                        @RequestParam String sourceMac,
                        @RequestParam String nasIp,
                        @RequestParam String basIp,
                        @RequestParam String signature,
-                       Map<String, Object> model,
-                       HttpServletRequest request) {
+                       HttpServletRequest request,
+                       HttpServletResponse response) {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
 
@@ -113,6 +114,7 @@ public class PwsWebController {
 
             try {
                 nasMapping.map(sourceIp, sourceMac, nasIp);
+                response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
             } catch (ConfigurationException e) {
                 /* map failed, invalid nas ip, forward to main page. */
                 if (log.isDebugEnabled()) {
@@ -121,11 +123,24 @@ public class PwsWebController {
             }
         }
 
-        return "redirect:main";
+        response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
+        return "main.html";
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/${application}", method = RequestMethod.POST)
     public Object post() {
-        return "redirect:main";
+        return "main.html";
+    }
+
+    @RequestMapping(value = "/")
+    public String main() {
+        return "redirect:/main.html";
+    }
+
+    @ExceptionHandler(value = { AuthenticationException.class, IOException.class})
+    public ResponseEntity<Failure> handleExceptions() throws JsonProcessingException {
+        Failure failure = new Failure();
+        failure.setError(RestResponse.ERROR_SERVER_ERROR);
+        return ResponseEntity.ok(failure);
     }
 }

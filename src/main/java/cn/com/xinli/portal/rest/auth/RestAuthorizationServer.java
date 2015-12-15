@@ -1,10 +1,9 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.rest.RandomStringGenerator;
 import cn.com.xinli.portal.rest.RestAuthenticationFailureEvent;
-import cn.com.xinli.portal.rest.SecureKeyGenerator;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeAuthentication;
-import cn.com.xinli.portal.rest.auth.challenge.ChallengeImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +34,7 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private SecureKeyGenerator secureKeyGenerator;
-
-    @Autowired
-    private TokenService accessTokenService;
-
-    @Autowired
-    private TokenService sessionTokenService;
+    private RandomStringGenerator secureRandomGenerator;
 
     @Autowired
     private ChallengeManager challengeManager;
@@ -93,8 +86,8 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
 
     @Override
     public Challenge createChallenge(String clientId) {
-        String nonce = secureKeyGenerator.generateUniqueRandomString(),
-                challenge = secureKeyGenerator.generateUniqueRandomString();
+        String nonce = secureRandomGenerator.generateUniqueRandomString(),
+                challenge = secureRandomGenerator.generateUniqueRandomString();
 
         Challenge chal = challengeManager.createChallenge(nonce, clientId, challenge, "");
         log.info("challenge created: " + chal);
@@ -103,8 +96,9 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
 
     @Override
     public void unsuccessfulAuthentication(HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              AuthenticationException failed) {
+                                           HttpServletResponse response,
+                                           Authentication authentication,
+                                           AuthenticationException failed) {
         SecurityContextHolder.clearContext();
         if (log.isDebugEnabled()) {
             log.debug("Cleared security context due to exception", failed);
@@ -115,7 +109,7 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
         //TODO check if spring-security response on exception.
 
         applicationEventPublisher.publishEvent(
-                new RestAuthenticationFailureEvent(request, response, null, failed));
+                new RestAuthenticationFailureEvent(request, response, authentication, failed));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest.token;
 
-import cn.com.xinli.portal.rest.SecureKeyGenerator;
+import cn.com.xinli.portal.rest.SecureRandomStringGenerator;
 import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -17,7 +17,7 @@ import org.springframework.security.core.token.TokenService;
 public abstract class AbstractRestTokenService implements TokenService, InitializingBean {
 
     @Autowired
-    private SecureKeyGenerator secureKeyGenerator;
+    private SecureRandomStringGenerator secureRandomStringGenerator;
 
     protected abstract Ehcache getCache();
 
@@ -42,7 +42,7 @@ public abstract class AbstractRestTokenService implements TokenService, Initiali
 
     @Override
     public Token allocateToken(String extendedInformation) {
-        String key = secureKeyGenerator.generateUniqueRandomString();
+        String key = secureRandomStringGenerator.generateUniqueRandomString();
         Token token = createToken(key, extendedInformation);
         Element element = getCache().putIfAbsent(createTokenElement(token));
         return (Token) element.getObjectValue();

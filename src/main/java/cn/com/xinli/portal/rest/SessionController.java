@@ -6,6 +6,7 @@ import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.NasMapping;
+import cn.com.xinli.portal.rest.configuration.RestApiConfiguration;
 import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhoupeng 2015/12/2.
  */
 @RestController
-@RequestMapping("/${application}/" + RestSecurityConfiguration.REST_API_VERSION)
+@RequestMapping("/${application}/" + RestApiConfiguration.REST_API_VERSION)
 public class SessionController {
     /** Log. */
     private static final Log log = LogFactory.getLog(SessionController.class);
@@ -37,7 +38,7 @@ public class SessionController {
     private NasMapping nasMapping;
 
     @RequestMapping(
-            value = "/" + RestSecurityConfiguration.REST_API_SESSIONS,
+            value = "/" + RestApiConfiguration.REST_API_SESSIONS,
             method = RequestMethod.POST)
     public Object connect(@RequestParam String username,
                           @RequestParam String password,
@@ -85,29 +86,37 @@ public class SessionController {
     }
 
     @RequestMapping(
-            value = "/" + RestSecurityConfiguration.REST_API_SESSION + "/{id}",
+            value = "/" + RestApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.GET)
     public Object get(@PathVariable String id) {
         //TODO implement get session information.
-        return "redirect:main";
+        return "redirect:main.html";
     }
 
 
     @RequestMapping(
-            value = "/" + RestSecurityConfiguration.REST_API_SESSION + "/{id}",
+            value = "/" + RestApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.POST)
     public Object update(@PathVariable String id) {
         //TODO implement get session information.
-        return "redirect:main";
+        return "redirect:main.html";
     }
 
     @RequestMapping(
-            value = "/" + RestSecurityConfiguration.REST_API_SESSION + "/{id}",
+            value = "/" + RestApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.DELETE)
     public Object disconnect(@PathVariable String id) {
         //TODO implement remove session process.
-        return "redirect:main";
+        return "redirect:main.html";
     }
 
 
+    @RequestMapping(
+            value = "/" + RestApiConfiguration.REST_API_SESSIONS + "/" + RestApiConfiguration.REST_API_FIND,
+            method = RequestMethod.DELETE)
+    public Object find(@RequestParam(value = "user_ip") String ip,
+                       @RequestParam(value = "user_mac") String mac) {
+        //TODO implement remove session process.
+        return "redirect:main.html";
+    }
 }
