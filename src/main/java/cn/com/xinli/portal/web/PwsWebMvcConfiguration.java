@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
@@ -28,10 +29,15 @@ public class PwsWebMvcConfiguration extends WebMvcConfigurerAdapter {
     @Bean
     public InternalResourceViewResolver internalResourceViewResolver() {
         InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setPrefix("/public/");
+        resolver.setPrefix("/static/");
         resolver.setSuffix(".html");
         log.debug("> configuring view resolvers.");
         return resolver;
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**").addResourceLocations("/WEB-INF/static");
     }
 
     @Override

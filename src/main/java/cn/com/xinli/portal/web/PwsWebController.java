@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -132,9 +133,10 @@ public class PwsWebController {
         return "main.html";
     }
 
-    @RequestMapping(value = "/")
-    public String main() {
-        return "redirect:/main.html";
+    @RequestMapping("/")
+    public String main(HttpServletResponse response) {
+        response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
+        return "redirect:main";
     }
 
     @ExceptionHandler(value = { AuthenticationException.class, IOException.class})
