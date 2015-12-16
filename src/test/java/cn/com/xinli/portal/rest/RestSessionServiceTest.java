@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.persist.SessionEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,13 +26,28 @@ public class RestSessionServiceTest extends SpringBootTestBase {
     public void testCreateSession() throws PortalException {
         final String ip = "192.168.3.25",
                 mac = "f4:6d:04:53:a0:f0",
+                os = "iOS",
+                version = "1.0",
+                username = "foo",
+                password = "bar",
                 nasId = "nas-01";
 
-        Session session = restSessionService.createSession(ip, mac, nasId);
+        SessionEntity entity = SessionEntity.builder()
+                .setUsername(username)
+                .setPassword(password)
+                .setNasId(nasId)
+                .setIp(ip)
+                .setMac(mac)
+                .setOs(os)
+                .setVersion(version)
+                .setPassword(version)
+                .build();
+
+        Session session = restSessionService.createSession(entity);
         Assert.assertNotNull(session);
         log.debug(session);
 
-        session = restSessionService.createSession(ip, mac, nasId);
+        session = restSessionService.createSession(entity);
         Assert.assertNotNull(session);
         log.debug(session);
     }

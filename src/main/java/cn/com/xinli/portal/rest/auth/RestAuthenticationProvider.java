@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeAuthentication;
+import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;

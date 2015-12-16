@@ -10,12 +10,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.view.InternalResourceView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,9 +75,17 @@ public class PwsWebController {
     private NasMapping nasMapping;
 
     @Autowired
-    private String pwsRestApiLocationHeader;
+    private String pwsSchemeHeaderName;
 
-    @Value("{$pws.private_key}") private String privateKey;
+    @Autowired
+    private String pwsSchemeHeaderValue;
+
+    @Autowired
+    private String mainPageViewName;
+
+    public View mainPageView() {
+        return new InternalResourceView(mainPageViewName);
+    }
 
     /**
      * Handle redirect.
@@ -90,21 +98,18 @@ public class PwsWebController {
      */
     @RequestMapping(value = "/${application}", method = RequestMethod.GET)
     public Object main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
-                       @RequestParam String sourceIp,
-                       @RequestParam String sourceMac,
-                       @RequestParam String nasIp,
-                       @RequestParam String basIp,
-                       @RequestParam String signature,
-                       HttpServletRequest request,
-                       HttpServletResponse response) {
+                       @RequestParam(defaultValue = "") String sourceIp,
+                       @RequestParam(defaultValue = "") String sourceMac,
+                       @RequestParam(defaultValue = "") String nasIp,
+                       @RequestParam(defaultValue = "") String basIp,
+                       HttpServletRequest request) {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
 
         while (true) {
             if (StringUtils.isEmpty(deviceIp)
                     || StringUtils.isEmpty(sourceIp)
-                    || StringUtils.isEmpty(sourceMac)
-                    || StringUtils.isEmpty(signature)) {
+                    || StringUtils.isEmpty(sourceMac)) {
                 /* Invalid redirection, forward to main page. */
                 break;
             }
@@ -115,7 +120,8 @@ public class PwsWebController {
 
             try {
                 nasMapping.map(sourceIp, sourceMac, nasIp);
-                response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
+                log.debug("mapping {" + sourceIp + " " + sourceMac + "} -> {" + nasIp + "}");
+
             } catch (ConfigurationException e) {
                 /* map failed, invalid nas ip, forward to main page. */
                 if (log.isDebugEnabled()) {
@@ -124,19 +130,27 @@ public class PwsWebController {
             }
         }
 
-        response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
-        return "main.html";
+        return mainPageView();
     }
 
     @RequestMapping(value = "/${application}", method = RequestMethod.POST)
     public Object post() {
-        return "main.html";
+        return mainPageView();
     }
 
     @RequestMapping("/")
-    public String main(HttpServletResponse response) {
-        response.setHeader(pwsRestApiLocationHeader, "/${application}/${rest.api.url}");
-        return "redirect:main";
+    public View main() {
+        return mainPageView();
+    }
+
+    @RequestMapping("/redirect")
+    public String redirect() {
+        return "redirect:/html/redirect.html";
+    }
+
+    @ModelAttribute
+    public void setPwsRestApiLocationHeader(HttpServletResponse response) {
+        response.setHeader(pwsSchemeHeaderName, pwsSchemeHeaderValue);
     }
 
     @ExceptionHandler(value = { AuthenticationException.class, IOException.class})

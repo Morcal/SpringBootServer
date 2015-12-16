@@ -1,11 +1,12 @@
 package cn.com.xinli.portal.configuration;
 
+import cn.com.xinli.portal.KeepAliveConfiguration;
 import cn.com.xinli.portal.NasMapping;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.rest.RestSessionService;
-import cn.com.xinli.portal.rest.auth.ChallengeManager;
-import cn.com.xinli.portal.rest.auth.ChallengeService;
+import cn.com.xinli.portal.rest.auth.challenge.ChallengeManager;
+import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.RestAuthorizationServer;
 import cn.com.xinli.portal.rest.auth.challenge.EhCacheChallengeManager;
 import cn.com.xinli.portal.rest.token.RestAccessTokenService;
@@ -26,6 +27,10 @@ import org.springframework.security.core.token.TokenService;
 public class PortalConfiguration {
 
     @Value("${private_key}") private String privateKey;
+
+    @Value("${session.keepalive}") private boolean keepalive;
+
+    @Value("${session.keepalive.interval}") private int keepaliveInterval;
 
     @Bean
     public ChallengeManager challengeManager() {
@@ -60,5 +65,13 @@ public class PortalConfiguration {
     @Bean
     public NasMapping deviceMapping() {
         return new NasMapping();
+    }
+
+    @Bean
+    public KeepAliveConfiguration keepAliveConfiguration() {
+        return KeepAliveConfiguration.builder()
+                .setKeepalive(keepalive)
+                .setInterval(keepaliveInterval)
+                .build();
     }
 }

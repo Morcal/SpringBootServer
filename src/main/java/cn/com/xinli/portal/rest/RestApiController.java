@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author zhoupeng 2015/12/15.
  */
 @Controller
-@RequestMapping("/${application}/${rest.api.url}")
+@RequestMapping("/${application}/${rest.api.uri}")
 public class RestApiController {
 
     @Autowired

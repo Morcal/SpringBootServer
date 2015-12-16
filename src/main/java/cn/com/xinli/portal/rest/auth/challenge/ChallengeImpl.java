@@ -1,7 +1,5 @@
 package cn.com.xinli.portal.rest.auth.challenge;
 
-import cn.com.xinli.portal.rest.auth.Challenge;
-
 /**
  * Project: portal
  *

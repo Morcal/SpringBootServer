@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,13 +23,16 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.header.HeaderWriterFilter;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Project: portal
+ * PWS REST APIs spring web security configuration.
  *
- * TODO check configuration order.
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -49,6 +51,10 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${server.integer}") private Integer serverInteger;
 
     @Value("${application}") private String application;
+
+    public static final String ACCESS_TOKEN_SCOPE = "portal-rest-api";
+    public static final String SESSION_TOKEN_SCOPE = "portal-session";
+    public static final String TOKEN_TYPE = "Bearer";
 
     @Bean
     public AuthenticationEntryPoint restAuthenticationEntryPoint() {
@@ -85,7 +91,9 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         List<List<String>> list =
         restApiProvider.getRegistrations().stream()
                 .map(registration ->
-                    registration.getApis().stream().map(EntryPoint::getUrl)
+                    registration.getApis().stream()
+                            .filter(EntryPoint::requiresAuth)
+                            .map(EntryPoint::getUrl)
                             .collect(Collectors.toList()))
                 .collect(Collectors.toList());
 
@@ -105,10 +113,11 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         /* Configure filter as http header filter. */
         http.addFilterAfter(restAuthenticationFilter(), HeaderWriterFilter.class);
 
-        /* Disable csrf and handle authentication exception. */
-        http.csrf().disable()
-                .exceptionHandling()
-                .authenticationEntryPoint(restAuthenticationEntryPoint());
+        /* Disable csrf. */
+        http.csrf().disable();
+
+        /* handle authentication exception. */
+        http.exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint());
 
         /* Authenticate REST APIs. */
         for (Registration registration : restApiProvider.getRegistrations()) {

@@ -79,8 +79,8 @@ public class RestApiConfiguration {
                 "authorize",
                 url("authorize"),
                 RequestMethod.GET.name(),
-                "JSON"
-        );
+                "JSON",
+                false);
         log.debug("> Creating: " + api.toString());
         return api;
     }
@@ -92,8 +92,8 @@ public class RestApiConfiguration {
                 "connect",
                 url("sessions"),
                 RequestMethod.POST.name(),
-                "JSON"
-        );
+                "JSON",
+                true);
         log.debug("> Creating: " + api.toString());
         return api;
     }
@@ -105,8 +105,8 @@ public class RestApiConfiguration {
                 "disconnect",
                 url("session"),
                 RequestMethod.DELETE.name(),
-                "JSON"
-        );
+                "JSON",
+                true);
         log.debug("> Creating: " + api.toString());
         return api;
     }
@@ -118,8 +118,8 @@ public class RestApiConfiguration {
                 "get-session",
                 url("session"),
                 RequestMethod.GET.name(),
-                "JSON"
-        );
+                "JSON",
+                true);
         log.debug("> Creating: " + api.toString());
         return api;
     }
@@ -131,8 +131,8 @@ public class RestApiConfiguration {
                 "update-session",
                 url("session"),
                 RequestMethod.POST.name(),
-                "JSON"
-        );
+                "JSON",
+                true);
         log.debug("> Creating: " + api.toString());
         return api;
     }
@@ -145,8 +145,8 @@ public class RestApiConfiguration {
                 "find-session",
                 url("sessions/find"),
                 RequestMethod.POST.name(),
-                "JSON"
-        );
+                "JSON",
+                true);
         log.debug("> Creating: " + api.toString());
         return api;
     }

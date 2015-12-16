@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.auth;
 
-import cn.com.xinli.portal.rest.auth.Challenge;
+import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.token.RestSessionToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -42,6 +44,9 @@ public interface AuthorizationServer {
                                   HttpServletResponse response,
                                   Authentication authResult);
 
+    void removeSessionToken(RestSessionToken token);
+
+    RestSessionToken allocateSessionToken(Session session);
 
 //    AuthenticationManager getAuthenticationManager();
 //    /**

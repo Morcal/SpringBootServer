@@ -1,9 +1,14 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RandomStringGenerator;
 import cn.com.xinli.portal.rest.RestAuthenticationFailureEvent;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeAuthentication;
+import cn.com.xinli.portal.rest.auth.challenge.ChallengeManager;
+import cn.com.xinli.portal.rest.token.RestSessionToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +20,6 @@ import org.springframework.security.authentication.event.InteractiveAuthenticati
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.token.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,28 +51,6 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    private Optional<String> getAuthenticationFromRequestHeader(HttpServletRequest request) {
-        String authentication = request.getHeader(HttpDigestCredentials.HEADER_NAME);
-        return Optional.ofNullable(authentication);
-    }
-
-    /**
-     * Get credentials from request.
-     * @param request request.
-     * @return credential.
-     * @throws BadCredentialsException if request does not contains well-formed credentials.
-     */
-    protected Optional<HttpDigestCredentials> getCredentials(HttpServletRequest request) {
-        Optional<String> o = getAuthenticationFromRequestHeader(request);
-
-        if (!o.isPresent()) {
-            return Optional.empty();
-        }
-
-        final HttpDigestCredentials credentials = HttpDigestCredentials.of(o.get().trim());
-        return Optional.ofNullable(credentials);
-    }
-
     @Override
     public void successfulAuthentication(HttpServletRequest request,
                                          HttpServletResponse response,
@@ -82,6 +64,16 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
             applicationEventPublisher.publishEvent(
                     new InteractiveAuthenticationSuccessEvent(authResult, this.getClass()));
         }
+    }
+
+    @Override
+    public void removeSessionToken(RestSessionToken token) {
+
+    }
+
+    @Override
+    public RestSessionToken allocateSessionToken(Session session) {
+        return null;
     }
 
     @Override
@@ -114,7 +106,7 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
 
     @Override
     public Authentication authenticate(HttpServletRequest request, HttpServletResponse response) {
-        Optional<HttpDigestCredentials> opt = getCredentials(request);
+        Optional<HttpDigestCredentials> opt = CredentialsUtil.getCredentials(request);
 
         if (!opt.isPresent()) {
             throw new BadCredentialsException("Missing credentials.");

@@ -15,11 +15,10 @@ import java.util.List;
 public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.
-     * @param ip ip address.
-     * @param mac mac address.
+     * @param pair ip, mac pair.
      * @return session if found, or null.
      */
-    SessionEntity findByIpAndMac(String ip, String mac);
+    SessionEntity find(String pair);
 
     /**
      * Find session by usr.

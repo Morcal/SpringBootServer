@@ -1,5 +1,7 @@
 package cn.com.xinli.portal;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 
 /**
@@ -19,4 +21,12 @@ public interface Session {
      * @return session id.
      */
     long getId();
+
+    String getIp();
+
+    String getMac();
+
+    static String pair(String ip, String mac) {
+        return (ip + " " + (StringUtils.isEmpty(mac) ? "unknown" : mac)).trim();
+    }
 }

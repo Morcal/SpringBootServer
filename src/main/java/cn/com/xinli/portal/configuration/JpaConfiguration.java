@@ -49,12 +49,11 @@ public class JpaConfiguration implements BeanFactoryAware {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(EmbeddedDriver.class.getName());
         dataSource.setUrl("jdbc:derby:PWS;create=true");
-        //DataSourceFactory
+        return dataSource;
 //        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
 //        return builder.setType(EmbeddedDatabaseType.DERBY)
 //                .setName(derbyScheme)
 //                .build();
-        return dataSource;
     }
 
     @Bean

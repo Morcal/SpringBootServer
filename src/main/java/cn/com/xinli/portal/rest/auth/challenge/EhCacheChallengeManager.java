@@ -1,9 +1,5 @@
 package cn.com.xinli.portal.rest.auth.challenge;
 
-import cn.com.xinli.portal.rest.auth.Challenge;
-import cn.com.xinli.portal.rest.auth.ChallengeException;
-import cn.com.xinli.portal.rest.auth.ChallengeManager;
-import cn.com.xinli.portal.rest.auth.ChallengeService;
 import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;

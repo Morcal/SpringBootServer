@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest.auth;
 
-import cn.com.xinli.portal.rest.auth.Challenge;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.token.AbstractRestToken;
 import org.springframework.cache.interceptor.KeyGenerator;
 
