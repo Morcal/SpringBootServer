@@ -13,10 +13,11 @@ import java.util.Date;
  * @author zhoupeng 2015/12/9.
  */
 @Entity
-@Table(schema = "PWS", name="Session")
+@PersistenceUnit(unitName = "bra")
+@Table(schema = "PWS", name="session")
 @NamedQueries(value = {
-        @NamedQuery(name = "SessionEntity.findByUsername", query = "from SessionEntity s where s.username = ?1"),
-        @NamedQuery(name = "SessionEntity.find", query = "from SessionEntity s where s.device = ?1"),
+        @NamedQuery(name = "SessionEntity.findByUsername", query = "select s from SessionEntity s where s.username = :username"),
+        @NamedQuery(name = "SessionEntity.find", query = "select s from SessionEntity s where s.device = :device"),
 })
 public class SessionEntity implements Session {
 
@@ -173,7 +174,6 @@ public class SessionEntity implements Session {
         private String os;
         private String password;
         private String version;
-        private String device;
 
         public Builder setIp(String ip) {
             this.ip = ip;
@@ -207,11 +207,6 @@ public class SessionEntity implements Session {
 
         public Builder setPassword(String password) {
             this.password = password;
-            return this;
-        }
-
-        public Builder setDevice(String device) {
-            this.device = device;
             return this;
         }
 

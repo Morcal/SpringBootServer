@@ -1,12 +1,15 @@
 package cn.com.xinli.portal.configuration;
 
+import cn.com.xinli.portal.ServerConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.derby.jdbc.EmbeddedDriver;
+import org.hibernate.dialect.DerbyTenSevenDialect;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -20,13 +23,19 @@ import org.springframework.orm.jpa.JpaDialect;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager;
 import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceUnit;
 import javax.sql.DataSource;
+import java.io.File;
+import java.util.Collections;
+import java.util.Properties;
 
 /**
  * Project: portal
@@ -42,18 +51,35 @@ public class JpaConfiguration implements BeanFactoryAware {
     /** Bean factory. */
     private BeanFactory beanFactory;
 
-    @Value("${database.derby.scheme}") private String derbyScheme;
+    @Autowired
+    private ServerConfig serverConfig;
+
+    @Bean
+    public boolean firstRun() {
+        if (serverConfig.useDerbyMemDb()) {
+            /* Within derby memory database, always return true. */
+            log.info("> Running on derby memory database.");
+            return true;
+        } else {
+            /* Check derby database directory to determine if we're on the first run. */
+            File pws = new File(serverConfig.getDerbyScheme());
+            return !(pws.exists() && pws.isDirectory());
+        }
+    }
 
     @Bean
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(EmbeddedDriver.class.getName());
-        dataSource.setUrl("jdbc:derby:PWS;create=true");
-        return dataSource;
-//        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-//        return builder.setType(EmbeddedDatabaseType.DERBY)
-//                .setName(derbyScheme)
-//                .build();
+        if (!serverConfig.useDerbyMemDb()) {
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(EmbeddedDriver.class.getName());
+            dataSource.setUrl("jdbc:derby:PWS;create=true");
+            return dataSource;
+        } else {
+            EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+            return builder.setType(EmbeddedDatabaseType.DERBY)
+                    .setName(serverConfig.getDerbyScheme())
+                    .build();
+        }
     }
 
     @Bean
@@ -64,7 +90,7 @@ public class JpaConfiguration implements BeanFactoryAware {
     @Bean
     public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(true);
+        vendorAdapter.setGenerateDdl(firstRun());
         vendorAdapter.setShowSql(true);
         return vendorAdapter;
     }
@@ -85,26 +111,14 @@ public class JpaConfiguration implements BeanFactoryAware {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());
-        /* Employee spring merging persistence unit manager. */
-//        MergingPersistenceUnitManager manager = new MergingPersistenceUnitManager();
-//        manager.setPackagesToScan("cn.com.xinli.portal.persist");
-//        factory.setPersistenceUnitManager(manager);
-        factory.setPersistenceUnitName("portal");
+//        factory.setPersistenceUnitManager(persistenceUnitManager());
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
         factory.setBeanFactory(beanFactory);
         factory.setPackagesToScan("cn.com.xinli.portal.persist");
-        // TODO create jpa property map.
-        // bean.setJpaPropertyMap();
 
         return factory;
     }
-
-//    @Bean
-//    public EntityManager entityManager() {
-//        return entityManagerFactory().createEntityManager();
-//        return factory.createEntityManager();
-//    }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

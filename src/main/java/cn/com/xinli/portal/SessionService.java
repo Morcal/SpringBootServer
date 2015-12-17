@@ -1,5 +1,7 @@
 package cn.com.xinli.portal;
 
+import java.util.List;
+
 /**
  * Portal web server session service.
  *
@@ -33,7 +35,19 @@ public interface SessionService {
      */
     void removeSession(long id) throws SessionNotFoundException;
 
-    Session find(String ip, String mac);
+    /**
+     * Find session by ip and mac.
+     * @param ip ip address.
+     * @param mac mac address.
+     * @return session if found or null.
+     */
+    List<Session> find(String ip, String mac);
 
+    /**
+     * Update session's last modified timestamp.
+     * @param id session id.
+     * @param timestamp last modified timestamp.
+     * @return updated session.
+     */
     Session update(long id, long timestamp);
 }

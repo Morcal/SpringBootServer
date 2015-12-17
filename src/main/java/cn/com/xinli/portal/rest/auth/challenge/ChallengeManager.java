@@ -11,13 +11,17 @@ public interface ChallengeManager {
      * @param nonce nonce.
      * @param clientId client id.
      * @param challenge challenge.
-     * @param response challenge response.
+     * @param scope challenge.
+     * @param requireToken challenge.
+     * @param needRefreshToken challenge.
      * @return new challenge.
      */
     Challenge createChallenge(String nonce,
                               String clientId,
                               String challenge,
-                              String response);
+                              String scope,
+                              boolean requireToken,
+                              boolean needRefreshToken);
 
     /**
      * Delete challenge.

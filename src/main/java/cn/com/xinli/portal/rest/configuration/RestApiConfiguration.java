@@ -1,12 +1,13 @@
 package cn.com.xinli.portal.rest.configuration;
 
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.RestException;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.api.Registration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,11 +31,12 @@ public class RestApiConfiguration {
     public static final String REST_API_FIND = "find";
     public static final String REST_API_AUTHORIZE = "authorize";
 
-    @Value("${application}") private String application;
+    @Autowired
+    private ServerConfig serverConfig;
 
     private String url(String api) {
         StringJoiner joiner = new StringJoiner("/");
-        joiner.add("/" + application)
+        joiner.add("/" + serverConfig.getApplication())
                 .add(REST_API_VERSION)
                 .add(api);
         return joiner.toString();
@@ -42,7 +44,8 @@ public class RestApiConfiguration {
 
     @Bean
     public Provider restApiProvider() {
-        Provider provider = new Provider("Xinli Software Technology ltd., co.");
+        Provider provider = new Provider();
+        provider.setVendor("Xinli Software Technology ltd., co.");
         try {
             provider.addRegistration(restApiRegistration());
         } catch (RestException e) {
@@ -56,7 +59,7 @@ public class RestApiConfiguration {
         Registration registration = new Registration(
                 API_TYPE,
                 REST_API_VERSION,
-                "/" + application + "/" + REST_API_VERSION + "/" + REST_API_AUTHORIZE);
+                "/" + serverConfig.getApplication() + "/" + REST_API_VERSION + "/" + REST_API_AUTHORIZE);
         log.debug("> Creating: " + registration.toString());
 
         try {

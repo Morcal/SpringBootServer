@@ -1,14 +1,19 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RandomStringGenerator;
 import cn.com.xinli.portal.rest.RestAuthenticationFailureEvent;
+import cn.com.xinli.portal.rest.RestRequestSupport;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.rest.auth.challenge.ChallengeAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeManager;
+import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestSessionToken;
+import cn.com.xinli.portal.rest.token.RestSessionTokenService;
+import cn.com.xinli.portal.rest.token.TokenManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +25,8 @@ import org.springframework.security.authentication.event.InteractiveAuthenticati
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.token.Token;
+import org.springframework.security.core.token.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +49,12 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
 
     @Autowired
     private ChallengeManager challengeManager;
+
+    @Autowired
+    private RestSessionTokenService sessionTokenService;
+
+    @Autowired
+    private ServerConfig serverConfig;
 
     /** Application event publisher. */
     private ApplicationEventPublisher applicationEventPublisher;
@@ -67,21 +80,21 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
     }
 
     @Override
-    public void removeSessionToken(RestSessionToken token) {
-
+    public boolean revokeSessionToken(RestSessionToken token) {
+        return sessionTokenService.revokeToken(token);
     }
 
     @Override
     public RestSessionToken allocateSessionToken(Session session) {
-        return null;
+        return (RestSessionToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
     }
 
     @Override
-    public Challenge createChallenge(String clientId) {
+    public Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken) {
         String nonce = secureRandomGenerator.generateUniqueRandomString(),
                 challenge = secureRandomGenerator.generateUniqueRandomString();
 
-        Challenge chal = challengeManager.createChallenge(nonce, clientId, challenge, "");
+        Challenge chal = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
         log.info("challenge created: " + chal);
         return chal;
     }
@@ -104,6 +117,49 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
                 new RestAuthenticationFailureEvent(request, response, authentication, failed));
     }
 
+    /**
+     * Verify request by checking its integrity and checking if
+     * request was originated in allowed time range.
+     *
+     * @param request http request.
+     * @param credentials credentials.
+     * @throws BadCredentialsException
+     */
+    private void verifyRequest(HttpServletRequest request, HttpDigestCredentials credentials) {
+        long now = System.currentTimeMillis();
+        long timestamp = credentials.getParameter(HttpDigestCredentials.TIMESTAMP, Long.class);
+
+        long diff = Math.abs(now - timestamp);
+
+        if (diff > RestSecurityConfiguration.MAX_TIME_DIFF) {
+            throw new BadCredentialsException("Way too inaccurate timestamp.");
+        }
+
+        /*
+         * Create a REST request from incoming request and then sign it,
+         * so that we can verify incoming request with signed one.
+         */
+        RestRequestSupport support = new RestRequestSupport();
+        request.getParameterMap().forEach((s, strings) -> {
+            for (String string : strings) {
+                support.setParameter(s, string);
+            }
+        });
+        credentials.getParameters().forEach((s, o) -> support.getCredentials().setParameter(s, o));
+        support.sign(request.getMethod(), request.getRequestURI(), serverConfig.getPrivateKey());
+
+        String signature = credentials.getParameter(HttpDigestCredentials.SIGNATURE, String.class);
+        String signedSignature = support.getCredentials().getParameter(HttpDigestCredentials.SIGNATURE, String.class);
+
+        if (signature == null) {
+            throw new BadCredentialsException("Missing signature.");
+        }
+
+        if (!signedSignature.equals(signature)) {
+            throw new BadCredentialsException("Signature verify failed.");
+        }
+    }
+
     @Override
     public Authentication authenticate(HttpServletRequest request, HttpServletResponse response) {
         Optional<HttpDigestCredentials> opt = CredentialsUtil.getCredentials(request);
@@ -113,12 +169,15 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
         }
 
         HttpDigestCredentials credentials = opt.get();
-        String principal = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
+        String principal = credentials.getParameter(HttpDigestCredentials.CLIENT_ID, String.class);
         if (principal == null) {
             throw new BadCredentialsException("principal not found.");
         }
 
-        ChallengeAuthentication authentication = new ChallengeAuthentication(principal, credentials);
+        /* Verify request. */
+        verifyRequest(request, credentials);
+
+        RestAccessAuthentication authentication = new RestAccessAuthentication(principal, credentials);
         //TODO add authentication details.
         //failed.setDetails(this.authenticationDetailsSource.buildDetails(request));
         Authentication result = authenticationManager.authenticate(authentication);

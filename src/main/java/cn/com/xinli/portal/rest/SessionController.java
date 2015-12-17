@@ -6,8 +6,8 @@ import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.rest.auth.RestAccessAuthentication;
 import cn.com.xinli.portal.rest.bean.*;
-import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
 import cn.com.xinli.portal.rest.configuration.RestApiConfiguration;
+import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestSessionToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,9 +39,6 @@ public class SessionController {
 
     @Autowired
     private AuthorizationServer authorizationServer;
-
-    @Autowired
-    private KeepAliveConfiguration keepAliveConfiguration;
 
     @Autowired
     private NasMapping nasMapping;
@@ -84,22 +81,21 @@ public class SessionController {
         log.info("> " + token.toString() + " created.");
 
         Success success = new Success();
-        success.setSession(buildRestSessionBean(session));
+        success.setSession(RestResponseBuilders.sessionBuilder(session, token).build());
 
         /* Check if we need to send authorization. */
         Optional<HttpDigestCredentials> opt = CredentialsUtil.getCredentials(request);
-        if (opt.isPresent()) {
+
+        opt.ifPresent(credentials -> {
             if (HttpDigestCredentials.containsChallenge(opt.get())) {
                 /* Set authorization only when response to challenge. */
-                Authorization authorization = new Authorization();
-                authorization.setExpiresIn(CachingConfiguration.ACCESS_TOKEN_TTL);
-                authorization.setRefreshToken(""); /* Refresh token not supported yet. */
-                authorization.setScope(token.getScope());
-                authorization.setTokenType(token.getType());
-                authorization.setToken(token.getKey());
-                success.setAuthorization(authorization);
+                RestAccessAuthentication authentication =
+                        (RestAccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
+                Authorization author =
+                        RestResponseBuilders.authorizationBuilder(authentication.getAccessToken()).build();
+                success.setAuthorization(author);
             }
-        }
+        });
 
         return ResponseEntity.ok(success);
     }
@@ -110,7 +106,7 @@ public class SessionController {
     public ResponseEntity<Success> get(@PathVariable long id) {
         SessionEntity entity = (SessionEntity) restSessionService.getSession(id);
         Success success = new Success();
-        success.setSession(buildRestSessionBean(entity));
+        success.setSession(RestResponseBuilders.sessionBuilder(entity, null).build());
         return ResponseEntity.ok(success);
     }
 
@@ -125,10 +121,18 @@ public class SessionController {
         SessionEntity found = (SessionEntity) restSessionService.find(ip, mac);
 
         if (entity.getId() == found.getId()) {
+            long now = System.currentTimeMillis();
+            if (Math.abs(now - timestamp) > RestSecurityConfiguration.MAX_TIME_DIFF) {
+                /* update request originated out of allowed range. */
+                Failure failure = new Failure();
+                failure.setError(RestResponse.ERROR_INVALID_PORTAL_REQUEST);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(failure);
+            }
+
             SessionEntity updated = (SessionEntity) restSessionService.update(id, timestamp);
             /* send updated session information. */
             Success success = new Success();
-            success.setSession(buildRestSessionBean(updated));
+            success.setSession(RestResponseBuilders.sessionBuilder(updated, null).build());
             return ResponseEntity.ok(success);
         } else {
             /* Assume client is trying to access unauthorized session. */
@@ -156,7 +160,7 @@ public class SessionController {
             if (sessionId == id) {
                 restSessionService.removeSession(id);
                 /* token may expired. */
-                authorizationServer.removeSessionToken(token);
+                authorizationServer.revokeSessionToken(token);
                 Deleted deleted = new Deleted();
                 deleted.setSessionRemoved(String.valueOf(id));
                 return ResponseEntity.ok(deleted);
@@ -177,30 +181,18 @@ public class SessionController {
                        @RequestParam(value = "user_mac", defaultValue = "") String mac) {
         SessionEntity entity = (SessionEntity) restSessionService.find(ip, mac);
 
+        /* Revoke current session token. */
+        RestAccessAuthentication authentication = (RestAccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (authorizationServer.revokeSessionToken(authentication.getSessionToken())) {
+            log.info("> session token: " + authentication.getSessionToken() + " revoked.");
+        }
+
+        /* reallocate a new session token. */
+        RestSessionToken token = authorizationServer.allocateSessionToken(entity);
+        log.info("> new session token: " + token + " allocated.");
+
         Success success = new Success();
-        success.setSession(buildRestSessionBean(entity));
+        success.setSession(RestResponseBuilders.sessionBuilder(entity, token).build());
         return ResponseEntity.ok(success);
-    }
-
-    cn.com.xinli.portal.rest.bean.Session buildRestSessionBean(SessionEntity entity) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            /* Something went wrong. */
-            throw new PortalException("Illegal state, request should be authenticated.");
-        }
-
-        RestAccessAuthentication access = (RestAccessAuthentication) authentication;
-        RestSessionToken token = access.getSessionToken();
-
-        cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
-        session.setKeepalive(keepAliveConfiguration.isKeepalive());
-        session.setId(String.valueOf(entity.getId()));
-        session.setKeepaliveInterval(keepAliveConfiguration.getInterval());
-        if (token != null) {
-            session.setToken(token.getKey());
-            session.setTokenExpiresIn(CachingConfiguration.SESSION_TOKEN_TTL);
-        }
-
-        return session;
     }
 }

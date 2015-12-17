@@ -1,12 +1,18 @@
 package cn.com.xinli.portal.rest;
 
+import cn.com.xinli.portal.PortalException;
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.bean.Authentication;
+import cn.com.xinli.portal.rest.bean.Authorization;
 import cn.com.xinli.portal.rest.bean.Failure;
+import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
+import cn.com.xinli.portal.rest.token.RestAccessToken;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.token.Token;
 
 /**
  * Project: portal
@@ -15,15 +21,28 @@ import java.util.Map;
  */
 public class RestResponseBuilders {
 
-    public static SessionResponseBuilder sessionResponseBuilder() {
-        return new SessionResponseBuilder();
+    interface Builder<T extends RestBean> {
+        T build();
     }
+
 
     public static ErrorBuilder errorBuilder() {
         return new ErrorBuilder();
     }
 
-    public static class ErrorBuilder {
+    public static AuthenticationBuilder authenticationBuilder(Challenge challenge) {
+        return new AuthenticationBuilder(challenge);
+    }
+
+    public static SessionBuilder sessionBuilder(Session session, Token token) {
+        return new SessionBuilder(session, token);
+    }
+
+    public static AuthorizationBuilder authorizationBuilder(RestAccessToken token) {
+        return new AuthorizationBuilder(token);
+    }
+
+    public static class ErrorBuilder implements Builder<Failure> {
         private String error;
         private String description;
         private String url;
@@ -43,6 +62,7 @@ public class RestResponseBuilders {
             return this;
         }
 
+        @Override
         public Failure build() {
             Failure failure = new Failure();
             failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
@@ -52,50 +72,75 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class SessionResponseBuilder {
-        private Session session;
-        private String token;
-        private long expiresIn = 0L;
+    public static class SessionBuilder implements Builder<cn.com.xinli.portal.rest.bean.Session> {
+        @Autowired
+        private ServerConfig serverConfig;
+        private final Session session;
+        private final Token token;
 
-        public SessionResponseBuilder setSession(Session session) {
+        public SessionBuilder(Session session, Token token) {
             this.session = session;
-            return this;
-        }
-
-        public SessionResponseBuilder setToken(String token) {
             this.token = token;
-            return this;
         }
 
-        public SessionResponseBuilder setExpiresIn(long expiresIn) {
-            this.expiresIn = expiresIn;
-            return this;
-        }
-
-        public Map<String, Object> build() {
+        @Override
+        public cn.com.xinli.portal.rest.bean.Session build() {
             if (session == null) {
-                throw new IllegalStateException("session not been set.");
+                throw new PortalException("Server failed to locate challenge.");
+            } else {
+                cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
+                session.setKeepaliveInterval(serverConfig.getKeepaliveInterval());
+                session.setKeepalive(serverConfig.requiresKeepalive());
+                session.setId(String.valueOf(this.session.getId()));
+                if (token != null) {
+                    session.setToken(token.getKey());
+                    session.setTokenExpiresIn(CachingConfiguration.SESSION_TOKEN_TTL);
+                }
+                return session;
             }
+        }
+    }
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(session.getStartDate());
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", session.getId());
+    public static class AuthenticationBuilder implements Builder<Authentication> {
+        private final Challenge challenge;
 
-            if (!StringUtils.isEmpty(token)) {
-                map.put("token", token);
+        public AuthenticationBuilder(Challenge challenge) {
+            this.challenge = challenge;
+        }
+
+        @Override
+        public Authentication build() {
+            if (challenge == null) {
+                throw new PortalException("Server failed to locate authentication.");
+            } else {
+                Authentication authentication = new Authentication();
+                authentication.setExpiresIn(CachingConfiguration.CHALLENGE_TTL);
+                authentication.setChallenge(challenge.getChallenge());
+                authentication.setNonce(challenge.getNonce());
+                return authentication;
             }
+        }
+    }
 
-            if (expiresIn != 0L) {
-                map.put("expires_in", expiresIn);
+    public static class AuthorizationBuilder implements Builder<Authorization> {
+        private final RestAccessToken token;
+
+        public AuthorizationBuilder(RestAccessToken token) {
+            this.token = token;
+        }
+
+        @Override
+        public Authorization build() {
+            if (token == null) {
+                throw new PortalException("Server failed to locate authorization.");
+            } else {
+                Authorization authorization = new Authorization();
+                authorization.setToken(token.getKey());
+                authorization.setExpiresIn(CachingConfiguration.ACCESS_TOKEN_TTL);
+                authorization.setScope(token.getScope());
+                authorization.setRefreshToken(""); /* Refresh token not supported yet. */
+                return authorization;
             }
-
-            Map<String, Object> accounting = new HashMap<>();
-            accounting.put("started_at", calendar.getTimeInMillis());
-
-            map.put("accounting", accounting);
-
-            return map;
         }
     }
 }

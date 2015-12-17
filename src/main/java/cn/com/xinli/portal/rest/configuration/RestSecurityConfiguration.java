@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.rest.configuration;
 
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.RestAuthenticationFailureEvent;
 import cn.com.xinli.portal.rest.RestAuthenticationSuccessEvent;
 import cn.com.xinli.portal.rest.SecureRandomStringGenerator;
@@ -10,7 +11,6 @@ import cn.com.xinli.portal.rest.auth.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,15 +46,14 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private Provider restApiProvider;
 
-    @Value("${private_key}") private String privateKey;
-
-    @Value("${server.integer}") private Integer serverInteger;
-
-    @Value("${application}") private String application;
+    @Autowired
+    private ServerConfig serverConfig;
 
     public static final String ACCESS_TOKEN_SCOPE = "portal-rest-api";
     public static final String SESSION_TOKEN_SCOPE = "portal-session";
     public static final String TOKEN_TYPE = "Bearer";
+
+    public static final long MAX_TIME_DIFF = 1800; // seconds.
 
     @Bean
     public AuthenticationEntryPoint restAuthenticationEntryPoint() {
@@ -122,7 +121,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         /* Authenticate REST APIs. */
         for (Registration registration : restApiProvider.getRegistrations()) {
             http.authorizeRequests()
-                    .antMatchers("/" + application + "/" + registration.getVersion())
+                    .antMatchers("/" + serverConfig.getApplication() + "/" + registration.getVersion())
                     .authenticated();
         }
     }

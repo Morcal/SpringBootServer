@@ -98,6 +98,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     public ResponseEntity<Failure> handleAuthenticationException(AuthenticationException e) {
         Failure failure = new Failure();
         failure.setError(RestResponse.ERROR_UNAUTHORIZED_REQUEST);
+        failure.setDescription(e.getMessage());
         return ResponseEntity.ok(failure);
     }
 }

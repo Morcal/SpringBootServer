@@ -3,18 +3,16 @@ package cn.com.xinli.portal.rest.auth;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.bean.RestBean;
 import cn.com.xinli.portal.rest.configuration.RestApiConfiguration;
-import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
-import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Project: portal
@@ -35,28 +33,25 @@ public class AuthorizeController {
 
 
     @RequestMapping("/" + RestApiConfiguration.REST_API_AUTHORIZE)
-    public Object authorize(@RequestHeader(value="X-Real-Ip") String realIp,
-                            @RequestHeader(value=HttpDigestCredentials.HEADER_NAME) String credentials,
-                            @RequestParam(name = "response_type") String responseType,
-                            @RequestParam(name = "client_id") String clientId,
-                            @RequestParam(name = "scope") String scope,
-                            @RequestParam(name = "require_token") String requireToken,
-                            @RequestParam(name = "need_refresh_token") String needRefreshToken,
-                            @RequestParam(name = "user_ip") String ip,
-                            @RequestParam(name = "user_mac") String mac,
-                            HttpServletRequest request) {
-
-        if (!AddressUtil.isValidateIp(realIp, ip, request)) {
-            return "redirect:main";
+    public ResponseEntity<RestBean> authorize(@RequestParam(name = "response_type") String responseType,
+                                              @RequestParam(name = "client_id") String clientId,
+                                              @RequestParam(name = "scope") String scope,
+                                              @RequestParam(name = "require_token") boolean requireToken,
+                                              @RequestParam(name = "need_refresh_token") boolean needRefreshToken,
+                                              @RequestParam(name = "user_ip", defaultValue = "") String ip,
+                                              @RequestParam(name = "user_mac", defaultValue = "") String mac) {
+        if (log.isDebugEnabled()) {
+            log.debug("> incoming authorize request, from: " + ip + ", mac: " + mac);
         }
 
         if (CHALLENGE_RESPONSE_TYPE.equals(responseType)) {
-            return authorizationServer.createChallenge(clientId);
+            Challenge challenge = authorizationServer.createChallenge(clientId, scope, requireToken, needRefreshToken);
+            return ResponseEntity.ok(RestResponseBuilders.authenticationBuilder(challenge).build());
         } else {
-            return RestResponseBuilders.errorBuilder()
+            return ResponseEntity.ok(RestResponseBuilders.errorBuilder()
                     .setError(RestResponse.ERROR_INVALID_REQUEST)
                     .setDescription("Response type not supported.")
-                    .build();
+                    .build());
         }
     }
 }

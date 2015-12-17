@@ -5,7 +5,6 @@ import cn.com.xinli.portal.SessionNotFoundException;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -14,8 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Project: portal
@@ -37,10 +37,10 @@ public class RestSessionService implements SessionService, InitializingBean {
 
     @Override
     public Session createSession(Session session) {
-        SessionEntity existed = sessionRepository.find(Session.pair(session.getIp(), session.getMac()));
-        if (existed != null) {
+        List<SessionEntity> existed = sessionRepository.find(Session.pair(session.getIp(), session.getMac()));
+        if (existed != null && !existed.isEmpty()) {
             log.warn("> session already exists." + existed);
-            return existed;
+            return existed.get(0);
         }
 
         SessionEntity entity = (SessionEntity) session;
@@ -68,23 +68,19 @@ public class RestSessionService implements SessionService, InitializingBean {
 
     @Override
     @Transactional
-    public Session find(String ip, String mac) {
-       return sessionRepository.find(Session.pair(ip, mac));
+    public List<Session> find(String ip, String mac) {
+        return Collections.unmodifiableList(sessionRepository.find(Session.pair(ip, mac)));
     }
 
     @Override
     @Transactional
     public Session update(long id, long timestamp) {
         SessionEntity found = sessionRepository.findOne(id);
-        if (found != null) {
+        if (found == null) {
             throw new SessionNotFoundException(id);
         }
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(timestamp);
-        Date date = calendar.getTime();
-
-        found.setLastModified(date);
+        found.setLastModified(new Date(timestamp));
 
         return sessionRepository.save(found);
     }

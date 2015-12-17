@@ -98,10 +98,10 @@ public class PwsWebController {
      */
     @RequestMapping(value = "/${application}", method = RequestMethod.GET)
     public Object main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
-                       @RequestParam(defaultValue = "") String sourceIp,
-                       @RequestParam(defaultValue = "") String sourceMac,
-                       @RequestParam(defaultValue = "") String nasIp,
-                       @RequestParam(defaultValue = "") String basIp,
+                       @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
+                       @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
+                       @RequestParam(value="nas-ip", defaultValue = "") String nasIp,
+                       @RequestParam(value="basIp", defaultValue = "") String basIp,
                        HttpServletRequest request) {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
@@ -115,17 +115,18 @@ public class PwsWebController {
             }
 
             if (!AddressUtil.isValidateIp(realIp, sourceIp, request)) {
+                log.debug("> invalid ip: " + sourceIp);
                 break;
             }
 
             try {
                 nasMapping.map(sourceIp, sourceMac, nasIp);
-                log.debug("mapping {" + sourceIp + " " + sourceMac + "} -> {" + nasIp + "}");
+                log.debug("> mapping {" + sourceIp + " " + sourceMac + "} -> {" + nasIp + "}");
 
             } catch (ConfigurationException e) {
                 /* map failed, invalid nas ip, forward to main page. */
                 if (log.isDebugEnabled()) {
-                    log.debug("Invalid mapping, ", e);
+                    log.debug("> Invalid mapping, ", e);
                 }
             }
         }

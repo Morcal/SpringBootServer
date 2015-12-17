@@ -8,17 +8,23 @@ package cn.com.xinli.portal.rest.auth.challenge;
 public class ChallengeImpl implements Challenge {
     private final String nonce;
     private final String clientId;
+    private final String scope;
+    private final boolean requireToken;
+    private final boolean needRefreshToken;
     private final String challenge;
-    private final String response;
 
     public ChallengeImpl(String nonce,
                          String clientId,
                          String challenge,
-                         String response) {
+                         String scope,
+                         boolean requireToken,
+                         boolean needRefreshToken) {
         this.nonce = nonce;
         this.clientId = clientId;
         this.challenge = challenge;
-        this.response = response;
+        this.scope = scope;
+        this.requireToken = requireToken;
+        this.needRefreshToken = needRefreshToken;
     }
 
     public String getClientId() {
@@ -31,12 +37,22 @@ public class ChallengeImpl implements Challenge {
     }
 
     @Override
-    public String getResponse() {
-        return response;
+    public String getNonce() {
+        return nonce;
     }
 
     @Override
-    public String getNonce() {
-        return nonce;
+    public boolean needRefreshToken() {
+        return needRefreshToken;
+    }
+
+    @Override
+    public boolean requiresToken() {
+        return requireToken;
+    }
+
+    @Override
+    public String getScope() {
+        return scope;
     }
 }

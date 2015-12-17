@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.KeepAliveConfiguration;
 import cn.com.xinli.portal.NasMapping;
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.rest.RestSessionService;
@@ -26,11 +26,35 @@ import org.springframework.security.core.token.TokenService;
 @ImportResource("classpath:nas.xml")
 public class PortalConfiguration {
 
+    @Value("${application}") private String application;
+
     @Value("${private_key}") private String privateKey;
 
-    @Value("${session.keepalive}") private boolean keepalive;
+    @Value("${session.requiresKeepalive}") private boolean keepalive;
 
-    @Value("${session.keepalive.interval}") private int keepaliveInterval;
+    @Value("${session.requiresKeepalive.interval}") private int keepaliveInterval;
+
+    @Value("${database.derby.scheme}") private String derbyScheme;
+
+    @Value("${database.derby.mem.enable}") private boolean derbyMemDb;
+
+    @Value("${database.init.sql}") private String initSql;
+
+    @Value("${rest.api.uri}") private String restApiUri;
+
+    @Bean
+    public ServerConfig serverConfig() {
+        ServerConfig config = new ServerConfig();
+        config.setUseDerbyMemDb(derbyMemDb);
+        config.setDerbyScheme(derbyScheme);
+        config.setInitSql(initSql);
+        config.setRequiresKeepalive(keepalive);
+        config.setKeepaliveInterval(keepaliveInterval);
+        config.setPrivateKey(privateKey);
+        config.setApplication(application);
+        config.setReestApiUri(restApiUri);
+        return config;
+    }
 
     @Bean
     public ChallengeManager challengeManager() {
@@ -67,11 +91,4 @@ public class PortalConfiguration {
         return new NasMapping();
     }
 
-    @Bean
-    public KeepAliveConfiguration keepAliveConfiguration() {
-        return KeepAliveConfiguration.builder()
-                .setKeepalive(keepalive)
-                .setInterval(keepaliveInterval)
-                .build();
-    }
 }

@@ -2,7 +2,6 @@ package cn.com.xinli.portal.persist;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,10 +14,10 @@ import java.util.List;
 public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.
-     * @param pair ip, mac pair.
-     * @return session if found, or null.
+     * @param device ip, mac device.
+     * @return session list if found, or null.
      */
-    SessionEntity find(String pair);
+    List<SessionEntity> find(String device);
 
     /**
      * Find session by usr.

@@ -26,6 +26,14 @@ public interface Session {
 
     String getMac();
 
+    /**
+     * Create a paired information for ip and mac.
+     *
+     * <p>If mac is missing, "unknown" will be used.</p>
+     * @param ip ip address.
+     * @param mac mac address.
+     * @return paired information.
+     */
     static String pair(String ip, String mac) {
         return (ip + " " + (StringUtils.isEmpty(mac) ? "unknown" : mac)).trim();
     }

@@ -17,8 +17,23 @@ import javax.servlet.http.HttpServletResponse;
  * @author zhoupeng 2015/11/30.
  */
 public interface AuthorizationServer {
-    Challenge createChallenge(String clientId);
+    /**
+     * Create a new challenge.
+     * @param clientId client id.
+     * @param scope token scope.
+     * @param requireToken if client requires token.
+     * @param needRefreshToken if client requires refresh token.
+     * @return challenge.
+     */
+    Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken);
 
+    /**
+     * Authenticate incoming http request.
+     * @param request http request.
+     * @param response http response.
+     * @return full populated authentication if success.
+     * @throws AuthenticationException
+     */
     Authentication authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException;
 
     /**
@@ -44,37 +59,17 @@ public interface AuthorizationServer {
                                   HttpServletResponse response,
                                   Authentication authResult);
 
-    void removeSessionToken(RestSessionToken token);
+    /**
+     * Revoke session token.
+     * @param token session token to revoke.
+     * @return true if revoked.
+     */
+    boolean revokeSessionToken(RestSessionToken token);
 
+    /**
+     * Allocate session token.
+     * @param session associated session.
+     * @return session token.
+     */
     RestSessionToken allocateSessionToken(Session session);
-
-//    AuthenticationManager getAuthenticationManager();
-//    /**
-//     * Generate a new session token.
-//     * @param session session.
-//     * @return new session token.
-//     */
-//    SessionToken generateSessionToken(Session session);
-//
-//    /**
-//     * Generate a new access token.
-//     * @param clientId client id issued by PWS.
-//     * @param secret shared secret issued by PWS.
-//     * @return new access token.
-//     */
-//    AccessToken generateAccessToken(String clientId, String secret);
-//
-//    /**
-//     * Validate session token.
-//     * @param token session token.
-//     * @return true if session token still valid.
-//     */
-//    boolean validateSessionToken(String token);
-//
-//    /**
-//     * Validate access token.
-//     * @param token access token.
-//     * @return true if access token still valid.
-//     */
-//    boolean validateAccessToken(String token);
 }

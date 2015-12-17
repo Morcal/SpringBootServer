@@ -2,7 +2,6 @@ package cn.com.xinli.portal.rest.auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 
@@ -17,14 +16,15 @@ public abstract class AbstractRestAuthentication extends AbstractAuthenticationT
     private final String principal;
     private HttpDigestCredentials credentials;
 
-    private static final AbstractRestAuthentication empty = new AbstractRestAuthentication(null, null, null) {};
+    private static final AbstractRestAuthentication empty = new AbstractRestAuthentication(null, null, null) {
+        @Override
+        public boolean isAuthenticated() {
+            return false;
+        }
+    };
 
     public static AbstractRestAuthentication empty() {
         return empty;
-    }
-
-    public boolean isEmpty() {
-        return StringUtils.isEmpty(principal) && credentials == null;
     }
 
     public AbstractRestAuthentication(Collection<? extends GrantedAuthority> authorities,

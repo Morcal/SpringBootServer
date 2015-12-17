@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.web;
 
+import cn.com.xinli.portal.ServerConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -22,7 +24,8 @@ public class PwsWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     /** Log. */
     private static final Log log = LogFactory.getLog(PwsWebSecurityConfiguration.class);
 
-    @Value("${application}") private String application;
+    @Autowired
+    private ServerConfig serverConfig;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -33,7 +36,7 @@ public class PwsWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         log.warn("> configuring http security... ");
-        http.authorizeRequests().antMatchers("/" + application).permitAll()
-                .and().authorizeRequests().antMatchers("/" + application + "/api").permitAll();
+        http.authorizeRequests().antMatchers("/" + serverConfig.getApplication()).permitAll()
+                .and().authorizeRequests().antMatchers("/" + serverConfig.getApplication() + "/api").permitAll();
     }
 }

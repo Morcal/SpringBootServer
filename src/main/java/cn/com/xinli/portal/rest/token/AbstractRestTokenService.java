@@ -14,7 +14,7 @@ import org.springframework.security.core.token.TokenService;
  *
  * @author zhoupeng 2015/12/13.
  */
-public abstract class AbstractRestTokenService implements TokenService, InitializingBean {
+public abstract class AbstractRestTokenService implements TokenManager, TokenService, InitializingBean {
 
     @Autowired
     private SecureRandomStringGenerator secureRandomStringGenerator;
@@ -58,5 +58,10 @@ public abstract class AbstractRestTokenService implements TokenService, Initiali
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean revokeToken(Token token) {
+        return getCache().remove(token.getKey());
     }
 }

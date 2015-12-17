@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.web;
 
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.Scheme;
-import cn.com.xinli.portal.rest.auth.CodecUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
@@ -13,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
-import java.io.UnsupportedEncodingException;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -28,8 +27,8 @@ public class PwsWebMvcConfiguration extends WebMvcConfigurerAdapter {
     /** Log. */
     private static final Log log = LogFactory.getLog(PwsWebMvcConfiguration.class);
 
-    @Value("${application}") private String application;
-    @Value("${rest.api.uri}") private String restApiUri;
+    @Autowired
+    private ServerConfig serverConfig;
 
     @Bean
     public String pwsSchemeHeaderName() {
@@ -41,15 +40,15 @@ public class PwsWebMvcConfiguration extends WebMvcConfigurerAdapter {
         Scheme scheme = new Scheme();
         scheme.setUri(pwsRestApiLocationUri());
         scheme.setVersion("1.0");
-        scheme.setServer("127.0.0.1");
+        scheme.setServer("192.168.3.26");
         scheme.setPort(8080);
-        scheme.setHost("localhost");
+        scheme.setHost("192.168.3.26");
         return scheme;
     }
 
     @Bean
     public String pwsRestApiLocationUri() {
-        return "/" + application + "/" + restApiUri;
+        return "/" + serverConfig.getApplication() + "/" + serverConfig.getReestApiUri();
     }
 
     /**
