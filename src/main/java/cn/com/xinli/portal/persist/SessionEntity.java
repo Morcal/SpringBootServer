@@ -16,8 +16,8 @@ import java.util.Date;
 @PersistenceUnit(unitName = "bra")
 @Table(schema = "PWS", name="session")
 @NamedQueries(value = {
-        @NamedQuery(name = "SessionEntity.findByUsername", query = "select s from SessionEntity s where s.username = :username"),
-        @NamedQuery(name = "SessionEntity.find", query = "select s from SessionEntity s where s.device = :device"),
+        @NamedQuery(name = "SessionEntity.findByUsername", query = "select s from SessionEntity s where s.username = ?1"),
+        @NamedQuery(name = "SessionEntity.find", query = "select s from SessionEntity s where s.device = ?1"),
 })
 public class SessionEntity implements Session {
 

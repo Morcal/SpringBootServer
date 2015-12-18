@@ -62,17 +62,6 @@ public class NasMapping {
     }
 
     /**
-     * Create a pair string for ip and mac.
-     * @param ip ip address.
-     * @param mac mac address.
-     * @return paired string.
-     */
-    private static String pair(String ip, String mac) {
-        String tarmac = StringUtils.defaultString(mac, " " + mac);
-        return StringUtils.join(ip, tarmac);
-    }
-
-    /**
      * Create a mapping from user ip and mac to NAS device configuration.
      * @param userIp user ip.
      * @param userMac user mac.
@@ -80,7 +69,7 @@ public class NasMapping {
      * @throws ConfigurationException
      */
     public void map(String userIp, String userMac, String nasIp) throws ConfigurationException {
-        String pair = pair(userIp, userMac);
+        String pair = Session.pair(userIp, userMac);
         synchronized (devices) {
             Optional<Nas> nas = devices.values().stream()
                     .filter(device -> device.getIpv4Address().equals(nasIp) ||
@@ -88,8 +77,8 @@ public class NasMapping {
                     ).findFirst();
 
             nas.ifPresent(n -> {
-                log.debug("mapping nas: " + n + ", pair: " + pair);
-                userNasMapping.putIfAbsent(pair, n.getId());
+                log.debug("> mapping nas: " + n + ", pair: " + pair);
+                userNasMapping.put(pair, n.getId());
             });
 
             nas.orElseThrow(() -> new ConfigurationException(
@@ -104,7 +93,7 @@ public class NasMapping {
      * @return NAS matches ip and mac, or null if not found.
      */
     public Nas findNas(String userIp, String userMac) {
-        String pair = pair(userIp, userMac);
+        String pair = Session.pair(userIp, userMac);
         String nasId = userNasMapping.get(pair);
 
         if (nasId != null) {
@@ -113,6 +102,15 @@ public class NasMapping {
             }
         }
 
+        return null;
+    }
+
+    public Nas findByIpv4Range(int ip) {
+        for (Nas nas : devices.values()) {
+            if (nas.getIpv4start() <= ip && nas.getIpv4end() >= ip) {
+                return nas;
+            }
+        }
         return null;
     }
 }

@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.configuration;
 
+import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.NasMapping;
 import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.SessionService;

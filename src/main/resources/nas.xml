@@ -14,6 +14,9 @@
                         <property name="ipv6Address" value=""/>
                         <property name="type" value="Huawei"/>
                         <property name="authType" value="CHAP"/>
+                        <property name="ipv4start" value="192.168.3.1"/>
+                        <property name="ipv4end" value="192.168.3.254"/>
+                        <property name="listenPort" value="2000"/>
                     </bean>
                 </entry>
                 <entry key="nas-02">
@@ -24,6 +27,9 @@
                         <property name="ipv6Address" value=""/>
                         <property name="type" value="Huawei"/>
                         <property name="authType" value="CHAP"/>
+                        <property name="ipv4start" value="192.168.4.1"/>
+                        <property name="ipv4end" value="192.168.4.254"/>
+                        <property name="listenPort" value="2000"/>
                     </bean>
                 </entry>
             </map>

@@ -4,6 +4,8 @@ import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.persist.CertificateEntity;
+import cn.com.xinli.portal.persist.CertificateRepository;
 import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RandomStringGenerator;
 import cn.com.xinli.portal.rest.RestAuthenticationFailureEvent;
@@ -14,6 +16,7 @@ import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestSessionToken;
 import cn.com.xinli.portal.rest.token.RestSessionTokenService;
 import cn.com.xinli.portal.rest.token.TokenManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,7 @@ import org.springframework.security.core.token.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,10 +55,10 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
     private ChallengeManager challengeManager;
 
     @Autowired
-    private RestSessionTokenService sessionTokenService;
+    private CertificateRepository certificateRepository;
 
     @Autowired
-    private ServerConfig serverConfig;
+    private RestSessionTokenService sessionTokenService;
 
     /** Application event publisher. */
     private ApplicationEventPublisher applicationEventPublisher;
@@ -90,13 +94,19 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
     }
 
     @Override
+    public boolean certificated(String clientId) {
+        List<CertificateEntity> found = certificateRepository.find(clientId);
+        return found != null && !found.isEmpty();
+    }
+
+    @Override
     public Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken) {
         String nonce = secureRandomGenerator.generateUniqueRandomString(),
                 challenge = secureRandomGenerator.generateUniqueRandomString();
 
-        Challenge chal = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
-        log.info("challenge created: " + chal);
-        return chal;
+        Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
+        log.info("challenge created: " + cha);
+        return cha;
     }
 
     @Override
@@ -127,11 +137,11 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
      */
     private void verifyRequest(HttpServletRequest request, HttpDigestCredentials credentials) {
         long now = System.currentTimeMillis();
-        long timestamp = credentials.getParameter(HttpDigestCredentials.TIMESTAMP, Long.class);
-
+        String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
+        long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
         long diff = Math.abs(now - timestamp);
 
-        if (diff > RestSecurityConfiguration.MAX_TIME_DIFF) {
+        if (diff > RestSecurityConfiguration.MAX_TIME_DIFF * 1000L) {
             throw new BadCredentialsException("Way too inaccurate timestamp.");
         }
 
@@ -146,10 +156,19 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
             }
         });
         credentials.getParameters().forEach((s, o) -> support.getCredentials().setParameter(s, o));
-        support.sign(request.getMethod(), request.getRequestURI(), serverConfig.getPrivateKey());
 
-        String signature = credentials.getParameter(HttpDigestCredentials.SIGNATURE, String.class);
-        String signedSignature = support.getCredentials().getParameter(HttpDigestCredentials.SIGNATURE, String.class);
+        String clientId = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
+        List<CertificateEntity> certificates = certificateRepository.find(clientId);
+        if (certificates == null || certificates.isEmpty()) {
+            throw new BadCredentialsException("invalid client id:" + clientId);
+        }
+
+        CertificateEntity certificate = certificates.get(0);
+        log.debug("> certificate loaded: " + certificate);
+        support.sign(request.getMethod(), request.getRequestURI(), certificate.getSharedSecret());
+
+        String signature = credentials.getParameter(HttpDigestCredentials.SIGNATURE);
+        String signedSignature = support.getCredentials().getParameter(HttpDigestCredentials.SIGNATURE);
 
         if (signature == null) {
             throw new BadCredentialsException("Missing signature.");
@@ -158,6 +177,8 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
         if (!signedSignature.equals(signature)) {
             throw new BadCredentialsException("Signature verify failed.");
         }
+
+        log.debug("> Request signature verified.");
     }
 
     @Override
@@ -169,7 +190,7 @@ public class RestAuthorizationServer implements AuthorizationServer, Application
         }
 
         HttpDigestCredentials credentials = opt.get();
-        String principal = credentials.getParameter(HttpDigestCredentials.CLIENT_ID, String.class);
+        String principal = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
         if (principal == null) {
             throw new BadCredentialsException("principal not found.");
         }

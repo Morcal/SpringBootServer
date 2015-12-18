@@ -53,8 +53,11 @@ public class EhCacheChallengeManager implements ChallengeService {
                                      boolean requireToken,
                                      boolean needRefreshToken) {
         ChallengeImpl cha = new ChallengeImpl(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
-        Element element = challengeCache.putIfAbsent(createChallengeElement(cha));
-        return (Challenge) element.getObjectValue();
+        challengeCache.put(createChallengeElement(cha));
+        Element element = challengeCache.get(cha.getNonce());
+        assert element != null;
+        log.debug("> cached element: " + element);
+        return cha;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.configuration.ConfigurationException;
+import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotNull;
@@ -36,18 +37,26 @@ public class Nas {
     /** Authentication type (PAP/CHAP). */
     private final String authType;
 
+    private final int ipv4start;
+
+    private final int ipv4end;
+
     public Nas(@NotNull String id,
                String ipv4Address,
                String ipv6Address,
                String type,
                int listenPort,
-               String authType) {
+               String authType,
+               int ipv4start,
+               int ipv4end) {
         this.id = id;
         this.ipv4Address = StringUtils.isEmpty(ipv4Address) ? "" : ipv4Address;
         this.ipv6Address = StringUtils.isEmpty(ipv6Address) ? "" : ipv6Address;
         this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : type;
         this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTENPORT : listenPort;
         this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHTYPE : authType;
+        this.ipv4start = ipv4start;
+        this.ipv4end = ipv4end;
     }
 
     public String getId() {
@@ -74,6 +83,28 @@ public class Nas {
         return authType;
     }
 
+    public int getIpv4end() {
+        return ipv4end;
+    }
+
+    public int getIpv4start() {
+        return ipv4start;
+    }
+
+    @Override
+    public String toString() {
+        return "Nas{" +
+                "authType='" + authType + '\'' +
+                ", id='" + id + '\'' +
+                ", ipv4Address='" + ipv4Address + '\'' +
+                ", ipv6Address='" + ipv6Address + '\'' +
+                ", type='" + type + '\'' +
+                ", listenPort=" + listenPort +
+                ", ipv4start=" + ipv4start +
+                ", ipv4end=" + ipv4end +
+                '}';
+    }
+
     /**
      * Create an unmodifiable NAS from configuration.
      * @param config nas config.
@@ -85,12 +116,26 @@ public class Nas {
                 && StringUtils.isEmpty(config.getIpv6Address())) {
             throw new ConfigurationException("NAS must has ipv4 or ipv6 address at lest.");
         }
+        String ipv4start = config.getIpv4start(),
+                ipv4end = config.getIpv4end();
+
+        int start = 0, end = 0;
+        try {
+            start = AddressUtil.convertIpv4Address(ipv4start);
+            end = AddressUtil.convertIpv4Address(ipv4end);
+        } catch (IllegalArgumentException iae) {
+            start = 0;
+            end = 0;
+        }
+
         return new Nas(config.getId(),
                 config.getIpv4Address(),
                 config.getIpv6Address(),
                 config.getType(),
                 config.getListenPort(),
-                config.getAuthType().toUpperCase());
+                config.getAuthType().toUpperCase(),
+                start,
+                end);
     }
 
     public static class Config {
@@ -101,6 +146,8 @@ public class Nas {
         private String type;
         private int listenPort;
         private String authType;
+        private String ipv4start;
+        private String ipv4end;
 
         public String getId() {
             return id;
@@ -156,6 +203,22 @@ public class Nas {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public String getIpv4end() {
+            return ipv4end;
+        }
+
+        public void setIpv4end(String ipv4end) {
+            this.ipv4end = ipv4end;
+        }
+
+        public String getIpv4start() {
+            return ipv4start;
+        }
+
+        public void setIpv4start(String ipv4start) {
+            this.ipv4start = ipv4start;
         }
 
         @Override

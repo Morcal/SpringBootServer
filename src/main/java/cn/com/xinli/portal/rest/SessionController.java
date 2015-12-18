@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
@@ -9,6 +10,7 @@ import cn.com.xinli.portal.rest.bean.*;
 import cn.com.xinli.portal.rest.configuration.RestApiConfiguration;
 import cn.com.xinli.portal.rest.configuration.RestSecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestSessionToken;
+import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,9 @@ public class SessionController {
     @Autowired
     private NasMapping nasMapping;
 
+    @Autowired
+    private ServerConfig serverConfig;
+
     @RequestMapping(
             value = "/" + RestApiConfiguration.REST_API_SESSIONS,
             method = RequestMethod.POST)
@@ -56,12 +61,19 @@ public class SessionController {
         // Get NAS if mapped.
         Nas nas = nasMapping.findNas(ip, mac);
         if (nas == null) {
-            /* NAS not found. */
-            Failure failure = new Failure();
-            failure.setError(RestResponse.ERROR_INVALID_PORTAL_REQUEST);
-            failure.setDescription("nas not found for ip: " + ip + ", mac: " + mac);
-            return ResponseEntity.ok(failure);
+            /* Last resort, try to find nas by ipv4 range. */
+            nas = nasMapping.findByIpv4Range(AddressUtil.convertIpv4Address(ip));
+            if (nas == null) {
+                log.debug("* nas not found for: " + Session.pair(ip, mac));
+                /* NAS not found. */
+                Failure failure = new Failure();
+                failure.setError(RestResponse.ERROR_INVALID_PORTAL_REQUEST);
+                failure.setDescription("nas not found for ip: " + ip + ", mac: " + mac);
+                return ResponseEntity.ok(failure);
+            }
         }
+
+        log.debug("> nas found: " + nas);
 
         // Create portal session.
         SessionEntity session = SessionEntity.builder().setUsername(username)
@@ -81,7 +93,7 @@ public class SessionController {
         log.info("> " + token.toString() + " created.");
 
         Success success = new Success();
-        success.setSession(RestResponseBuilders.sessionBuilder(session, token).build());
+        success.setSession(RestResponseBuilders.sessionBuilder(session, token).build(serverConfig));
 
         /* Check if we need to send authorization. */
         Optional<HttpDigestCredentials> opt = CredentialsUtil.getCredentials(request);
@@ -106,7 +118,7 @@ public class SessionController {
     public ResponseEntity<Success> get(@PathVariable long id) {
         SessionEntity entity = (SessionEntity) restSessionService.getSession(id);
         Success success = new Success();
-        success.setSession(RestResponseBuilders.sessionBuilder(entity, null).build());
+        success.setSession(RestResponseBuilders.sessionBuilder(entity, null).build(serverConfig));
         return ResponseEntity.ok(success);
     }
 
@@ -132,7 +144,7 @@ public class SessionController {
             SessionEntity updated = (SessionEntity) restSessionService.update(id, timestamp);
             /* send updated session information. */
             Success success = new Success();
-            success.setSession(RestResponseBuilders.sessionBuilder(updated, null).build());
+            success.setSession(RestResponseBuilders.sessionBuilder(updated, null).build(serverConfig));
             return ResponseEntity.ok(success);
         } else {
             /* Assume client is trying to access unauthorized session. */
@@ -177,7 +189,7 @@ public class SessionController {
     @RequestMapping(
             value = "/" + RestApiConfiguration.REST_API_SESSIONS + "/" + RestApiConfiguration.REST_API_FIND,
             method = RequestMethod.DELETE)
-    public Object find(@RequestParam(value = "user_ip") String ip,
+    public ResponseEntity<RestBean> find(@RequestParam(value = "user_ip") String ip,
                        @RequestParam(value = "user_mac", defaultValue = "") String mac) {
         SessionEntity entity = (SessionEntity) restSessionService.find(ip, mac);
 
@@ -192,7 +204,13 @@ public class SessionController {
         log.info("> new session token: " + token + " allocated.");
 
         Success success = new Success();
-        success.setSession(RestResponseBuilders.sessionBuilder(entity, token).build());
+        success.setSession(RestResponseBuilders.sessionBuilder(entity, token).build(serverConfig));
         return ResponseEntity.ok(success);
+    }
+
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason="Server Internal Error")
+    @ExceptionHandler(RuntimeException.class)
+    public void handleException(RuntimeException e) {
+        e.printStackTrace();
     }
 }

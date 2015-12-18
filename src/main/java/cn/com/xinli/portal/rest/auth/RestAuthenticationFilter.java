@@ -84,6 +84,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             Authentication result = AbstractRestAuthentication.empty();
             try {
                 result = authorizationServer.authenticate(request, response);
+                SecurityContextHolder.getContext().setAuthentication(result);
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException e) {
                 authorizationServer.unsuccessfulAuthentication(request, response, result, e);

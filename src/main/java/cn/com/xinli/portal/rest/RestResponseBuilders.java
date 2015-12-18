@@ -73,8 +73,6 @@ public class RestResponseBuilders {
     }
 
     public static class SessionBuilder implements Builder<cn.com.xinli.portal.rest.bean.Session> {
-        @Autowired
-        private ServerConfig serverConfig;
         private final Session session;
         private final Token token;
 
@@ -83,14 +81,19 @@ public class RestResponseBuilders {
             this.token = token;
         }
 
+        public cn.com.xinli.portal.rest.bean.Session build(ServerConfig serverConfig) {
+            cn.com.xinli.portal.rest.bean.Session session = build();
+            session.setKeepaliveInterval(serverConfig.getKeepaliveInterval());
+            session.setKeepalive(serverConfig.requiresKeepalive());
+            return session;
+        }
+
         @Override
         public cn.com.xinli.portal.rest.bean.Session build() {
             if (session == null) {
-                throw new PortalException("Server failed to locate challenge.");
+                throw new PortalException("Server failed to locate session.");
             } else {
                 cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
-                session.setKeepaliveInterval(serverConfig.getKeepaliveInterval());
-                session.setKeepalive(serverConfig.requiresKeepalive());
                 session.setId(String.valueOf(this.session.getId()));
                 if (token != null) {
                     session.setToken(token.getKey());

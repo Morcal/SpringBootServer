@@ -44,8 +44,8 @@ public abstract class AbstractRestTokenService implements TokenManager, TokenSer
     public Token allocateToken(String extendedInformation) {
         String key = secureRandomStringGenerator.generateUniqueRandomString();
         Token token = createToken(key, extendedInformation);
-        Element element = getCache().putIfAbsent(createTokenElement(token));
-        return (Token) element.getObjectValue();
+        getCache().put(createTokenElement(token));
+        return token;
     }
 
     @Override

@@ -18,6 +18,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface AuthorizationServer {
     /**
+     * Check if given clientId aka appId been certificated.
+     * @param clientId client id aka appId.
+     * @return true if client id certificated.
+     */
+    boolean certificated(String clientId);
+
+    /**
      * Create a new challenge.
      * @param clientId client id.
      * @param scope token scope.

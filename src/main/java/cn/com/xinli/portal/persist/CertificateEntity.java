@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Table(schema = "PWS", name="certificate")
 @NamedQueries(value = {
         @NamedQuery(name = "CertificateEntity.find",
-                query = "select c from CertificateEntity c where c.appId = :appId")
+                query = "select c from CertificateEntity c where c.appId = ?1")
 })
 public class CertificateEntity implements Certificate {
     @Id
@@ -43,12 +43,12 @@ public class CertificateEntity implements Certificate {
 
     @Override
     public String getAppId() {
-        return null;
+        return appId;
     }
 
     @Override
     public String getSharedSecret() {
-        return null;
+        return sharedSecret;
     }
 
     public void setAppId(String appId) {
@@ -88,5 +88,17 @@ public class CertificateEntity implements Certificate {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return "CertificateEntity{" +
+                "appId='" + appId + '\'' +
+                ", id=" + id +
+                ", sharedSecret='" + sharedSecret + '\'' +
+                ", vendor='" + vendor + '\'' +
+                ", os='" + os + '\'' +
+                ", version='" + version + '\'' +
+                '}';
     }
 }

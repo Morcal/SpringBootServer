@@ -55,4 +55,16 @@ public class ChallengeImpl implements Challenge {
     public String getScope() {
         return scope;
     }
+
+    @Override
+    public String toString() {
+        return "ChallengeImpl{" +
+                "challenge='" + challenge + '\'' +
+                ", nonce='" + nonce + '\'' +
+                ", clientId='" + clientId + '\'' +
+                ", scope='" + scope + '\'' +
+                ", requireToken=" + requireToken +
+                ", needRefreshToken=" + needRefreshToken +
+                '}';
+    }
 }
