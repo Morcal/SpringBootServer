@@ -1,7 +1,11 @@
 package cn.com.xinli.portal.persist;
 
+import cn.com.xinli.portal.Session;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -11,13 +15,15 @@ import java.util.List;
  * @author zhoupeng 2015/12/7.
  */
 @Repository
+@Transactional
 public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.
      * @param device ip, mac device.
      * @return session list if found, or null.
      */
-    List<SessionEntity> find(String device);
+    @Query("select s from SessionEntity s where s.device = :device")
+    List<Session> find(@Param("device") String device);
 
     /**
      * Find session by usr.
@@ -25,5 +31,6 @@ public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
      * @param username user name.
      * @return session list.
      */
-    List<SessionEntity> findByUsername(String username);
+    @Query("select s from SessionEntity s where s.username = :username")
+    List<Session> findByUsername(@Param("username") String username);
 }

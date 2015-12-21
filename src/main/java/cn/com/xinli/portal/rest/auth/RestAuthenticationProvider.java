@@ -2,8 +2,12 @@ package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
-import cn.com.xinli.portal.rest.token.RestAccessToken;
-import cn.com.xinli.portal.rest.token.RestSessionToken;
+import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
+import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.rest.token.AccessToken;
+import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
+import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
+import cn.com.xinli.portal.rest.token.SessionToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.token.Token;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -52,7 +55,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
      * @param credentials credentials.
      * @throws BadCredentialsException
      */
-    private void handleChallenge(RestAccessAuthentication authentication,
+    private void handleChallenge(AccessAuthentication authentication,
                                  HttpDigestCredentials credentials,
                                  Collection<GrantedAuthority> authorities) {
             /* Credentials contains challenge, authenticate it. */
@@ -62,7 +65,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
 
         if (!challengeService.verify(challenge, response)) {
             log.debug("> failed to verify challenge.");
-            throw new BadCredentialsException("Incorrect challenge answer.");
+            throw new InvalidChallengeException("Incorrect challenge answer.");
         } else {
             log.debug("> challenge verified.");
             /* Remove challenge immediately. */
@@ -72,13 +75,13 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             authentication.setAuthenticated(true);
             /* TODO Provide better information, like Username for token allocation. */
             if (challenge.requiresToken()) {
-                Token token = accessTokenService.allocateToken(
+                org.springframework.security.core.token.Token token = accessTokenService.allocateToken(
                         credentials.getParameter(HttpDigestCredentials.CLIENT_ID));
-                authentication.setAccessToken(RestAccessToken.class.cast(token));
+                authentication.setAccessToken(AccessToken.class.cast(token));
             }
 
             authentication.setAuthenticated(true);
-            authorities.add(new SimpleGrantedAuthority("portal-rest-api"));
+            authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
         }
     }
 
@@ -88,19 +91,19 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
      * @param credentials credentials.
      * @throws BadCredentialsException
      */
-    private void verifyAccessToken(RestAccessAuthentication authentication,
+    private void verifyAccessToken(AccessAuthentication authentication,
                                    HttpDigestCredentials credentials,
                                    Collection<GrantedAuthority> authorities) {
         /* Credentials contains access token. */
-        Token verified = accessTokenService.verifyToken(
+        org.springframework.security.core.token.Token verified = accessTokenService.verifyToken(
                 credentials.getParameter(HttpDigestCredentials.CLIENT_TOKEN));
         if (verified == null) {
-            throw new BadCredentialsException("invalid client token.");
+            throw new InvalidAccessTokenException("invalid client token.");
         }
         log.debug("> Session token verified.");
         authentication.setAuthenticated(true);
-        authentication.setAccessToken(RestAccessToken.class.cast(verified));
-        authorities.add(new SimpleGrantedAuthority("portal-rest-api"));
+        authentication.setAccessToken(AccessToken.class.cast(verified));
+        authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
     }
 
     /**
@@ -109,15 +112,15 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
      * @param credentials credentials.
      * @throws BadCredentialsException
      */
-    private void verifySessionToken(RestAccessAuthentication authentication,
+    private void verifySessionToken(AccessAuthentication authentication,
                                     HttpDigestCredentials credentials,
                                     Collection<GrantedAuthority> authorities) {
-        Token verified = sessionTokenService.verifyToken(
+        org.springframework.security.core.token.Token verified = sessionTokenService.verifyToken(
                 credentials.getParameter(HttpDigestCredentials.SESSION_TOKEN));
         if (verified == null) {
-            throw new BadCredentialsException("Invalid session token.");
+            throw new InvalidSessionTokenException("Invalid session token.");
         }
-        authentication.setSessionToken(RestSessionToken.class.cast(verified));
+        authentication.setSessionToken(SessionToken.class.cast(verified));
         long sessionId = Long.parseLong(verified.getExtendedInformation());
         authorities.add(new SessionAuthority(sessionId));
     }
@@ -125,14 +128,14 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if (authentication == null) {
-            throw new IllegalArgumentException("authentication can not be empty.");
+            throw new BadCredentialsException("authentication can not be empty.");
         }
 
         if (!supports(authentication.getClass())) {
-            throw new IllegalArgumentException("unsupported authentication.");
+            throw new BadCredentialsException("unsupported authentication.");
         }
 
-        RestAccessAuthentication restAccessAuth = (RestAccessAuthentication) authentication;
+        AccessAuthentication restAccessAuth = (AccessAuthentication) authentication;
         HttpDigestCredentials credentials = restAccessAuth.getCredentials();
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
@@ -151,19 +154,20 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         }
 
         /* Populate a full authenticated authentication with granted authorities. */
-        RestAccessAuthentication populate = new RestAccessAuthentication(
+        AccessAuthentication populate = new AccessAuthentication(
                 authorities,
                 restAccessAuth.getPrincipal(),
                 restAccessAuth.getCredentials());
         populate.setAccessToken(restAccessAuth.getAccessToken());
         populate.setSessionToken(restAccessAuth.getSessionToken());
+        populate.setAuthenticated(true);
 
         return populate;
     }
 
     @Override
     public boolean supports(Class<?> aClass) {
-        return RestAccessAuthentication.class.isAssignableFrom(aClass);
+        return AccessAuthentication.class.isAssignableFrom(aClass);
     }
 
     @Override

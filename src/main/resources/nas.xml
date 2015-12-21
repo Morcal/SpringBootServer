@@ -3,36 +3,32 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <bean id="nasMapping" class="cn.com.xinli.portal.NasMapping" init-method="init">
+    <bean id="nasMapping" class="cn.com.xinli.portal.support.NasMappingSupport" init-method="init">
         <property name="configured">
-            <map>
-                <entry key="nas-01">
-                    <bean id="nas01" class="cn.com.xinli.portal.Nas.Config">
-                        <property name="id" value="nas-01"/>
-                        <property name="name" value="测试NAS 01"/>
-                        <property name="ipv4Address" value="10.1.0.5"/>
-                        <property name="ipv6Address" value=""/>
-                        <property name="type" value="Huawei"/>
-                        <property name="authType" value="CHAP"/>
-                        <property name="ipv4start" value="192.168.3.1"/>
-                        <property name="ipv4end" value="192.168.3.254"/>
-                        <property name="listenPort" value="2000"/>
-                    </bean>
-                </entry>
-                <entry key="nas-02">
-                    <bean id="nas02" class="cn.com.xinli.portal.Nas.Config">
-                        <property name="id" value="nas-02"/>
-                        <property name="name" value="测试NAS 01"/>
-                        <property name="ipv4Address" value="10.1.0.10"/>
-                        <property name="ipv6Address" value=""/>
-                        <property name="type" value="Huawei"/>
-                        <property name="authType" value="CHAP"/>
-                        <property name="ipv4start" value="192.168.4.1"/>
-                        <property name="ipv4end" value="192.168.4.254"/>
-                        <property name="listenPort" value="2000"/>
-                    </bean>
-                </entry>
-            </map>
+            <set>
+                <bean id="nas01" class="cn.com.xinli.portal.support.NasConfiguration">
+                    <property name="id" value="1"/>
+                    <property name="name" value="测试NAS 01"/>
+                    <property name="ipv4Address" value="10.1.0.5"/>
+                    <property name="ipv6Address" value=""/>
+                    <property name="type" value="Huawei"/>
+                    <property name="authType" value="CHAP"/>
+                    <property name="ipv4start" value="192.168.3.1"/>
+                    <property name="ipv4end" value="192.168.3.254"/>
+                    <property name="listenPort" value="2000"/>
+                </bean>
+                <bean id="nas02" class="cn.com.xinli.portal.support.NasConfiguration">
+                    <property name="id" value="2"/>
+                    <property name="name" value="测试NAS 01"/>
+                    <property name="ipv4Address" value="10.1.0.10"/>
+                    <property name="ipv6Address" value=""/>
+                    <property name="type" value="Huawei"/>
+                    <property name="authType" value="CHAP"/>
+                    <property name="ipv4start" value="192.168.4.1"/>
+                    <property name="ipv4end" value="192.168.4.254"/>
+                    <property name="listenPort" value="2000"/>
+                </bean>
+            </set>
         </property>
     </bean>
 </beans>

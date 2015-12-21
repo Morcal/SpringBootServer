@@ -1,7 +1,5 @@
 package cn.com.xinli.portal;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Project: xpws
  *
@@ -15,7 +13,7 @@ public class ServerConfig {
     private String derbyScheme;
     private boolean useDerbyMemDb;
     private String initSql;
-    private String reestApiUri;
+    private String activityLoggingSeverity;
 
     public boolean useDerbyMemDb() {
         return useDerbyMemDb;
@@ -73,71 +71,25 @@ public class ServerConfig {
         this.application = application;
     }
 
-    public String getReestApiUri() {
-        return reestApiUri;
+    public String getActivityLoggingSeverity() {
+        return activityLoggingSeverity;
     }
 
-    public void setReestApiUri(String reestApiUri) {
-        this.reestApiUri = reestApiUri;
+    public void setActivityLoggingSeverity(String activityLoggingSeverity) {
+        this.activityLoggingSeverity = activityLoggingSeverity;
     }
 
-    static class KeepaliveConfiguration {
-        private final boolean keepalive;
-
-        private final int interval;
-
-        private final String additionalInformation;
-
-        public KeepaliveConfiguration(boolean keepalive, int interval, String additionalInformation) {
-            this.interval = interval;
-            this.keepalive = keepalive;
-            this.additionalInformation = additionalInformation;
-        }
-
-        public int getInterval() {
-            return interval;
-        }
-
-        public boolean isKeepalive() {
-            return keepalive;
-        }
-
-        public String getAdditionalInformation() {
-            return additionalInformation;
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static class Builder {
-            private boolean keepalive = false;
-
-            private int interval = -1;
-
-            private String additionalInformation;
-
-            public Builder setKeepalive(boolean keepalive) {
-                this.keepalive = keepalive;
-                return this;
-            }
-
-            public Builder setInterval(int interval) {
-                if (interval > 0) {
-                    this.keepalive = true;
-                    this.interval = interval;
-                }
-                return this;
-            }
-
-            public Builder setAdditionalInformation(String additionalInformation) {
-                this.additionalInformation = StringUtils.defaultString(additionalInformation, "");
-                return this;
-            }
-
-            public KeepaliveConfiguration build() {
-                return new KeepaliveConfiguration(keepalive, interval, additionalInformation);
-            }
-        }
+    @Override
+    public String toString() {
+        return "ServerConfig{" +
+                "activityLoggingSeverity='" + activityLoggingSeverity + '\'' +
+                ", application='" + application + '\'' +
+                ", privateKey='" + privateKey + '\'' +
+                ", requiresKeepalive=" + requiresKeepalive +
+                ", keepaliveInterval=" + keepaliveInterval +
+                ", derbyScheme='" + derbyScheme + '\'' +
+                ", useDerbyMemDb=" + useDerbyMemDb +
+                ", initSql='" + initSql + '\'' +
+                '}';
     }
 }

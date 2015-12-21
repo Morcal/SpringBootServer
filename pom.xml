@@ -24,6 +24,7 @@
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
     <dependencies>
@@ -130,7 +131,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-					<encoding>UTF8</encoding>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 

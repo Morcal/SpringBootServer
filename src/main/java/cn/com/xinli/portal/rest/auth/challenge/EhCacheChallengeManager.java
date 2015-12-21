@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.rest.auth.challenge;
 
-import cn.com.xinli.portal.persist.CertificateEntity;
-import cn.com.xinli.portal.persist.CertificateRepository;
+import cn.com.xinli.portal.auth.Certificate;
+import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.rest.Constants;
 import cn.com.xinli.portal.rest.auth.SignatureUtil;
 import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
@@ -11,8 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Project: portal
@@ -28,7 +26,7 @@ public class EhCacheChallengeManager implements ChallengeService {
     private Ehcache challengeCache;
 
     @Autowired
-    private CertificateRepository certificateRepository;
+    private CertificateService certificateService;
 
     private Element createChallengeElement(Challenge challenge) {
         long now = System.currentTimeMillis();
@@ -56,7 +54,10 @@ public class EhCacheChallengeManager implements ChallengeService {
         challengeCache.put(createChallengeElement(cha));
         Element element = challengeCache.get(cha.getNonce());
         assert element != null;
-        log.debug("> cached element: " + element);
+        if (log.isDebugEnabled()) {
+            log.debug("> cached element: " + element);
+        }
+
         return cha;
     }
 
@@ -67,10 +68,10 @@ public class EhCacheChallengeManager implements ChallengeService {
     }
 
     @Override
-    public Challenge loadChallenge(String nonce) throws ChallengeException {
+    public Challenge loadChallenge(String nonce) throws ChallengeNotFoundException {
         Element element = challengeCache.get(nonce);
         if (element == null) {
-            throw new ChallengeException("challenge is gone.");
+            throw new ChallengeNotFoundException("challenge not found for:" + nonce + ".");
         }
         return (Challenge) element.getObjectValue();
     }
@@ -80,17 +81,12 @@ public class EhCacheChallengeManager implements ChallengeService {
         if (answer == null)
             return false;
 
-        // FIXME it will only compares with first one found.
-        List<CertificateEntity> found = certificateRepository.find(challenge.getClientId());
-        if (found != null && !found.isEmpty()) {
-            String signature = SignatureUtil.sign(
-                    challenge.getChallenge().getBytes(),
-                    found.get(0).getSharedSecret(),
-                    Constants.DEFAULT_KEY_SPEC);
-            return signature.equals(answer);
-        }
-
-        return false;
+        Certificate certificate = certificateService.loadCertificate(challenge.getClientId());
+        String signature = SignatureUtil.sign(
+                challenge.getChallenge().getBytes(),
+                certificate.getSharedSecret(),
+                Constants.DEFAULT_KEY_SPEC);
+        return signature.equals(answer);
     }
 
     @Override

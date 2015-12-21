@@ -1,7 +1,12 @@
 package cn.com.xinli.portal.rest.configuration;
 
+import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.rest.auth.CacheKeyGenerator;
 import cn.com.xinli.portal.rest.auth.RestCacheErrorHandler;
+import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.token.AccessToken;
+import cn.com.xinli.portal.rest.token.SessionToken;
+import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import org.springframework.cache.CacheManager;
@@ -23,23 +28,26 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableCaching
 public class CachingConfiguration implements CachingConfigurer {
-    /** Access token cache name. */
+    /** {@linkplain AccessToken} cache name. */
     public static final String ACCESS_TOKEN_CACHE_NAME = "access-token-cache";
 
-    /** Access token cache name. */
+    /** {@linkplain SessionToken} cache name. */
     public static final String SESSION_TOKEN_CACHE_NAME = "session-token-cache";
 
-    /** Access token cache name. */
+    /** {@linkplain Challenge} cache name. */
     public static final String CHALLENGE_CACHE_NAME = "challenge-cache";
 
+    /** {@linkplain Certificate} cache name. */
+    public static final String CERTIFICATE_CACHE_NAME = "certificate-cache";
+
     /** Access token ttl in seconds. */
-    public static final int ACCESS_TOKEN_TTL = 60;
+    public static final int ACCESS_TOKEN_TTL = 25;
 
     /** Session token ttl in seconds. */
-    public static final int SESSION_TOKEN_TTL = 60;
+    public static final int SESSION_TOKEN_TTL = 20;
 
     /** Challenge ttl in seconds. */
-    public static final int CHALLENGE_TTL = 30;
+    public static final int CHALLENGE_TTL = 10;
 
     /* Max cache entries. */
     private static final long MAX_CACHE_ENTRIES = 10_000;
@@ -52,7 +60,8 @@ public class CachingConfiguration implements CachingConfigurer {
         /* Use ehcache as memory only cache. */
         CacheConfiguration accessTokenCache = new CacheConfiguration(),
                 sessionTokenCache = new CacheConfiguration(),
-                challengeCache = new CacheConfiguration();
+                challengeCache = new CacheConfiguration(),
+                certificateCache = new CacheConfiguration();
 
         net.sf.ehcache.config.Configuration ehcacheConfig = new net.sf.ehcache.config.Configuration();
 
@@ -77,26 +86,36 @@ public class CachingConfiguration implements CachingConfigurer {
         challengeCache.persistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.NONE));
         ehcacheConfig.addCache(challengeCache);
 
-        return new net.sf.ehcache.CacheManager(ehcacheConfig);
+        /* Add certificate cache. */
+        certificateCache.setName(CERTIFICATE_CACHE_NAME);
+        certificateCache.setTimeToLiveSeconds(Long.MAX_VALUE);
+        certificateCache.setMaxEntriesLocalHeap(100);
+        certificateCache.persistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.NONE));
+        ehcacheConfig.addCache(certificateCache);
+
+        ehcacheConfig.setName("rest-service-cache");
+
+        return  net.sf.ehcache.CacheManager.create(ehcacheConfig);
     }
 
     @Bean
-    public net.sf.ehcache.config.Configuration ehcacheConfiguration() {
-        return new net.sf.ehcache.config.Configuration();
-    }
-
-    @Bean
-    public net.sf.ehcache.Ehcache accessTokenCache() {
+    public Ehcache accessTokenCache() {
         return ehcacheManager().getEhcache(ACCESS_TOKEN_CACHE_NAME);
     }
 
     @Bean
-    public net.sf.ehcache.Ehcache sessionTokenCache() {
+    public Ehcache sessionTokenCache() {
         return ehcacheManager().getEhcache(SESSION_TOKEN_CACHE_NAME);
     }
 
-    @Bean net.sf.ehcache.Ehcache challengeCache() {
+    @Bean
+    public Ehcache challengeCache() {
         return ehcacheManager().getEhcache(CHALLENGE_CACHE_NAME);
+    }
+
+    @Bean
+    public Ehcache certificateCache() {
+        return ehcacheManager().getEhcache(CERTIFICATE_CACHE_NAME);
     }
 
     @Bean
@@ -111,7 +130,7 @@ public class CachingConfiguration implements CachingConfigurer {
     public CacheResolver cacheResolver() {
         return new NamedCacheResolver(
                 cacheManager(),
-                ACCESS_TOKEN_CACHE_NAME, SESSION_TOKEN_CACHE_NAME, CHALLENGE_CACHE_NAME
+                ACCESS_TOKEN_CACHE_NAME, SESSION_TOKEN_CACHE_NAME, CHALLENGE_CACHE_NAME, CERTIFICATE_CACHE_NAME
         );
     }
 

@@ -27,5 +27,5 @@ public interface ChallengeManager {
      * Delete challenge.
      * @param challenge challenge to delete.
      */
-    void deleteChallenge(Challenge challenge) throws ChallengeException;
+    void deleteChallenge(Challenge challenge) throws ChallengeNotFoundException;
 }

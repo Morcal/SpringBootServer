@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.persist;
 
-import cn.com.xinli.portal.Certificate;
+import cn.com.xinli.portal.auth.Certificate;
 
 import javax.persistence.*;
 
@@ -12,16 +12,12 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="certificate")
-@NamedQueries(value = {
-        @NamedQuery(name = "CertificateEntity.find",
-                query = "select c from CertificateEntity c where c.appId = ?1")
-})
 public class CertificateEntity implements Certificate {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "app_id")
+    @Column(name = "app_id", unique = true)
     private String appId;
 
     @Column(name = "shared_secret")
@@ -35,6 +31,9 @@ public class CertificateEntity implements Certificate {
 
     @Column
     private String version;
+
+    @Column
+    private boolean disabled;
 
     @Override
     public long getId() {
@@ -91,6 +90,15 @@ public class CertificateEntity implements Certificate {
     }
 
     @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    @Override
     public String toString() {
         return "CertificateEntity{" +
                 "appId='" + appId + '\'' +
@@ -99,6 +107,7 @@ public class CertificateEntity implements Certificate {
                 ", vendor='" + vendor + '\'' +
                 ", os='" + os + '\'' +
                 ", version='" + version + '\'' +
+                ", disabled=" + disabled +
                 '}';
     }
 }

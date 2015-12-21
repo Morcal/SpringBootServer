@@ -1,10 +1,8 @@
 package cn.com.xinli.portal.persist;
 
 import cn.com.xinli.portal.Session;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -15,10 +13,6 @@ import java.util.Date;
 @Entity
 @PersistenceUnit(unitName = "bra")
 @Table(schema = "PWS", name="session")
-@NamedQueries(value = {
-        @NamedQuery(name = "SessionEntity.findByUsername", query = "select s from SessionEntity s where s.username = ?1"),
-        @NamedQuery(name = "SessionEntity.find", query = "select s from SessionEntity s where s.device = ?1"),
-})
 public class SessionEntity implements Session {
 
     @Id
@@ -160,69 +154,5 @@ public class SessionEntity implements Session {
                 ", version='" + version + '\'' +
                 ", lastModified=" + lastModified +
                 '}';
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private String nasId;
-        private String username;
-        private String ip;
-        private String mac;
-        private String os;
-        private String password;
-        private String version;
-
-        public Builder setIp(String ip) {
-            this.ip = ip;
-            return this;
-        }
-
-        public Builder setNasId(String nasId) {
-            this.nasId = nasId;
-            return this;
-        }
-
-        public Builder setUsername(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public Builder setMac(String mac) {
-            this.mac = mac;
-            return this;
-        }
-
-        public Builder setOs(String os) {
-            this.os = os;
-            return this;
-        }
-
-        public Builder setVersion(String version) {
-            this.version = version;
-            return this;
-        }
-
-        public Builder setPassword(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public SessionEntity build() {
-            SessionEntity entity = new SessionEntity();
-            entity.setIp(ip);
-            entity.setMac(StringUtils.defaultString(mac, "unknown"));
-            entity.setNasId(nasId);
-            entity.setUsername(username);
-            entity.setStartDate(Calendar.getInstance().getTime());
-            entity.setDevice(StringUtils.defaultString(Session.pair(ip, mac)));
-            entity.setOs(os);
-            entity.setPassword(password);
-            entity.setVersion(version);
-            return entity;
-        }
-
     }
 }

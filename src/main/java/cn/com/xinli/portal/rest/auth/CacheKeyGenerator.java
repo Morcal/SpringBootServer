@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.rest.token.AbstractRestToken;
+import cn.com.xinli.portal.rest.token.AbstractToken;
 import org.springframework.cache.interceptor.KeyGenerator;
 
 import java.lang.reflect.Method;
@@ -17,8 +17,8 @@ public class CacheKeyGenerator implements KeyGenerator {
         if (target != null) {
             if (target instanceof Challenge) {
                 return Challenge.class.cast(target).getNonce();
-            } else if (target instanceof AbstractRestToken) {
-                return AbstractRestToken.class.cast(target).getKey();
+            } else if (target instanceof AbstractToken) {
+                return AbstractToken.class.cast(target).getKey();
             }
         }
         return null;

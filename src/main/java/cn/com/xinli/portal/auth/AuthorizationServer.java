@@ -2,10 +2,11 @@ package cn.com.xinli.portal.auth;
 
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.rest.token.RestSessionToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.token.Token;
 
+import javax.security.cert.CertificateException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,48 +36,16 @@ public interface AuthorizationServer {
     Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken);
 
     /**
-     * Authenticate incoming http request.
-     * @param request http request.
-     * @param response http response.
-     * @return full populated authentication if success.
-     * @throws AuthenticationException
-     */
-    Authentication authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException;
-
-    /**
-     * Handle unsuccessful authentication.
-     * @param request request.
-     * @param response response.
-     * @param authentication authentication failed to authenticate.
-     * @param failed authentication exception.
-     */
-    void unsuccessfulAuthentication(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    Authentication authentication,
-                                    AuthenticationException failed);
-
-
-    /**
-     * Handle successful authentication.
-     * @param request request.
-     * @param response response.
-     * @param authResult result.
-     */
-    void successfulAuthentication(HttpServletRequest request,
-                                  HttpServletResponse response,
-                                  Authentication authResult);
-
-    /**
-     * Revoke session token.
-     * @param token session token to revoke.
+     * Revoke token.
+     * @param token token to revoke.
      * @return true if revoked.
      */
-    boolean revokeSessionToken(RestSessionToken token);
+    boolean revokeToken(Token token);
 
     /**
      * Allocate session token.
      * @param session associated session.
      * @return session token.
      */
-    RestSessionToken allocateSessionToken(Session session);
+    Token allocateToken(Session session);
 }

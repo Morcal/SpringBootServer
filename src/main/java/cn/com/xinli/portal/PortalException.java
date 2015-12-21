@@ -7,7 +7,7 @@ package cn.com.xinli.portal;
  *
  * @author zhoupeng 2015/12/2.
  */
-public class PortalException extends RuntimeException {
+public abstract class PortalException extends RuntimeException {
     public PortalException(String message) {
         super(message);
     }

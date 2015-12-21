@@ -35,7 +35,11 @@ public class CredentialsUtil {
             return Optional.empty();
         }
 
-        final HttpDigestCredentials credentials = HttpDigestCredentials.of(o.get().trim());
-        return Optional.ofNullable(credentials);
+        try {
+            final HttpDigestCredentials credentials = HttpDigestCredentials.of(o.get().trim());
+            return Optional.ofNullable(credentials);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

@@ -20,4 +20,11 @@ public class SessionAuthority implements GrantedAuthority {
     public String getAuthority() {
         return String.valueOf(sessionId);
     }
+
+    @Override
+    public String toString() {
+        return "SessionAuthority{" +
+                "sessionId=" + sessionId +
+                '}';
+    }
 }

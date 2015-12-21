@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.rest;
 
+import cn.com.xinli.portal.util.RandomStringGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -11,7 +11,7 @@ public interface ChallengeService extends ChallengeManager {
      * @param nonce challenge nonce.
      * @return challenge if found.
      */
-    Challenge loadChallenge(String nonce) throws ChallengeException;
+    Challenge loadChallenge(String nonce) throws ChallengeNotFoundException;
 
     boolean verify(Challenge challenge, String answer);
 

@@ -1,6 +1,6 @@
 package cn.com.xinli.portal;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Portal web server session service.
@@ -41,7 +41,7 @@ public interface SessionService {
      * @param mac mac address.
      * @return session if found or null.
      */
-    List<Session> find(String ip, String mac);
+    Optional<Session> find(String ip, String mac);
 
     /**
      * Update session's last modified timestamp.
