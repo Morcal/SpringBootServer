@@ -17,12 +17,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Optional;
 
 /**
  * Portal web server session REST APIs controller.
- *
+ * <p>
  * Project: portal
  *
  * @author zhoupeng 2015/12/2.
@@ -30,11 +31,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/${pws.root}/" + ApiConfiguration.REST_API_VERSION)
 public class SessionController {
-    /** Log. */
+    /**
+     * Log.
+     */
     private static final Log log = LogFactory.getLog(SessionController.class);
 
     @Autowired
-    private SessionService restSessionService;
+    private SessionService sessionService;
 
     @Autowired
     private AuthorizationServer authorizationServer;
@@ -46,7 +49,7 @@ public class SessionController {
     private ServerConfig serverConfig;
 
     private Session buildSession(long nas, String username, String password, String ip,
-                                  String mac, String os, String version) {
+                                 String mac, String os, String version) {
         SessionEntity session = new SessionEntity();
         session.setIp(ip);
         session.setMac(mac);
@@ -54,18 +57,18 @@ public class SessionController {
         session.setVersion(version);
         session.setUsername(username);
         session.setPassword(password);
-        session.setNasId(String.valueOf(nas));
+        session.setNasId(nas);
         session.setDevice(Session.pair(ip, mac));
         return session;
     }
 
     /**
      * Create a portal session so that user can access broadband connection.
-     *
+     * <p>
      * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
      * and has authority of this session can proceed.</p>
      *
-     * @param ip source ip address.
+     * @param ip  source ip address.
      * @param mac source mac address.
      * @return JSON.
      */
@@ -92,9 +95,15 @@ public class SessionController {
         }
 
         // Create portal session.
-        Session session = restSessionService.createSession(
-                buildSession(nas.getId(), username, password, ip, mac, os, version));
-        log.info("> " + session.toString() + " created.");
+        Session session;
+        try {
+            session = sessionService.createSession(
+                    nas,
+                    buildSession(nas.getId(), username, password, ip, mac, os, version));
+            log.info("> " + session.toString() + " created.");
+        } catch (IOException e) {
+            throw new SessionOperationException("Failed to create session", e);
+        }
 
         // create session authorization. FIXME session may be removed by other threads.
         SessionToken token = (SessionToken) authorizationServer.allocateToken(session);
@@ -112,10 +121,10 @@ public class SessionController {
 
     /**
      * Get portal session information.
-     *
+     * <p>
      * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
      * and has authority of this session can proceed.</p>
-     *
+     * <p>
      * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
      * overrule anything and everything.
      *
@@ -130,7 +139,7 @@ public class SessionController {
             " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
     public RestBean get(@P("session") @PathVariable long id,
                         @AuthenticationPrincipal Principal principal) {
-        Session session = restSessionService.getSession(id);
+        Session session = sessionService.getSession(id);
         return RestResponseBuilders.successBuilder()
                 .setSession(session)
                 .setAccessAuthentication((AccessAuthentication) principal)
@@ -140,17 +149,17 @@ public class SessionController {
 
     /**
      * Update portal session.
-     *
+     * <p>
      * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
      * and has authority of this session can proceed.</p>
-     *
+     * <p>
      * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
      * overrule anything and everything.
      *
-     * @param ip source ip address.
-     * @param mac source mac address.
+     * @param ip        source ip address.
+     * @param mac       source mac address.
      * @param timestamp source timestamp.
-     * @param id session id.
+     * @param id        session id.
      * @return JSON.
      */
     @ResponseBody
@@ -158,16 +167,16 @@ public class SessionController {
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.POST)
     @PreAuthorize("(" + SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE + " and hasAuthority(#session)) " +
-                    " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
+            " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
     public RestBean update(@RequestParam(value = "user_ip") String ip,
                            @RequestParam(value = "user_mac", defaultValue = "") String mac,
                            @RequestParam long timestamp,
                            @P("session") @PathVariable long id,
                            @AuthenticationPrincipal Principal principal) {
-        Optional<Session> opt = restSessionService.find(ip, mac);
+        Optional<Session> opt = sessionService.find(ip, mac);
         opt.orElseThrow(() -> new SessionNotFoundException("Session not found."));
 
-        Session found = opt.get(), entity = restSessionService.getSession(id);
+        Session found = opt.get(), entity = sessionService.getSession(id);
 
         if (entity.getId() == found.getId()) {
             long now = System.currentTimeMillis();
@@ -175,7 +184,7 @@ public class SessionController {
                 throw new OutOfRangeUpdateException("update out of range.");
             }
 
-            Session updated = restSessionService.update(id, timestamp);
+            Session updated = sessionService.update(id, timestamp);
             /* send updated session information. */
             return RestResponseBuilders.successBuilder()
                     .setSession(updated)
@@ -189,10 +198,10 @@ public class SessionController {
 
     /**
      * Disconnect portal session.
-     *
+     * <p>
      * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
      * and has authority of this session can proceed.</p>
-     *
+     * <p>
      * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
      * overrule anything and everything.
      *
@@ -210,7 +219,7 @@ public class SessionController {
         AccessAuthentication access = (AccessAuthentication) principal;
         SessionToken token = access.getSessionToken();
 
-        restSessionService.removeSession(id);
+        sessionService.removeSession(id);
         /* token may expired. */
         authorizationServer.revokeToken(token);
 
@@ -227,7 +236,7 @@ public class SessionController {
     public RestBean find(@RequestParam(value = "user_ip") String ip,
                          @RequestParam(value = "user_mac", defaultValue = "") String mac,
                          @AuthenticationPrincipal Principal principal) {
-        Optional<Session> opt = restSessionService.find(ip, mac);
+        Optional<Session> opt = sessionService.find(ip, mac);
         opt.orElseThrow(() -> new SessionNotFoundException("Session not found."));
 
         Session session = opt.get();

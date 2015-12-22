@@ -1,5 +1,6 @@
 package cn.com.xinli.portal;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -17,7 +18,7 @@ public interface SessionService {
      * @return session
      * @throws PortalException
      */
-    Session createSession(Session session);
+    Session createSession(Nas nas, Session session) throws IOException;
 
     /**
      * Get session by id.
@@ -50,4 +51,10 @@ public interface SessionService {
      * @return updated session.
      */
     Session update(long id, long timestamp);
+
+    /**
+     * Remove session by ip address.
+     * @param ip ip address.
+     */
+    void removeSession(String ip);
 }

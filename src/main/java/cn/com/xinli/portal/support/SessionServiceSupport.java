@@ -1,10 +1,11 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.Session;
-import cn.com.xinli.portal.SessionNotFoundException;
-import cn.com.xinli.portal.SessionService;
+import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
+import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.protocol.PortalClient;
+import cn.com.xinli.portal.protocol.PortalClients;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
@@ -29,21 +31,29 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
     @Autowired
     private SessionRepository sessionRepository;
 
+    @Autowired
+    private NasMapping nasMapping;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(sessionRepository);
     }
 
     @Override
-    public Session createSession(Session session) {
-        Optional<Session> opt = sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
-                .stream()
-                .findFirst();
+    public Session createSession(Nas nas, Session session) throws IOException {
+        Optional<Session> opt =
+                sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
+                        .stream()
+                        .findFirst();
 
         if (opt.isPresent()) {
             log.warn("> session already exists.");
             return opt.get();
         } else {
+            Credentials credentials = new Credentials(
+                    session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
+            PortalClient client = PortalClients.create(nas);
+            client.login(credentials);
             return sessionRepository.save((SessionEntity) session);
         }
     }
@@ -61,9 +71,27 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
     @Override
     @Transactional
     public void removeSession(long id) throws SessionNotFoundException {
-        if (sessionRepository.findOne(id) == null) {
+        Session session = sessionRepository.findOne(id);
+        if (session == null) {
             throw new SessionNotFoundException(id);
         }
+
+        Credentials credentials = new Credentials(
+                session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
+
+        Nas nas = nasMapping.getNas(session.getNasId());
+        if (nas == null) {
+            throw new NasNotFoundException("NAS not found by id: " + session.getNasId());
+        }
+
+        try {
+            PortalClient client = PortalClients.create(nas);
+            client.logout(credentials);
+        } catch (IOException e) {
+            log.error(e);
+            throw new SessionOperationException("Failed to logout", e);
+        }
+
         sessionRepository.delete(id);
     }
 
@@ -84,5 +112,16 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
         found.setLastModified(new Date(timestamp));
 
         return sessionRepository.save(found);
+    }
+
+    @Override
+    @Transactional
+    public void removeSession(String ip) {
+        Session found = sessionRepository.find1(ip);
+        if (found == null) {
+            throw new SessionNotFoundException("session with ip: " + ip + " not found.");
+        }
+
+        removeSession(found.getId());
     }
 }

@@ -65,7 +65,7 @@ public class PortalConfiguration {
     }
 
     @Bean
-    public SessionService restSessionService() {
+    public SessionService sessionService() {
         return new SessionServiceSupport();
     }
 
@@ -88,5 +88,4 @@ public class PortalConfiguration {
     public CertificateService certificateService() {
         return new CertificateServiceSupport();
     }
-
 }

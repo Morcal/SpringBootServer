@@ -16,6 +16,13 @@ public interface NasMapping {
     void reload();
 
     /**
+     * Get NAS/BRAS by id.
+     * @param id NAS/BRAS id.
+     * @return NAS if found or null.
+     */
+    Nas getNas(long id);
+
+    /**
      * Create a mapping from user ip and mac to NAS device configuration.
      * @param userIp user ip.
      * @param userMac user mac.

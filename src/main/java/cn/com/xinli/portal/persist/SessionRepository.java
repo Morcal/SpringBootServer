@@ -33,4 +33,12 @@ public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
      */
     @Query("select s from SessionEntity s where s.username = :username")
     List<Session> findByUsername(@Param("username") String username);
+
+    /**
+     * Find one session by ip.
+     * @param ip ip address.
+     * @return session.
+     */
+    @Query("select s from SessionEntity s where s.ip = :ip")
+    Session find1(@Param("ip") String ip);
 }

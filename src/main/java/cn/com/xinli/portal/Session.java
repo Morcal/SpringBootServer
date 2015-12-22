@@ -14,7 +14,9 @@ public interface Session {
      * Get Session start date.
      * @return session start date.
      */
-    Date getStartDate();
+    Date getStartTime();
+
+    Date getEndTime();
 
     /**
      * Get session id.
@@ -25,6 +27,8 @@ public interface Session {
     String getIp();
 
     String getMac();
+
+    long getNasId();
 
     /**
      * Create a paired information for ip and mac.
@@ -37,4 +41,8 @@ public interface Session {
     static String pair(String ip, String mac) {
         return (ip + " " + (StringUtils.isEmpty(mac) ? "unknown" : mac)).trim();
     }
+
+    String getUsername();
+
+    String getPassword();
 }

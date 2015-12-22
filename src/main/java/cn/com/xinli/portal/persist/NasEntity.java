@@ -37,6 +37,9 @@ public class NasEntity implements Nas {
     @Column
     private String authType;
 
+    @Column
+    private String sharedSecret;
+
     /** IPv4 range start. */
     @Column
     private int ipv4start;
@@ -118,16 +121,26 @@ public class NasEntity implements Nas {
     }
 
     @Override
+    public String getSharedSecret() {
+        return sharedSecret;
+    }
+
+    public void setSharedSecret(String sharedSecret) {
+        this.sharedSecret = sharedSecret;
+    }
+
+    @Override
     public String toString() {
         return "NasEntity{" +
                 "authType='" + authType + '\'' +
                 ", id=" + id +
                 ", ipv4Address='" + ipv4Address + '\'' +
-                ", ipv4end=" + ipv4end +
-                ", ipv4start=" + ipv4start +
                 ", ipv6Address='" + ipv6Address + '\'' +
-                ", listenPort=" + listenPort +
                 ", type='" + type + '\'' +
+                ", listenPort=" + listenPort +
+                ", sharedSecret='" + sharedSecret + '\'' +
+                ", ipv4start=" + ipv4start +
+                ", ipv4end=" + ipv4end +
                 '}';
     }
 }

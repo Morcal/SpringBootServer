@@ -84,6 +84,13 @@ public class NasMappingSupport implements NasMapping {
     }
 
     @Override
+    public Nas getNas(long id) {
+        synchronized (devices) {
+            return devices.get(id);
+        }
+    }
+
+    @Override
     public Nas findNas(String userIp, String userMac) {
         String pair = Session.pair(userIp, userMac);
         Long nasId = userNasMapping.get(pair);

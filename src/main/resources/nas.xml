@@ -16,6 +16,7 @@
                     <property name="ipv4start" value="192.168.3.1"/>
                     <property name="ipv4end" value="192.168.3.254"/>
                     <property name="listenPort" value="2000"/>
+                    <property name="sharedSecret" value="aaa"/>
                 </bean>
                 <bean id="nas02" class="cn.com.xinli.portal.support.NasConfiguration">
                     <property name="id" value="2"/>
@@ -27,6 +28,7 @@
                     <property name="ipv4start" value="192.168.4.1"/>
                     <property name="ipv4end" value="192.168.4.254"/>
                     <property name="listenPort" value="2000"/>
+                    <property name="sharedSecret" value="aaa"/>
                 </bean>
             </set>
         </property>

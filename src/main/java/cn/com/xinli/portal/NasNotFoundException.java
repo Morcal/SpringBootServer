@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus
 public class NasNotFoundException extends PortalException {
+    public NasNotFoundException(String message) {
+        super(message);
+    }
+
     public NasNotFoundException(String ip, String mac) {
-        super("NAS configuration not found for: " + Session.pair(ip, mac));
+        this("NAS configuration not found for: " + Session.pair(ip, mac));
     }
 }

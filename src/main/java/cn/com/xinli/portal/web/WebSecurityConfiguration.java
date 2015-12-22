@@ -40,5 +40,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/" + serverConfig.getApplication(),
                         "/" + serverConfig.getApplication() + "/api")
                 .permitAll();
+        //http.anonymous().disable();
     }
 }

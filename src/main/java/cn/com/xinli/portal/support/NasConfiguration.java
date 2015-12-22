@@ -15,6 +15,7 @@ public class NasConfiguration {
     private String authType;
     private String ipv4start;
     private String ipv4end;
+    private String sharedSecret;
 
     public long getId() {
         return id;
@@ -88,16 +89,27 @@ public class NasConfiguration {
         this.ipv4start = ipv4start;
     }
 
+    public String getSharedSecret() {
+        return sharedSecret;
+    }
+
+    public void setSharedSecret(String sharedSecret) {
+        this.sharedSecret = sharedSecret;
+    }
+
     @Override
     public String toString() {
-        return "Config{" +
-                "id='" + id + '\'' +
+        return "NasConfiguration{" +
+                "authType='" + authType + '\'' +
+                ", id=" + id +
                 ", name='" + name + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
                 ", type='" + type + '\'' +
                 ", listenPort=" + listenPort +
-                ", authType='" + authType + '\'' +
+                ", ipv4start='" + ipv4start + '\'' +
+                ", ipv4end='" + ipv4end + '\'' +
+                ", sharedSecret='" + sharedSecret + '\'' +
                 '}';
     }
 }

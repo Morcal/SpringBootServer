@@ -20,7 +20,7 @@ public class SessionEntity implements Session {
     private long id;
 
     @Column(name = "nas_id")
-    private String nasId;
+    private long nasId;
 
     @Column
     private String device;
@@ -35,7 +35,10 @@ public class SessionEntity implements Session {
     private String mac;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private Date startTime;
+
+    @Column(name = "end_date")
+    private Date endTime;
 
     @Column
     private String password;
@@ -58,11 +61,12 @@ public class SessionEntity implements Session {
         this.id = id;
     }
 
-    public String getNasId() {
+    @Override
+    public long getNasId() {
         return nasId;
     }
 
-    public void setNasId(String nasId) {
+    public void setNasId(long nasId) {
         this.nasId = nasId;
     }
 
@@ -74,6 +78,7 @@ public class SessionEntity implements Session {
         this.username = username;
     }
 
+    @Override
     public String getIp() {
         return ip;
     }
@@ -82,6 +87,7 @@ public class SessionEntity implements Session {
         this.ip = ip;
     }
 
+    @Override
     public String getMac() {
         return mac;
     }
@@ -90,13 +96,12 @@ public class SessionEntity implements Session {
         this.mac = mac;
     }
 
-    @Override
-    public Date getStartDate() {
-        return startDate;
+    public Date getStartTime() {
+        return startTime;
     }
 
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
     }
 
     public String getOs() {
@@ -140,15 +145,25 @@ public class SessionEntity implements Session {
     }
 
     @Override
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    @Override
     public String toString() {
         return "SessionEntity{" +
                 "device='" + device + '\'' +
                 ", id=" + id +
-                ", nasId='" + nasId + '\'' +
+                ", nasId=" + nasId +
                 ", username='" + username + '\'' +
                 ", ip='" + ip + '\'' +
                 ", mac='" + mac + '\'' +
-                ", startDate=" + startDate +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
                 ", password='" + password + '\'' +
                 ", os='" + os + '\'' +
                 ", version='" + version + '\'' +

@@ -9,49 +9,67 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Device (NAS/BRAS) supports Portal protocol configuration.
- *
+ * <p>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */
 public class NasSupport implements Nas {
-    /** NAS id. */
+    /**
+     * NAS id.
+     */
     private final long id;
 
-    /** IPv4 Address. */
+    /**
+     * IPv4 Address.
+     */
     private final String ipv4Address;
 
-    /** IPv6 Address. */
+    /**
+     * IPv6 Address.
+     */
     private final String ipv6Address;
 
-    /** Nas type. */
+    /**
+     * Nas type.
+     */
     private final String type;
 
-    /** Portal listen port. */
+    /**
+     * Portal listen port.
+     */
     private final int listenPort;
 
-    /** Authentication type (PAP/CHAP). */
+    /**
+     * Authentication type (PAP/CHAP).
+     */
     private final String authType;
+
+    private final String sharedSecret;
 
     private final int ipv4start;
 
     private final int ipv4end;
 
-    /** Sole constructor. */
+    /**
+     * Sole constructor.
+     */
     private NasSupport(@NotNull long id,
-               String ipv4Address,
-               String ipv6Address,
-               String type,
-               int listenPort,
-               String authType,
-               int ipv4start,
-               int ipv4end) {
+                       String ipv4Address,
+                       String ipv6Address,
+                       String type,
+                       int listenPort,
+                       String authType,
+                       String sharedSecret,
+                       int ipv4start,
+                       int ipv4end) {
         this.id = id;
+        this.sharedSecret = sharedSecret;
         this.ipv4Address = StringUtils.isEmpty(ipv4Address) ? "" : ipv4Address;
         this.ipv6Address = StringUtils.isEmpty(ipv6Address) ? "" : ipv6Address;
         this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : type;
-        this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTENPORT : listenPort;
-        this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHTYPE : authType;
+        this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTEN_PORT : listenPort;
+        this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHENTICATION_TYPE : authType;
         this.ipv4start = ipv4start;
         this.ipv4end = ipv4end;
     }
@@ -97,14 +115,20 @@ public class NasSupport implements Nas {
     }
 
     @Override
+    public String getSharedSecret() {
+        return sharedSecret;
+    }
+
+    @Override
     public String toString() {
-        return "Nas{" +
+        return "NasSupport{" +
                 "authType='" + authType + '\'' +
-                ", id='" + id + '\'' +
+                ", id=" + id +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
                 ", type='" + type + '\'' +
                 ", listenPort=" + listenPort +
+                ", sharedSecret='" + sharedSecret + '\'' +
                 ", ipv4start=" + ipv4start +
                 ", ipv4end=" + ipv4end +
                 '}';
@@ -112,6 +136,7 @@ public class NasSupport implements Nas {
 
     /**
      * Create an unmodifiable NAS from configuration.
+     *
      * @param configuration nas configuration.
      * @return NAS.
      * @throws PortalException
@@ -119,7 +144,8 @@ public class NasSupport implements Nas {
     public static Nas build(NasConfiguration configuration) throws PortalException {
         if (StringUtils.isEmpty(configuration.getIpv4Address())
                 && StringUtils.isEmpty(configuration.getIpv6Address())) {
-            throw new PortalException("NAS must has ipv4 or ipv6 address at lest."){};
+            throw new PortalException("NAS must has ipv4 or ipv6 address at lest.") {
+            };
         }
         String ipv4start = configuration.getIpv4start(),
                 ipv4end = configuration.getIpv4end();
@@ -139,6 +165,7 @@ public class NasSupport implements Nas {
                 configuration.getType(),
                 configuration.getListenPort(),
                 configuration.getAuthType().toUpperCase(),
+                configuration.getSharedSecret(),
                 start,
                 end);
     }

@@ -10,9 +10,9 @@ package cn.com.xinli.portal;
 public interface Nas {
     String DEFAULT_NAS_TYPE = "Huawei";
 
-    int DEFAULT_NAS_LISTENPORT = 2000;
+    int DEFAULT_NAS_LISTEN_PORT = 2000;
 
-    String DEFAULT_NAS_AUTHTYPE = "CHAP";
+    String DEFAULT_NAS_AUTHENTICATION_TYPE = "CHAP";
 
     long getId();
 
@@ -29,4 +29,6 @@ public interface Nas {
     int getIpv4end();
 
     int getIpv4start();
+
+    String getSharedSecret();
 }

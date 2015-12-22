@@ -2,6 +2,7 @@ package cn.com.xinli.portal.scratch;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -76,7 +77,8 @@ public class SpringFunctionBeanTest {
     /** Log. */
     private static final Log log = LogFactory.getLog(SpringFunctionBeanTest.class);
 
-    public static void main(String[] args) {
+    @Test
+    public void testIt() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
         ReferencingService referencingService = context.getBean(ReferencingService.class);
         int i = referencingService.referenceIt();
