@@ -40,7 +40,9 @@ public class HuaweiNasTest {
     HuaweiNas nas;
 
     @Test
-    public void testNas() throws IOException {
+    public void testNas() throws IOException, InterruptedException {
         nas.start();
+        Thread.sleep(10_000);
+        nas.shutdown();
     }
 }

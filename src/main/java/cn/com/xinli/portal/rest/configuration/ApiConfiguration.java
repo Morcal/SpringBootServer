@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import java.util.StringJoiner;
 
 /**
+ * PWS REST APIs configurations.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/6.

@@ -15,10 +15,10 @@ public interface SessionService {
      * Create a new portal session.
      *
      * @param session session to create.
-     * @return session
+     * @return session message.
      * @throws PortalException
      */
-    Session createSession(Nas nas, Session session) throws IOException;
+    Message<Session> createSession(Nas nas, Session session) throws IOException;
 
     /**
      * Get session by id.
@@ -32,9 +32,10 @@ public interface SessionService {
     /**
      * Remove session by id.
      * @param id session id.
+     * @return session message.
      * @throws SessionNotFoundException
      */
-    void removeSession(long id) throws SessionNotFoundException;
+    Message<Session> removeSession(long id) throws SessionNotFoundException;
 
     /**
      * Find session by ip and mac.
@@ -56,5 +57,5 @@ public interface SessionService {
      * Remove session by ip address.
      * @param ip ip address.
      */
-    void removeSession(String ip);
+    Message removeSession(String ip);
 }

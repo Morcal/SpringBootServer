@@ -42,6 +42,6 @@ public class PortalClients {
 
         protocol.orElseThrow(() -> new PortalProtocolException("Unsupported nas type: " + nas.getType()));
 
-        return new DefaultPortalClient(nas, new HuaweiCodecFactory(protocol.get().getVersion()));
+        return new DefaultPortalClient(protocol.get().getVersion(), nas, new HuaweiCodecFactory());
     }
 }

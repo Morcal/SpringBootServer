@@ -1,14 +1,11 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.rest.api.Provider;
-import cn.com.xinli.portal.rest.bean.Failure;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Project: xpws
@@ -22,15 +19,9 @@ public class ApiController {
     @Autowired
     private Provider restApiProvider;
 
+    @ResponseBody
     @RequestMapping
-    public ResponseEntity<Provider> api() {
-        return ResponseEntity.ok(restApiProvider);
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Failure> handleAuthenticationException(AuthenticationException e) {
-        Failure failure = new Failure();
-        failure.setError(RestResponse.ERROR_UNAUTHORIZED_REQUEST);
-        return ResponseEntity.ok(failure);
+    public Provider api() {
+        return restApiProvider;
     }
 }

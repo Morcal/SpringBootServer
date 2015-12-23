@@ -27,8 +27,12 @@ public abstract class AbstractPortalClient implements PortalClient {
     /** Protocol. */
     protected final CodecFactory codecFactory;
 
-    public AbstractPortalClient(Nas nas, CodecFactory codecFactory) {
+    /** Huawei Protocol version. */
+    protected final int version;
+
+    public AbstractPortalClient(int version, Nas nas, CodecFactory codecFactory) {
         this.nas = nas;
+        this.version = version;
         this.codecFactory = codecFactory;
     }
 
@@ -50,21 +54,23 @@ public abstract class AbstractPortalClient implements PortalClient {
 
         try {
             socket = new DatagramSocket();
-            socket.setSoTimeout(3000);
-            DatagramPacket pack = codecFactory.getEncoder().encode(packet, nas.getSharedSecret());
-            socket.send(pack);
+            socket.setSoTimeout(10_000);
+            DatagramPacket request = codecFactory.getEncoder()
+                    .encode(packet, Nas.getInetAddress(nas), nas.getListenPort(), nas.getSharedSecret());
+            socket.send(request);
 
             DatagramPacket response = createResponseDatagramPacket();
             socket.receive(response);
 
-            Packet responsePacket = codecFactory.getDecoder().decode(response, nas.getSharedSecret());
+            Packet responsePacket = codecFactory.getDecoder()
+                    .decode(packet.getAuthenticator(), response, nas.getSharedSecret());
             if (responsePacket == null) {
                 return Optional.empty();
             } else {
                 return Optional.of(responsePacket);
             }
         } catch (SocketTimeoutException e) {
-            log.warn("* Receive from nas: " + nas + " timeout.");
+            log.warn("* Receive from nas timeout, nas: " + nas);
             return Optional.empty();
         } finally {
             if (socket != null) {
@@ -75,20 +81,21 @@ public abstract class AbstractPortalClient implements PortalClient {
     }
 
     /**
-     * Send an acknowledge packet to NAS.
+     * Send an acknowledge packet to NAS (as request).
      *
      * @param ack acknowledge packet.
      * @throws IOException
      */
     public void ack(Packet ack) throws IOException {
         DatagramSocket socket = new DatagramSocket();
-        DatagramPacket pack = codecFactory.getEncoder().encode(ack, nas.getSharedSecret());
+        DatagramPacket pack = codecFactory.getEncoder()
+                .encode(ack, Nas.getInetAddress(nas), nas.getListenPort(), nas.getSharedSecret());
         socket.send(pack);
         socket.close();
     }
 
     /**
-     * Send a not-acknowledge packet to NAS.
+     * Send a not-acknowledge packet to NAS (as request).
      * @param nak not-acknowledge packet.
      * @throws IOException
      */

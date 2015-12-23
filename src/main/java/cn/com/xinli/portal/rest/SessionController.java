@@ -95,12 +95,19 @@ public class SessionController {
         }
 
         // Create portal session.
-        Session session;
+        Session session = buildSession(nas.getId(), username, password, ip, mac, os, version);
         try {
-            session = sessionService.createSession(
-                    nas,
-                    buildSession(nas.getId(), username, password, ip, mac, os, version));
-            log.info("> " + session.toString() + " created.");
+            Message message = sessionService.createSession(nas, session);
+            if (log.isDebugEnabled()) {
+                log.info(message);
+            }
+
+            if (!message.isSuccess()) {
+                return RestResponseBuilders.errorBuilder()
+                        .setError(RestResponse.ERROR_SERVER_ERROR)
+                        .setDescription(message.getText())
+                        .build();
+            }
         } catch (IOException e) {
             throw new SessionOperationException("Failed to create session", e);
         }
@@ -219,7 +226,19 @@ public class SessionController {
         AccessAuthentication access = (AccessAuthentication) principal;
         SessionToken token = access.getSessionToken();
 
-        sessionService.removeSession(id);
+        Message<Session> message = sessionService.removeSession(id);
+        if (log.isDebugEnabled()) {
+            log.debug(message);
+            Session rm = message.getContent();
+            log.debug("session: " + rm + " removed.");
+        }
+
+        if (!message.isSuccess()) {
+            return RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setDescription(message.getText())
+                    .build();
+        }
         /* token may expired. */
         authorizationServer.revokeToken(token);
 

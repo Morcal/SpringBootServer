@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.web;
 
 import cn.com.xinli.portal.NasMapping;
-import cn.com.xinli.portal.PortalException;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -95,7 +94,7 @@ public class WebController {
         /* TODO check logic here. */
         String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
 
-        while (true) {
+        do {
             if (StringUtils.isEmpty(deviceIp)
                     || StringUtils.isEmpty(sourceIp)
                     || StringUtils.isEmpty(sourceMac)) {
@@ -114,7 +113,7 @@ public class WebController {
             if (log.isDebugEnabled()) {
                 log.debug("> mapping {" + sourceIp + " " + sourceMac + "} -> {" + nasIp + "}");
             }
-        }
+        } while (false);
 
         return mainPageView;
     }

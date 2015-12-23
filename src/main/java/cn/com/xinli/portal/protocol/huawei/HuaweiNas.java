@@ -1,9 +1,6 @@
 package cn.com.xinli.portal.protocol.huawei;
 
-import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.Session;
-import cn.com.xinli.portal.SessionNotFoundException;
-import cn.com.xinli.portal.SessionService;
+import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.protocol.Packet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,14 +19,23 @@ public class HuaweiNas extends DefaultPortalServer {
     private static final Log log = LogFactory.getLog(HuaweiNas.class);
 
     public HuaweiNas() {
-        super(createSessionService());
+        super(createServerConfig(), createMockSessionService());
     }
 
-    static SessionService createSessionService() {
+    static ServerConfig createServerConfig() {
+        ServerConfig serverConfig = new ServerConfig();
+        serverConfig.setPortalServerSharedSecret("s3cr3t");
+        serverConfig.setPortalServerHuaweiVersion("v2");
+        serverConfig.setPortalServerListenPort(2000);
+        serverConfig.setPortalServerThreadSize(4);
+        return serverConfig;
+    }
+
+    static SessionService createMockSessionService() {
         return new SessionService() {
             @Override
-            public Session createSession(Nas nas, Session session) throws IOException {
-                return null;
+            public Message<Session> createSession(Nas nas, Session session) throws IOException {
+                return Message.of(session, true, "");
             }
 
             @Override
@@ -38,7 +44,9 @@ public class HuaweiNas extends DefaultPortalServer {
             }
 
             @Override
-            public void removeSession(long id) throws SessionNotFoundException {}
+            public Message<Session> removeSession(long id) throws SessionNotFoundException {
+                return Message.of(null, true, "");
+            }
 
             @Override
             public Optional<Session> find(String ip, String mac) {
@@ -51,8 +59,9 @@ public class HuaweiNas extends DefaultPortalServer {
             }
 
             @Override
-            public void removeSession(String ip) {
+            public Message removeSession(String ip) {
                 log.debug("> Removing session, ip: " + ip);
+                return Message.of(null, true, "");
             }
         };
     }
@@ -60,8 +69,8 @@ public class HuaweiNas extends DefaultPortalServer {
     @Override
     protected void handlePacket(DatagramPacket packet) {
         try {
-            Packet in = codecFactory.getDecoder().decode(packet, sharedSecret);
-            if (codecFactory.verify(in, sharedSecret)) {
+            if (codecFactory.verify(packet, sharedSecret)) {
+                Packet in = codecFactory.getDecoder().decode(packet, sharedSecret);
                 Optional<Enums.Type> type = Enums.Type.valueOf(in.getType());
                 if (type.isPresent()) {
                     switch (type.get()) {
@@ -76,7 +85,7 @@ public class HuaweiNas extends DefaultPortalServer {
                         case REQ_LOGOUT:
                             handleLogout(in);
                             break;
-                        
+
                         default:
                             break;
                     }

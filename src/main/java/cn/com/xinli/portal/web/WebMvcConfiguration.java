@@ -1,9 +1,11 @@
 package cn.com.xinli.portal.web;
 
+import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.Scheme;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -35,15 +37,18 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
         return "X-PWS-Scheme";
     }
 
+    @Autowired
+    private ServerConfig serverConfig;
+
     @Bean
     public Scheme scheme() {
         Scheme scheme = new Scheme();
         scheme.setUri(ApiConfiguration.API_PATH);
-        scheme.setVersion("1.0");
-        scheme.setServer("192.168.3.26");
-        scheme.setPort(8080);
-        scheme.setHost("192.168.3.26");
-        scheme.setScheme("http");
+        scheme.setVersion(serverConfig.getRestSchemeVersion());
+        scheme.setServer(serverConfig.getRestSchemeServer());
+        scheme.setPort(serverConfig.getPortalServerListenPort());
+        scheme.setHost(serverConfig.getRestSchemeHost());
+        scheme.setScheme(serverConfig.getRestSchemeScheme());
         return scheme;
     }
 

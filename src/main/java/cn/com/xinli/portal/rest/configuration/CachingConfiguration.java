@@ -21,6 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * PWS Caching configurations.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/11.

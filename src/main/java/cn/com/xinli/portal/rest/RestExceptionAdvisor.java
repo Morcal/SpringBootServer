@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.SessionNotFoundException;
+import cn.com.xinli.portal.protocol.PortalProtocolException;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeNotFoundException;
 import cn.com.xinli.portal.rest.bean.Failure;
@@ -113,8 +114,22 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             log.error(e);
         }
 
-        return  RestResponseBuilders.errorBuilder()
+        return RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_UNAUTHORIZED_REQUEST)
+                .setDescription(e.getMessage())
+                .build();
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    @ExceptionHandler(value = {PortalProtocolException.class})
+    public RestBean handlePortalProtocolException(PortalProtocolException e) {
+        if (log.isDebugEnabled()) {
+            log.error(e);
+        }
+        return RestResponseBuilders.errorBuilder()
+                .setError(RestResponse.ERROR_SERVER_ERROR)
+                .setDescription(e.getMessage())
                 .build();
     }
 }

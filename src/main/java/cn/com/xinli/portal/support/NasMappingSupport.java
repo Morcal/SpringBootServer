@@ -1,9 +1,6 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.NasMapping;
-import cn.com.xinli.portal.PortalException;
-import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.NasRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,8 +75,7 @@ public class NasMappingSupport implements NasMapping {
                 userNasMapping.put(pair, n.getId());
             });
 
-            nas.orElseThrow(() -> new PortalException(
-                    "NAS with ip: " + nasIp + " not found."){});
+            nas.orElseThrow(() -> new NasNotFoundException("NAS with ip: " + nasIp + " not found."));
         }
     }
 

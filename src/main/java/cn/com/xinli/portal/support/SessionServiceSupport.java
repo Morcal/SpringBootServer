@@ -40,7 +40,7 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
     }
 
     @Override
-    public Session createSession(Nas nas, Session session) throws IOException {
+    public Message<Session> createSession(Nas nas, Session session) throws IOException {
         Optional<Session> opt =
                 sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
                         .stream()
@@ -48,13 +48,21 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
 
         if (opt.isPresent()) {
             log.warn("> session already exists.");
-            return opt.get();
+            return Message.of(opt.get(), true, "Session already exists.");
         } else {
             Credentials credentials = new Credentials(
                     session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
             PortalClient client = PortalClients.create(nas);
-            client.login(credentials);
-            return sessionRepository.save((SessionEntity) session);
+            Message message = client.login(credentials);
+            if (log.isDebugEnabled()) {
+                log.debug(message);
+            }
+
+            if (message.isSuccess()) {
+                sessionRepository.save((SessionEntity) session);
+            }
+
+            return Message.of(session, message.isSuccess(), message.getText());
         }
     }
 
@@ -70,7 +78,7 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
 
     @Override
     @Transactional
-    public void removeSession(long id) throws SessionNotFoundException {
+    public Message<Session> removeSession(long id) throws SessionNotFoundException {
         Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
@@ -86,13 +94,19 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
 
         try {
             PortalClient client = PortalClients.create(nas);
-            client.logout(credentials);
+            Message message = client.logout(credentials);
+            if (log.isDebugEnabled()) {
+                log.debug(message);
+            }
+
+            if (message.isSuccess()) {
+                sessionRepository.delete(id);
+            }
+            return Message.of(session, message.isSuccess(), message.getText());
         } catch (IOException e) {
             log.error(e);
             throw new SessionOperationException("Failed to logout", e);
         }
-
-        sessionRepository.delete(id);
     }
 
     @Override
@@ -116,12 +130,12 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
 
     @Override
     @Transactional
-    public void removeSession(String ip) {
+    public Message removeSession(String ip) {
         Session found = sessionRepository.find1(ip);
         if (found == null) {
             throw new SessionNotFoundException("session with ip: " + ip + " not found.");
         }
 
-        removeSession(found.getId());
+        return removeSession(found.getId());
     }
 }

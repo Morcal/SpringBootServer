@@ -6,27 +6,27 @@
     <bean id="nasMapping" class="cn.com.xinli.portal.support.NasMappingSupport" init-method="init">
         <property name="configured">
             <set>
-                <bean id="nas01" class="cn.com.xinli.portal.support.NasConfiguration">
+                <bean class="cn.com.xinli.portal.support.NasConfiguration">
                     <property name="id" value="1"/>
-                    <property name="name" value="测试NAS 01"/>
-                    <property name="ipv4Address" value="10.1.0.5"/>
+                    <property name="name" value="xinli-h3c-vbras"/>
+                    <property name="ipv4Address" value="192.168.3.95"/>
                     <property name="ipv6Address" value=""/>
-                    <property name="type" value="Huawei"/>
+                    <property name="type" value="Huawei v2"/>
                     <property name="authType" value="CHAP"/>
                     <property name="ipv4start" value="192.168.3.1"/>
                     <property name="ipv4end" value="192.168.3.254"/>
                     <property name="listenPort" value="2000"/>
                     <property name="sharedSecret" value="aaa"/>
                 </bean>
-                <bean id="nas02" class="cn.com.xinli.portal.support.NasConfiguration">
+                <bean class="cn.com.xinli.portal.support.NasConfiguration">
                     <property name="id" value="2"/>
-                    <property name="name" value="测试NAS 01"/>
-                    <property name="ipv4Address" value="10.1.0.10"/>
+                    <property name="name" value="mock-huawei-nas"/>
+                    <property name="ipv4Address" value="127.0.0.1"/>
                     <property name="ipv6Address" value=""/>
-                    <property name="type" value="Huawei"/>
-                    <property name="authType" value="CHAP"/>
-                    <property name="ipv4start" value="192.168.4.1"/>
-                    <property name="ipv4end" value="192.168.4.254"/>
+                    <property name="type" value="Huawei v2"/>
+                    <property name="authType" value="PAP"/>
+                    <property name="ipv4start" value="192.168.5.1"/>
+                    <property name="ipv4end" value="192.168.5.254"/>
                     <property name="listenPort" value="2000"/>
                     <property name="sharedSecret" value="aaa"/>
                 </bean>

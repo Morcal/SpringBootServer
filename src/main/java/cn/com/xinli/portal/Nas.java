@@ -1,5 +1,10 @@
 package cn.com.xinli.portal;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Device (NAS/BRAS) support Portal protocol configuration.
  *
@@ -31,4 +36,12 @@ public interface Nas {
     int getIpv4start();
 
     String getSharedSecret();
+
+    static String getIp(Nas nas) {
+        return StringUtils.isEmpty(nas.getIpv4Address()) ? nas.getIpv6Address() : nas.getIpv4Address();
+    }
+
+    static InetAddress getInetAddress(Nas nas) throws UnknownHostException {
+        return InetAddress.getByName(getIp(nas));
+    }
 }

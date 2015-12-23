@@ -2,7 +2,6 @@ package cn.com.xinli.portal.protocol;
 
 import cn.com.xinli.portal.protocol.huawei.Enums;
 
-import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,9 +49,7 @@ public class Packet {
 
     private byte[] authenticator;
 
-    private InetAddress address;
-
-    private Collection<Attribute> attributes;
+    private Collection<Attribute> attributes = new ArrayList<>();
 
     private static final int MAX_SERIAL = Short.MAX_VALUE * 2 + 1;
 
@@ -68,6 +65,16 @@ public class Packet {
             if (serial.compareAndSet(current, next))
                 return next;
         }
+    }
+
+    private static Packet EMPTY = createEmpty();
+
+    public static Packet empty() { return EMPTY; }
+
+    private static Packet createEmpty() {
+        Packet packet = new Packet();
+        packet.setAttributes(Collections.emptyList());
+        return packet;
     }
 
     public void addAttribute(Enums.Attribute type, byte[] value) {
@@ -90,7 +97,7 @@ public class Packet {
         public Attribute(int type, byte[] value) {
             this.type = type;
             this.value = value;
-            this.length = value.length;
+            this.length = value.length + 2;
         }
 
         public int getLength() {
@@ -103,6 +110,15 @@ public class Packet {
 
         public byte[] getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return "Attribute{" +
+                    "length=" + length +
+                    ", type=" + type +
+                    ", value=" + Arrays.toString(value) +
+                    '}';
         }
     }
 
@@ -141,14 +157,6 @@ public class Packet {
 
     public int getAuthType() {
         return authType;
-    }
-
-    public InetAddress getAddress() {
-        return address;
-    }
-
-    public void setAddress(InetAddress address) {
-        this.address = address;
     }
 
     public void setAuthType(int authType) {
@@ -214,8 +222,7 @@ public class Packet {
     @Override
     public String toString() {
         return "Packet{" +
-                "address=" + address +
-                ", version=" + version +
+                "version=" + version +
                 ", type=" + type +
                 ", authType=" + authType +
                 ", reserved=" + reserved +

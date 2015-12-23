@@ -13,7 +13,16 @@ public class ServerConfig {
     private String derbyScheme;
     private boolean useDerbyMemDb;
     private String initSql;
+    private String restSchemeScheme;
+    private String restSchemeServer;
+    private String restSchemeHost;
+    private int restSchemePort;
+    private String restSchemeVersion;
     private String activityLoggingSeverity;
+    private int portalServerListenPort;
+    private int portalServerThreadSize;
+    private String portalServerSharedSecret;
+    private String portalServerHuaweiVersion;
 
     public boolean useDerbyMemDb() {
         return useDerbyMemDb;
@@ -79,6 +88,86 @@ public class ServerConfig {
         this.activityLoggingSeverity = activityLoggingSeverity;
     }
 
+    public String getPortalServerHuaweiVersion() {
+        return portalServerHuaweiVersion;
+    }
+
+    public void setPortalServerHuaweiVersion(String portalServerHuaweiVersion) {
+        this.portalServerHuaweiVersion = portalServerHuaweiVersion;
+    }
+
+    public int getPortalServerListenPort() {
+        return portalServerListenPort;
+    }
+
+    public void setPortalServerListenPort(int portalServerListenPort) {
+        this.portalServerListenPort = portalServerListenPort;
+    }
+
+    public String getPortalServerSharedSecret() {
+        return portalServerSharedSecret;
+    }
+
+    public void setPortalServerSharedSecret(String portalServerSharedSecret) {
+        this.portalServerSharedSecret = portalServerSharedSecret;
+    }
+
+    public int getPortalServerThreadSize() {
+        return portalServerThreadSize;
+    }
+
+    public void setPortalServerThreadSize(int portalServerThreadSize) {
+        this.portalServerThreadSize = portalServerThreadSize;
+    }
+
+    public boolean isRequiresKeepalive() {
+        return requiresKeepalive;
+    }
+
+    public boolean isUseDerbyMemDb() {
+        return useDerbyMemDb;
+    }
+
+    public String getRestSchemeHost() {
+        return restSchemeHost;
+    }
+
+    public void setRestSchemeHost(String restSchemeHost) {
+        this.restSchemeHost = restSchemeHost;
+    }
+
+    public int getRestSchemePort() {
+        return restSchemePort;
+    }
+
+    public void setRestSchemePort(int restSchemePort) {
+        this.restSchemePort = restSchemePort;
+    }
+
+    public String getRestSchemeScheme() {
+        return restSchemeScheme;
+    }
+
+    public void setRestSchemeScheme(String restSchemeScheme) {
+        this.restSchemeScheme = restSchemeScheme;
+    }
+
+    public String getRestSchemeServer() {
+        return restSchemeServer;
+    }
+
+    public void setRestSchemeServer(String restSchemeServer) {
+        this.restSchemeServer = restSchemeServer;
+    }
+
+    public String getRestSchemeVersion() {
+        return restSchemeVersion;
+    }
+
+    public void setRestSchemeVersion(String restSchemeVersion) {
+        this.restSchemeVersion = restSchemeVersion;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
@@ -90,6 +179,15 @@ public class ServerConfig {
                 ", derbyScheme='" + derbyScheme + '\'' +
                 ", useDerbyMemDb=" + useDerbyMemDb +
                 ", initSql='" + initSql + '\'' +
+                ", restSchemeScheme='" + restSchemeScheme + '\'' +
+                ", restSchemeServer='" + restSchemeServer + '\'' +
+                ", restSchemeHost='" + restSchemeHost + '\'' +
+                ", restSchemePort=" + restSchemePort +
+                ", restSchemeVersion='" + restSchemeVersion + '\'' +
+                ", portalServerListenPort=" + portalServerListenPort +
+                ", portalServerThreadSize=" + portalServerThreadSize +
+                ", portalServerSharedSecret='" + portalServerSharedSecret + '\'' +
+                ", portalServerHuaweiVersion=" + portalServerHuaweiVersion +
                 '}';
     }
 }
