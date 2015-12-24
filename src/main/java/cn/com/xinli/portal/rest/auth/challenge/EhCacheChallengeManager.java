@@ -88,10 +88,4 @@ public class EhCacheChallengeManager implements ChallengeService {
                 Constants.DEFAULT_KEY_SPEC);
         return signature.equals(answer);
     }
-
-    @Override
-    public void evictExpiredChallenges() {
-        log.info("evicting expired challenges...");
-        challengeCache.evictExpiredElements();
-    }
 }

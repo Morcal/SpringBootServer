@@ -14,6 +14,4 @@ public interface ChallengeService extends ChallengeManager {
     Challenge loadChallenge(String nonce) throws ChallengeNotFoundException;
 
     boolean verify(Challenge challenge, String answer);
-
-    void evictExpiredChallenges();
 }

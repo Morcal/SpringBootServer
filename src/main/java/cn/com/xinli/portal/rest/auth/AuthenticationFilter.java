@@ -168,6 +168,11 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
             throw new BadCredentialsException("Missing signature.");
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("> Comparing signature, calculated: {" + signedSignature +
+                    "}, original: {" + signature + "}");
+        }
+
         if (!signedSignature.equals(signature)) {
             throw new BadCredentialsException("Signature verify failed.");
         }

@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -56,6 +57,21 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
                     .setDescription(e.getMessage())
                     .setUrl("/error")
                     .build();
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    @ExceptionHandler(value = { BadCredentialsException.class })
+    public RestBean handleAuthenticationException(BadCredentialsException e) {
+        if (log.isDebugEnabled()) {
+            log.error(e);
+        }
+
+        return RestResponseBuilders.errorBuilder()
+                .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setDescription(e.getMessage())
+                .setUrl("/error")
+                .build();
     }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)

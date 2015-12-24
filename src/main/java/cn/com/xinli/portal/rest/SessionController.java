@@ -81,8 +81,8 @@ public class SessionController {
                             @RequestParam String password,
                             @RequestParam(name = "user_ip") String ip,
                             @RequestParam(name = "user_mac") String mac,
-                            @RequestParam String os,
-                            @RequestParam String version,
+                            @RequestParam(defaultValue = "") String os,
+                            @RequestParam(defaultValue = "") String version,
                             @AuthenticationPrincipal Principal principal) {
         // Get NAS if mapped.
         Nas nas = nasMapping.findNas(ip, mac);
