@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.protocol;
 
 /**
+ * Portal authentication type.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.
@@ -26,5 +28,14 @@ public enum AuthType {
             }
         }
         throw new RuntimeException("Authentication type: " + type + " not supported.");
+    }
+
+    public static AuthType valueOf(int code) {
+        for (AuthType t : AuthType.values()) {
+            if (t.code() == code) {
+                return t;
+            }
+        }
+        throw new RuntimeException("Authentication code: " + code + " not supported.");
     }
 }

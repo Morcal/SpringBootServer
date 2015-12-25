@@ -1,0 +1,9 @@
+    _  _. _ __            ____
+   : \/ /| '_ \ __ __  __/ ___'
+    \  / | |_) |\ \\ \/ /\___ \
+    /  \ | .__/  \_\\__/  ___) | ${AnsiColor.RED}${application.formatted-version}
+${AnsiColor.RED}---${AnsiColor.WHITE}/ /\_:|_|${AnsiColor.RED}-------------${AnsiColor.WHITE}|____/${AnsiColor.RED}-------->
+${AnsiColor.WHITE}     `
+${AnsiColor.RED}${application.title}${AnsiColor.BRIGHT_GREEN}Powered by Spring Boot${spring-boot.formatted-version}
+${AnsiColor.BLUE}@copyright 2015, Xi'an Xinli Software Technology ltd., co.
+${AnsiColor.WHITE}

@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.persist;
 
 import cn.com.xinli.portal.Nas;
+import cn.com.xinli.portal.protocol.AuthType;
 
 import javax.persistence.*;
 
@@ -16,6 +17,9 @@ public class NasEntity implements Nas {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
+    @Column(name = "nas_id")
+    private String nasId;
 
     /** IPv4 Address. */
     @Column
@@ -35,7 +39,7 @@ public class NasEntity implements Nas {
 
     /** Authentication type (PAP/CHAP). */
     @Column
-    private String authType;
+    private AuthType authType;
 
     @Column
     private String sharedSecret;
@@ -58,11 +62,20 @@ public class NasEntity implements Nas {
     }
 
     @Override
-    public String getAuthType() {
+    public String getNasId() {
+        return nasId;
+    }
+
+    public void setNasId(String nasId) {
+        this.nasId = nasId;
+    }
+
+    @Override
+    public AuthType getAuthType() {
         return authType;
     }
 
-    public void setAuthType(String authType) {
+    public void setAuthType(AuthType authType) {
         this.authType = authType;
     }
 
@@ -132,8 +145,9 @@ public class NasEntity implements Nas {
     @Override
     public String toString() {
         return "NasEntity{" +
-                "authType='" + authType + '\'' +
+                "authType=" + authType +
                 ", id=" + id +
+                ", nasId='" + nasId + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
                 ", type='" + type + '\'' +

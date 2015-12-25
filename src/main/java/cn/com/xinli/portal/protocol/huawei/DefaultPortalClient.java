@@ -2,20 +2,18 @@ package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.Message;
 import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.protocol.*;
-import org.apache.commons.lang3.StringUtils;
+import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.protocol.Packet;
+import cn.com.xinli.portal.protocol.Protocol;
+import cn.com.xinli.portal.protocol.support.AbstractPortalClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
 import java.util.Optional;
 
 /**
@@ -29,112 +27,33 @@ public class DefaultPortalClient extends AbstractPortalClient {
     /** Log. */
     private static final Log log = LogFactory.getLog(DefaultPortalClient.class);
 
+    /** Associated protocol. */
+    protected final Protocol protocol;
 
-    public DefaultPortalClient(int version, Nas nas, CodecFactory codecFactory) {
-        super(version, nas, codecFactory);
+    public DefaultPortalClient(Nas nas, Protocol protocol) {
+        super(nas);
+        this.protocol = protocol;
     }
 
     @Override
-    protected DatagramPacket createResponseDatagramPacket() {
-        int capacity = 1024;
-        byte[] buf = new byte[capacity];
-        return new DatagramPacket(buf, buf.length);
+    protected Packet createChapReqPacket(Credentials credentials) {
+        return Utils.createChapReqPacket(protocol, credentials);
     }
 
     /**
-     * Get ipv4 address in bytes.
+     * {@inheritDoc}
+     *
      * <p>
-     * FIXME: can't apply on ipv6 address.
-     *
-     * @param ip ipv4 address in form of "xxx.xxx.xxx.xxx".
-     * @return ipv4 address in bytes.
-     * @throws UnknownHostException
-     */
-    byte[] getIp4Address(String ip) throws UnknownHostException {
-        byte[] bytes = InetAddress.getByName(ip).getAddress();
-        if (bytes.length > 4) {
-            return Arrays.copyOfRange(bytes, bytes.length - 4, bytes.length);
-        } else {
-            return Arrays.copyOf(bytes, 4);
-        }
-    }
-
-    /**
-     * Create challenge request packet.
-     *
-     * @return challenge request packet.
-     */
-    Packet createChapReqPacket(Credentials credentials) {
-        try {
-            int attrs = 0;
-            Packet packet = new Packet();
-            packet.setVersion(version);
-            packet.setType(Enums.Type.REQ_CHALLENGE.code());
-            packet.setSerialNum(Packet.nextSerialNum());
-            packet.setAuthType(AuthType.CHAP.code());
-            packet.setIp(getIp4Address(credentials.getIp()));
-            if (!StringUtils.isEmpty(credentials.getMac())) {
-                packet.addAttribute(Enums.Attribute.USER_MAC, credentials.getMac().getBytes());
-                attrs++;
-            }
-            packet.setAttrs(attrs);
-            return packet;
-        } catch (UnknownHostException e) {
-            log.error(e);
-            return null;
-        }
-    }
-
-    /**
-     * Create CHAP packet.
-     * <p>
-     * <code>CHAP password = MD5(CHAP id + Password + Challenge)</code></p>
-     *
-     * @param challenge   challenge.
-     * @param serialNum   serial number.
-     * @param reqId       challenge request id, from previous challenge response.
+     * <code>CHAP password = MD5(CHAP id + Password + Challenge)</code>
+     * </p>
+     * @param ack   challenge acknowledge packet.
      * @param credentials user credentials.
-     * @return chap packet.
+     * @return
+     * @throws IOException
      */
-    Packet createChapAuthPacket(byte[] challenge,
-                                int serialNum,
-                                int reqId,
-                                Credentials credentials) throws IOException {
-        int attrs = 0;
-        Packet packet = new Packet();
-        packet.setVersion(version);
-        packet.setType(Enums.Type.REQ_AUTH.code());
-        packet.setAuthType(AuthType.CHAP.code());
-        packet.setSerialNum(serialNum);
-        packet.setReqId(reqId);
-        packet.setIp(getIp4Address(credentials.getIp()));
-        packet.addAttribute(Enums.Attribute.USER_NAME, credentials.getUsername().getBytes());
-        attrs++;
-        if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(Enums.Attribute.USER_MAC, credentials.getUsername().getBytes());
-            attrs++;
-        }
-
-        /* Calculate chap password. */
-        try (ByteArrayOutputStream bao = new ByteArrayOutputStream()) {
-            DataOutputStream output = new DataOutputStream(bao);
-            output.writeByte(reqId);
-            output.flush();
-
-            bao.write(credentials.getPassword().getBytes());
-            bao.write(challenge);
-            bao.flush();
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.reset();
-            md5.update(bao.toByteArray());
-            packet.addAttribute(Enums.Attribute.CHALLENGE_PASSWORD, md5.digest());
-            attrs++;
-            packet.setAttrs(attrs);
-        } catch (NoSuchAlgorithmException e) {
-            log.error(e);
-        }
-
-        return packet;
+    @Override
+    protected Packet createChapAuthPacket(Packet ack, Credentials credentials) throws IOException {
+        return Utils.createChapAuthPacket(protocol, ack, credentials);
     }
 
     /**
@@ -143,25 +62,9 @@ public class DefaultPortalClient extends AbstractPortalClient {
      * @param credentials user credentials.
      * @return PAP authentication packet.
      */
-    Packet createPapAuthPacket(Credentials credentials) throws IOException {
-        int attrs = 0;
-        Packet packet = new Packet();
-        packet.setVersion(version);
-        packet.setType(Enums.Type.REQ_AUTH.code());
-        packet.setSerialNum(Packet.nextSerialNum());
-        packet.setAuthType(AuthType.PAP.code());
-        packet.setIp(getIp4Address(credentials.getIp()));
-        packet.addAttribute(Enums.Attribute.USER_NAME, credentials.getUsername().getBytes());
-        attrs++;
-        packet.addAttribute(Enums.Attribute.PASSWORD, credentials.getPassword().getBytes());
-        attrs++;
-        if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(Enums.Attribute.USER_MAC, credentials.getUsername().getBytes());
-            attrs++;
-        }
-        packet.setAttrs(attrs);
-
-        return packet;
+    @Override
+    protected Packet createPapAuthPacket(Credentials credentials) throws IOException {
+        return Utils.createPapAuthPacket(protocol, credentials);
     }
 
     /**
@@ -169,142 +72,130 @@ public class DefaultPortalClient extends AbstractPortalClient {
      *
      * @param authType    authentication type.
      * @param credentials user credentials.
-     * @return logout request packet, or null if ip address in credentials is unknown.
+     * @return logout request packet,
+     * or null if ip address in credentials is unknown.
      */
-    Packet createLogoutPacket(AuthType authType, Credentials credentials) throws IOException {
-        Packet packet = new Packet();
-        packet.setVersion(version);
-        packet.setSerialNum(Packet.nextSerialNum());
-        packet.setType(Enums.Type.REQ_LOGOUT.code());
-        packet.setAuthType(authType.code());
-        packet.setIp(getIp4Address(credentials.getIp()));
-        packet.setError(Enums.LogoutRequestError.PORTAL_SERVER_REQUEST.code());
-        return packet;
+    @Override
+    protected Packet createLogoutPacket(AuthType authType, Credentials credentials) throws IOException {
+        return Utils.createLogoutPacket(protocol, authType, credentials);
     }
 
     /**
      * Create affirmative acknowledge packet.
      *
-     * @param serialNum serial number from original response packet.
-     * @param reqId     request id from original response packet.
-     * @param ip        request ip address.
-     * @param authType  authentication type.
+     * @param response response packet from remote.
      * @return packet.
      */
-    private Packet createAckPacket(int serialNum, int reqId, byte[] ip, AuthType authType) {
-        Packet ack = new Packet();
-        ack.setVersion(version);
-        ack.setType(Enums.Type.AFF_ACK_AUTH.code());
-        ack.setSerialNum(serialNum);
-        ack.setReqId(reqId);
-        ack.setIp(ip);
-        ack.setAuthType(authType.code());
-        return ack;
+    private Packet createAffAckPacket(Packet response) {
+        return Utils.createAffAckPacket(protocol, response);
     }
 
     /**
-     * Create not acknowledge (TIMEOUT) packet.
+     * Create request timeout packet.
      * <p>
      * NAK packet use {@link Enums.Type#REQ_LOGOUT} as packet type.
      * NAK (TIMEOUT) packet error code must be 1.
      * </p>
-     *
-     * @param serialNum serial number from original request packet.
-     * @param reqId     request id from original request packet.
-     * @param ip        request ip address.
-     * @param authType  authentication type.
-     * @return packet.
+     * @param request original request.
+     * @return request timeout packet.
      */
-    private Packet createNakPacket(int serialNum, int reqId, byte[] ip, AuthType authType) {
-        Packet nak = new Packet();
-        nak.setVersion(version);
-        nak.setType(Enums.Type.REQ_LOGOUT.code());
-        nak.setSerialNum(serialNum);
-        nak.setReqId(reqId);
-        nak.setAuthType(authType.code());
-        nak.setIp(ip);
-        nak.setError(Enums.LogoutRequestError.NAS_RESPONSE_TIMEOUT.code()); // timeout.
-        return nak;
+    private Packet createRequestTimeoutPacket(Packet request) {
+        return Utils.createRequestTimeoutPacket(protocol, request);
     }
 
     @Override
-    public Message login(Credentials credentials) throws IOException {
-        AuthType authType = AuthType.of(nas.getAuthType());
-        Optional<Packet> response;
-        Packet authRequest;
+    protected Optional<Packet> request(Packet packet) throws IOException {
+        DatagramSocket socket = null;
+        HuaweiPacket hwPkt = (HuaweiPacket) packet;
 
-        switch (authType) {
-            case CHAP:
-                Packet challenge = createChapReqPacket(credentials);
-                response = super.request(challenge);
-                if (!response.isPresent()) {
-                    /* Not respond, send timeout NAK, reqId = 0. */
-                    super.nak(createNakPacket(challenge.getSerialNum(), 0, challenge.getIp(), AuthType.CHAP));
-                    return PortalMessage.failure("NAS not respond to challenge request.");
-                }
+        try {
+            /* Send request to remote. */
+            socket = new DatagramSocket();
+            socket.setSoTimeout(10_000);
+            DatagramPacket request = protocol.getCodecFactory().getEncoder()
+                    .encode(packet, nas.getInetAddress(), nas.getListenPort(), nas.getSharedSecret());
+            socket.send(request);
 
-                Packet chapAck = response.get();
-                /* Create portal request to login. */
-                authRequest = createChapAuthPacket(
-                        chapAck.getAttribute(Enums.Attribute.CHALLENGE),
-                        chapAck.getSerialNum(),
-                        chapAck.getReqId(),
-                        credentials);
-                response = super.request(authRequest);
-                break;
+            /* Try to receive from remote. */
+            int capacity = 1024;
+            byte[] buf = new byte[capacity];
+            DatagramPacket response = new DatagramPacket(buf, buf.length);
+            socket.receive(response);
 
-            case PAP:
-                authRequest = createPapAuthPacket(credentials);
-                response = super.request(authRequest);
-                break;
-
-            default:
-                throw new PortalProtocolException("Unsupported authentication type: " + authType);
-        }
-
-        /* Check authentication response. */
-        if (response.isPresent()) {
-            Packet authResponse = response.get();
-            if (authResponse.getError() == Enums.AuthError.OK.code()) {
-                log.debug("> auth ok, send affirmative acknowledge.");
-                /* Authentication ok, send affirmative acknowledge. */
-                super.ack(
-                        createAckPacket(
-                                authRequest.getSerialNum(),
-                                authRequest.getReqId(),
-                                authRequest.getIp(),
-                                authType));
+            /* Decode response. */
+            Packet responsePacket = protocol.getCodecFactory().getDecoder()
+                    .decode(hwPkt.getAuthenticator(), response, nas.getSharedSecret());
+            return Optional.ofNullable(responsePacket);
+        } catch (SocketTimeoutException e) {
+            log.warn("* Receive from nas timeout, nas: " + nas);
+            return Optional.empty();
+        } finally {
+            if (socket != null) {
+                socket.close();
+                socket.disconnect();
             }
-            return PortalMessage.from(authResponse);
-        } else {
-            log.debug("+ auth not response, send nak.");
-            /* Not respond, send nak. */
-            super.request(
-                    createNakPacket(
-                            authRequest.getSerialNum(),
-                            authRequest.getReqId(),
-                            authRequest.getIp(),
-                            authType));
-            return PortalMessage.failure("NAS not respond to authentication request.");
         }
     }
 
+    /**
+     * Send an acknowledge packet to NAS (as request).
+     *
+     * @param ack acknowledge packet.
+     * @throws IOException
+     */
+    private void sendAffAck(Packet ack) throws IOException {
+        DatagramSocket socket = new DatagramSocket();
+        DatagramPacket pack = protocol.getCodecFactory().getEncoder()
+                .encode(ack, nas.getInetAddress(), nas.getListenPort(), nas.getSharedSecret());
+        socket.send(pack);
+        socket.close();
+    }
+
+    /**
+     * Send a not-acknowledge packet to NAS (as request).
+     * @param nak not-acknowledge packet.
+     * @throws IOException
+     */
+    private void sendTimeout(Packet nak) throws IOException {
+        sendAffAck(nak);
+    }
+
+
     @Override
-    public Message logout(Credentials credentials) throws IOException {
-        AuthType authType = AuthType.of(nas.getAuthType());
-        /* Create portal request to logout. */
-        Packet logout = createLogoutPacket(authType, credentials);
-        if (logout == null) {
-            return PortalMessage.failure("Failed to create logout request.");
+    protected Message<Packet> handleChapRequestNotRespond(Packet request) throws IOException {
+        sendTimeout(createRequestTimeoutPacket(request));
+        return Message.of(request, false, "NAS not respond to challenge request.");
+    }
+
+    @Override
+    protected Message<Packet> handleAuthenticationNotRespond(Packet request) throws IOException {
+        HuaweiPacket packet = (HuaweiPacket) request;
+        sendTimeout(createRequestTimeoutPacket(packet));
+        return Message.of(request, false, "NAS not respond to authentication request.");
+    }
+
+    @Override
+    protected Message<Packet> handleAuthenticationResponse(Packet response) throws IOException {
+        HuaweiPacket packet = (HuaweiPacket) response;
+        sendAffAck(createAffAckPacket(packet));
+        return PortalMessage.from(packet);
+    }
+
+    @Override
+    protected Message<Packet> handleLogoutResponse(Packet response) throws IOException {
+        if (!response.isSuccess()) {
+            HuaweiPacket packet = (HuaweiPacket) response;
+            if (packet.getError() == Enums.LogoutError.GONE.code()) {
+                return Message.of(null, true, Enums.LogoutError.OK.getDescription());
+            }
         }
+        return PortalMessage.from((HuaweiPacket) response);
+    }
 
-        Optional<Packet> response = super.request(logout);
-
-        if (!response.isPresent()) {
-            super.nak(createNakPacket(logout.getSerialNum(), logout.getReqId(), logout.getIp(), authType));
-            return PortalMessage.failure("NAS not respond to logout.");
-        }
-
-        return PortalMessage.from(response.get());
+    @Override
+    protected Message<Packet> handleLogoutNotRespond(Packet request) throws IOException {
+        HuaweiPacket packet = (HuaweiPacket) request;
+        sendTimeout(createRequestTimeoutPacket(packet));
+        return Message.of(request, false, "NAS not respond to authentication request.");
     }
 }

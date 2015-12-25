@@ -132,6 +132,7 @@ public class SessionEntity implements Session {
         return lastModified;
     }
 
+    @Override
     public String getDevice() {
         return device;
     }

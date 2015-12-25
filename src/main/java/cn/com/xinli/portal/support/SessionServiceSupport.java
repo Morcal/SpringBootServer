@@ -5,7 +5,7 @@ import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
 import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.protocol.PortalClient;
-import cn.com.xinli.portal.protocol.PortalClients;
+import cn.com.xinli.portal.protocol.support.PortalClients;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -87,13 +87,11 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
-        Nas nas = nasMapping.getNas(session.getNasId());
-        if (nas == null) {
-            throw new NasNotFoundException("NAS not found by id: " + session.getNasId());
-        }
+        Optional<Nas> nas = nasMapping.getNas(session.getNasId());
+        nas.orElseThrow(() -> new NasNotFoundException("NAS not found by id: " + session.getNasId()));
 
         try {
-            PortalClient client = PortalClients.create(nas);
+            PortalClient client = PortalClients.create(nas.get());
             Message message = client.logout(credentials);
             if (log.isDebugEnabled()) {
                 log.debug(message);

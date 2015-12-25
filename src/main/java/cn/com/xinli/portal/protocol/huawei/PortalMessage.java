@@ -1,11 +1,13 @@
-package cn.com.xinli.portal.protocol;
+package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.Message;
-import cn.com.xinli.portal.protocol.huawei.Enums;
+import cn.com.xinli.portal.protocol.Packet;
 
 import java.util.*;
 
 /**
+ * Huawei portal message.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.
@@ -13,7 +15,7 @@ import java.util.*;
 public class PortalMessage implements Message<Packet> {
     private boolean success = false;
     private String text;
-    private Packet packet;
+    private HuaweiPacket packet;
 
     @Override
     public String getText() {
@@ -21,12 +23,8 @@ public class PortalMessage implements Message<Packet> {
     }
 
     @Override
-    public Packet getContent() {
-        return packet;
-    }
-
-    public void setText(String text) {
-        this.text = text;
+    public Optional<Packet> getContent() {
+        return Optional.ofNullable(packet);
     }
 
     @Override
@@ -34,31 +32,23 @@ public class PortalMessage implements Message<Packet> {
         return success;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+//    public static PortalMessage success(String content) {
+//        return build(true, content);
+//    }
+//
+//    public static PortalMessage failure(String content) {
+//        return build(false, content);
+//    }
+//
+//    static PortalMessage build(boolean success, String text) {
+//        PortalMessage message = new PortalMessage();
+//        message.setSuccess(success);
+//        message.setText(text);
+//        message.packet = HuaweiPacket.empty();
+//        return message;
+//    }
 
-    public Packet getPacket() {
-        return packet;
-    }
-
-    public static PortalMessage success(String content) {
-        return build(true, content);
-    }
-
-    public static PortalMessage failure(String content) {
-        return build(false, content);
-    }
-
-    static PortalMessage build(boolean success, String text) {
-        PortalMessage message = new PortalMessage();
-        message.setSuccess(success);
-        message.setText(text);
-        message.packet = Packet.empty();
-        return message;
-    }
-
-    private static String buildText(Packet packet) {
+    private static String buildText(HuaweiPacket packet) {
         try {
             Optional<Enums.Type> type = Enums.Type.valueOf(packet.getType());
 
@@ -87,12 +77,12 @@ public class PortalMessage implements Message<Packet> {
         }
     }
 
-    public static PortalMessage from(Packet packet) {
+    public static PortalMessage from(HuaweiPacket packet) {
         PortalMessage message = new PortalMessage();
-        message.setSuccess(packet.getError() == 0);
+        message.success = packet.getError() == 0;
         message.packet = packet;
 
-        Optional<Packet.Attribute> text = packet.getAttributes().stream()
+        Optional<HuaweiPacket.Attribute> text = packet.getAttributes().stream()
                 .filter(attr -> attr.getType() == Enums.Attribute.TEXT_INFO.code())
                 .findFirst();
 
@@ -108,8 +98,8 @@ public class PortalMessage implements Message<Packet> {
     @Override
     public String toString() {
         return "PortalMessage{" +
-                "text='" + text + '\'' +
-                ", success=" + success +
+                "text='" + text +
+                "', success=" + success +
                 ", packet=" + packet +
                 '}';
     }

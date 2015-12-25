@@ -33,4 +33,14 @@ public class Credentials {
     public String getUsername() {
         return username;
     }
+
+    @Override
+    public String toString() {
+        return "Credentials{" +
+                "ip='" + ip + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", mac='" + mac + '\'' +
+                '}';
+    }
 }

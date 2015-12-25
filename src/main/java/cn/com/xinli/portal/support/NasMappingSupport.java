@@ -10,6 +10,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * PWS {@link Nas} mapping.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/19.
@@ -80,10 +82,17 @@ public class NasMappingSupport implements NasMapping {
     }
 
     @Override
-    public Nas getNas(long id) {
+    public Optional<Nas> getNas(long id) {
         synchronized (devices) {
-            return devices.get(id);
+            return Optional.ofNullable(devices.get(id));
         }
+    }
+
+    @Override
+    public Optional<Nas> getNasByNasId(String nasId) {
+        return devices.values().stream()
+                .filter(nas -> nas.getNasId().equalsIgnoreCase(nasId))
+                .findFirst();
     }
 
     @Override

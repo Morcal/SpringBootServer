@@ -16,12 +16,15 @@ import java.util.*;
 /**
  * Huawei portal protocol codec factory.
  * <p>
- * <p>{@link Decoder} and {@link Encoder} should be thread-safe.</p>
+ * {@link Decoder} and {@link Encoder} should be thread-safe.
+ * <p>
+ * This implementation is stateless, so its thread-safe.
+ * <p>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */
-public class HuaweiCodecFactory implements CodecFactory {
+final class HuaweiCodecFactory implements CodecFactory {
     /**
      * Log.
      */
@@ -30,12 +33,12 @@ public class HuaweiCodecFactory implements CodecFactory {
     /**
      * Decoder.
      */
-    private final DatagramDecoder decoder = new Decoder();
+    private static final DatagramDecoder decoder = new Decoder();
 
     /**
      * Encoder.
      */
-    private final DatagramEncoder encoder = new Encoder();
+    private static final DatagramEncoder encoder = new Encoder();
 
     @Override
     public DatagramDecoder getDecoder() {
@@ -50,9 +53,10 @@ public class HuaweiCodecFactory implements CodecFactory {
     /**
      * Calculate authenticator.
      * <p>
-     *     <code>Authenticator = MD5(16bytes + 16bytes of 0 + attributes + shared secret)</code>
+     * <code>Authenticator = MD5(16bytes + 16bytes of 0 + attributes + shared secret)</code>
      * </p>
-     * @param output output stream.
+     *
+     * @param output       output stream.
      * @param sharedSecret shared secret.
      * @return 16 bytes authenticator.
      * @throws IOException
@@ -80,12 +84,13 @@ public class HuaweiCodecFactory implements CodecFactory {
 
     /**
      * Read bytes from input stream.
+     *
      * @param input input stream.
      * @param bytes bytes to read.
      * @return bytes read.
      * @throws IOException
      */
-    byte[] readBytes(InputStream input, int bytes) throws IOException {
+    static byte[] readBytes(InputStream input, int bytes) throws IOException {
         byte[] data = new byte[bytes];
         if (input.read(data, 0, data.length) != bytes) {
             throw new IOException("not enough data.");
@@ -94,22 +99,23 @@ public class HuaweiCodecFactory implements CodecFactory {
     }
 
     /**
-     * Read {@link Packet.Attribute}s from input stream.
+     * Read {@link HuaweiPacket.Attribute}s from input stream.
+     *
      * @param input input stream.
-     * @param size attribute size.
-     * @return collection of {@link Packet.Attribute}s.
+     * @param size  attribute size.
+     * @return collection of {@link HuaweiPacket.Attribute}s.
      * @throws IOException
      */
-    Collection<Packet.Attribute> readAttributes(InputStream input, int size) throws IOException {
+    static Collection<HuaweiPacket.Attribute> readAttributes(InputStream input, int size) throws IOException {
         if (size == 0) {
             return Collections.emptyList();
         }
 
-        List<Packet.Attribute> attributes = new ArrayList<>();
+        List<HuaweiPacket.Attribute> attributes = new ArrayList<>();
         while (size-- > 0) {
             int type = input.read() & 0xFF;
             int length = input.read() & 0xFF;
-            attributes.add(new Packet.Attribute(type, readBytes(input, length - 2)));
+            attributes.add(new HuaweiPacket.Attribute(type, readBytes(input, length - 2)));
         }
 
         return attributes;
@@ -123,7 +129,7 @@ public class HuaweiCodecFactory implements CodecFactory {
      * @return true if incoming packet is valid.
      * @throws IOException
      */
-    public boolean verify(DatagramPacket in, String sharedSecret) throws IOException {
+    public static boolean verify(DatagramPacket in, String sharedSecret) throws IOException {
         return verify(null, in, sharedSecret);
     }
 
@@ -135,9 +141,9 @@ public class HuaweiCodecFactory implements CodecFactory {
      * @return true if incoming packet is valid.
      * @throws IOException
      */
-    public boolean verify(byte[] authenticator,
-                          DatagramPacket in,
-                          String sharedSecret) throws IOException {
+    public static boolean verify(byte[] authenticator,
+                                 DatagramPacket in,
+                                 String sharedSecret) throws IOException {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         byte[] data = Arrays.copyOfRange(in.getData(), 0, in.getLength());
         if (data.length < 32) {
@@ -145,7 +151,7 @@ public class HuaweiCodecFactory implements CodecFactory {
         }
 
         try (DataOutputStream dos = new DataOutputStream(bao)) {
-            dos.write(data, 0 , 16);
+            dos.write(data, 0, 16);
             if (authenticator == null) {
                 /* incoming request. */
                 dos.writeLong(0);
@@ -163,17 +169,17 @@ public class HuaweiCodecFactory implements CodecFactory {
                 Arrays.copyOfRange(data, 16, 32));
     }
 
-    class Encoder implements CodecFactory.DatagramEncoder {
-
+    static class Encoder implements CodecFactory.DatagramEncoder {
         /**
-         * Write attributes from a {@link Packet} to a {@link DataOutputStream}.
-         * @param output output stream.
+         * Write attributes from a {@link HuaweiPacket} to a {@link DataOutputStream}.
+         *
+         * @param output     output stream.
          * @param attributes attributes.
          * @throws IOException
          */
         void writeAttributes(DataOutputStream output,
-                             Collection<Packet.Attribute> attributes) throws IOException {
-            for (Packet.Attribute attribute : attributes) {
+                             Collection<HuaweiPacket.Attribute> attributes) throws IOException {
+            for (HuaweiPacket.Attribute attribute : attributes) {
                 output.writeByte(attribute.getType());
                 output.writeByte(attribute.getLength());
                 output.write(attribute.getValue());
@@ -182,7 +188,8 @@ public class HuaweiCodecFactory implements CodecFactory {
 
         /**
          * Write authenticator to a {@link ByteArrayOutputStream}.
-         * @param bao output stream.
+         *
+         * @param bao           output stream.
          * @param authenticator authentiator to write.
          * @throws IOException
          */
@@ -201,19 +208,21 @@ public class HuaweiCodecFactory implements CodecFactory {
 
         /**
          * Write packet to datagram.
-         * @param packet packet.
-         * @param server remote server address.
-         * @param port remote server port.
-         * @param sharedSecret shared secret.
+         *
+         * @param out           packet to write.
+         * @param server        remote server address.
+         * @param port          remote server port.
+         * @param sharedSecret  shared secret.
          * @param authenticator authenticator.
          * @return datagram packet.
          * @throws IOException
          */
-        DatagramPacket writePacket(Packet packet,
+        DatagramPacket writePacket(Packet out,
                                    InetAddress server,
                                    int port,
                                    String sharedSecret,
                                    byte[] authenticator) throws IOException {
+            HuaweiPacket packet = (HuaweiPacket) out;
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             try (DataOutputStream output = new DataOutputStream(bao)) {
                 output.writeByte(packet.getVersion());
@@ -271,16 +280,17 @@ public class HuaweiCodecFactory implements CodecFactory {
         }
     }
 
-    class Decoder implements CodecFactory.DatagramDecoder {
+    static class Decoder implements CodecFactory.DatagramDecoder {
 
         /**
-         * Read {@link Packet} from input stream.
+         * Read {@link HuaweiPacket} from input stream.
+         *
          * @param input input stream.
-         * @return Packet.
+         * @return HuaweiPacket.
          * @throws IOException
          */
-        private Packet readPacket(InputStream input) throws IOException {
-            Packet packet = new Packet();
+        private HuaweiPacket readPacket(InputStream input) throws IOException {
+            HuaweiPacket packet = new HuaweiPacket();
             packet.setVersion(input.read() & 0xFF);
             packet.setType(input.read() & 0xFF);
             packet.setAuthType(input.read() & 0xFF);
@@ -292,22 +302,24 @@ public class HuaweiCodecFactory implements CodecFactory {
             packet.setPort(port[0] << 8 | port[1]);
             packet.setError(input.read() & 0xFF);
             packet.setAttrs(input.read() & 0xFF);
-            packet.setAuthenticator(readBytes(input, 16));
+            if (packet.getVersion() == V2.Version) {
+                packet.setAuthenticator(readBytes(input, 16));
+            }
             packet.setAttributes(readAttributes(input, packet.getAttrs()));
             return packet;
         }
 
         @Override
-        public Packet decode(DatagramPacket in, String sharedSecret) throws IOException {
+        public HuaweiPacket decode(DatagramPacket in, String sharedSecret) throws IOException {
             return decode(null, in, sharedSecret);
         }
 
         @Override
-        public Packet decode(byte[] authenticator,
-                             DatagramPacket in,
-                             String sharedSecret) throws IOException {
+        public HuaweiPacket decode(byte[] authenticator,
+                                   DatagramPacket in,
+                                   String sharedSecret) throws IOException {
             ByteArrayInputStream bai = new ByteArrayInputStream(in.getData(), 0, in.getLength());
-            int ver = (int)Arrays.copyOfRange(in.getData(), 0, 1)[0];
+            int ver = (int) Arrays.copyOfRange(in.getData(), 0, 1)[0];
 
             if (ver == V2.Version) {
                 if (!verify(authenticator, in, sharedSecret)) {

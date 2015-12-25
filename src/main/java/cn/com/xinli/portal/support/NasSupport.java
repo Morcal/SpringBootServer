@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.PortalException;
+import cn.com.xinli.portal.protocol.AuthType;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,9 +17,30 @@ import javax.validation.constraints.NotNull;
  */
 public class NasSupport implements Nas {
     /**
+     * Default nas type name.
+     */
+    String DEFAULT_NAS_TYPE = "Huawei";
+
+    /**
+     * Default nas listen port.
+     */
+    int DEFAULT_NAS_LISTEN_PORT = 2000;
+
+    /**
+     * Default NAS authentication type.
+     */
+    AuthType DEFAULT_NAS_AUTHENTICATION_TYPE = AuthType.CHAP;
+
+    /**
      * NAS id.
      */
     private final long id;
+
+    /**
+     * NAS id.
+     * @see {@link Nas#getNasId()}
+     */
+    private final String nasId;
 
     /**
      * IPv4 Address.
@@ -43,18 +65,28 @@ public class NasSupport implements Nas {
     /**
      * Authentication type (PAP/CHAP).
      */
-    private final String authType;
+    private final AuthType authType;
 
+    /**
+     * Shared secret.
+     */
     private final String sharedSecret;
 
+    /**
+     * Ipv4 start address in {@link Integer} form.
+     */
     private final int ipv4start;
 
+    /**
+     * Ipv4 end address in {@link Integer} form.
+     */
     private final int ipv4end;
 
     /**
      * Sole constructor.
      */
     private NasSupport(@NotNull long id,
+                       String nasId,
                        String ipv4Address,
                        String ipv6Address,
                        String type,
@@ -64,12 +96,13 @@ public class NasSupport implements Nas {
                        int ipv4start,
                        int ipv4end) {
         this.id = id;
+        this.nasId = nasId;
         this.sharedSecret = sharedSecret;
         this.ipv4Address = StringUtils.isEmpty(ipv4Address) ? "" : ipv4Address;
         this.ipv6Address = StringUtils.isEmpty(ipv6Address) ? "" : ipv6Address;
         this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : type;
         this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTEN_PORT : listenPort;
-        this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHENTICATION_TYPE : authType;
+        this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHENTICATION_TYPE : AuthType.of(authType);
         this.ipv4start = ipv4start;
         this.ipv4end = ipv4end;
     }
@@ -77,6 +110,11 @@ public class NasSupport implements Nas {
     @Override
     public long getId() {
         return id;
+    }
+
+    @Override
+    public String getNasId() {
+        return nasId;
     }
 
     @Override
@@ -100,7 +138,7 @@ public class NasSupport implements Nas {
     }
 
     @Override
-    public String getAuthType() {
+    public AuthType getAuthType() {
         return authType;
     }
 
@@ -124,6 +162,7 @@ public class NasSupport implements Nas {
         return "NasSupport{" +
                 "authType='" + authType + '\'' +
                 ", id=" + id +
+                ", nasId='" + nasId + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
                 ", type='" + type + '\'' +
@@ -160,6 +199,7 @@ public class NasSupport implements Nas {
         }
 
         return new NasSupport(configuration.getId(),
+                configuration.getNasId(),
                 configuration.getIpv4Address(),
                 configuration.getIpv6Address(),
                 configuration.getType(),

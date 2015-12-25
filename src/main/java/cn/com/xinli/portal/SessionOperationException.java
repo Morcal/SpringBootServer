@@ -1,6 +1,8 @@
 package cn.com.xinli.portal;
 
 /**
+ * Session operation exception.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.

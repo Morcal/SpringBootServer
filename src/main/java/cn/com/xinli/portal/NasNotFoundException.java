@@ -3,6 +3,8 @@ package cn.com.xinli.portal;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
+ * PWS throws this exception when {@link Nas} not found.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/19.

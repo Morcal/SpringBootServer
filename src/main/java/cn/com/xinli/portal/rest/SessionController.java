@@ -186,7 +186,7 @@ public class SessionController {
         Session found = opt.get(), entity = sessionService.getSession(id);
 
         if (entity.getId() == found.getId()) {
-            long now = System.currentTimeMillis();
+            long now = System.currentTimeMillis() / 1000L;
             if (Math.abs(now - timestamp) > SecurityConfiguration.MAX_TIME_DIFF) {
                 throw new OutOfRangeUpdateException("update out of range.");
             }
@@ -229,7 +229,7 @@ public class SessionController {
         Message<Session> message = sessionService.removeSession(id);
         if (log.isDebugEnabled()) {
             log.debug(message);
-            Session rm = message.getContent();
+            Session rm = message.getContent().get();
             log.debug("session: " + rm + " removed.");
         }
 

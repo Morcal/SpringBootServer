@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.scratch;
 
-import cn.com.xinli.portal.protocol.Packet;
+import cn.com.xinli.portal.protocol.huawei.HuaweiPacket;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -18,7 +18,7 @@ public class SerialNumTest {
 
     public void inc() {
         for (int i = 0; i < 10000; i++) {
-            int num = Packet.nextSerialNum();
+            int num = HuaweiPacket.nextSerialNum();
             if (!results.add(num)) {
                 throw new RuntimeException("found redundant number.");
             }

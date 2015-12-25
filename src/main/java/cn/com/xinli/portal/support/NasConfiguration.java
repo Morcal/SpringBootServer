@@ -7,6 +7,7 @@ package cn.com.xinli.portal.support;
  */
 public class NasConfiguration {
     private long id;
+    private String nasId;
     private String name;
     private String ipv4Address;
     private String ipv6Address;
@@ -97,11 +98,20 @@ public class NasConfiguration {
         this.sharedSecret = sharedSecret;
     }
 
+    public String getNasId() {
+        return nasId;
+    }
+
+    public void setNasId(String nasId) {
+        this.nasId = nasId;
+    }
+
     @Override
     public String toString() {
         return "NasConfiguration{" +
                 "authType='" + authType + '\'' +
                 ", id=" + id +
+                ", nasId='" + nasId + '\'' +
                 ", name='" + name + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +

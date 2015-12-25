@@ -2,7 +2,8 @@ package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.TestBase;
-import cn.com.xinli.portal.protocol.*;
+import cn.com.xinli.portal.protocol.CodecFactory;
+import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.support.NasConfiguration;
 import cn.com.xinli.portal.support.NasSupport;
 import org.junit.Assert;
@@ -10,7 +11,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.util.Arrays;
 
 /**
@@ -18,7 +18,7 @@ import java.util.Arrays;
  *
  * @author zhoupeng 2015/12/24.
  */
-public class PacketTest extends TestBase {
+public class HuaweiPacketTest extends TestBase {
 
     final Credentials credentials = new Credentials("zhoup", "123456", "192.168.3.26", "20cf-30bb-e9af");
 
@@ -41,14 +41,14 @@ public class PacketTest extends TestBase {
         //PortalClient client = PortalClients.create(createNas());
         CodecFactory codecFactory = new HuaweiCodecFactory();
 
-        DefaultPortalClient client = new DefaultPortalClient(V2.Version, nas, codecFactory);
-        Packet papAuth = client.createPapAuthPacket(credentials);
+        DefaultPortalClient client = new DefaultPortalClient(nas, new V2());
+        HuaweiPacket papAuth = (HuaweiPacket) client.createPapAuthPacket(credentials);
         DatagramPacket packet = codecFactory.getEncoder()
                 .encode(papAuth,
-                        InetAddress.getByName(nas.getIpv4Address()),
+                        nas.getInetAddress(),
                         nas.getListenPort(),
                         nas.getSharedSecret());
-        Packet decoded = codecFactory.getDecoder().decode(packet, nas.getSharedSecret());
+        HuaweiPacket decoded = (HuaweiPacket) codecFactory.getDecoder().decode(packet, nas.getSharedSecret());
 
         Assert.assertNotNull(decoded);
         Assert.assertTrue(Arrays.equals(papAuth.getAuthenticator(), decoded.getAuthenticator()));

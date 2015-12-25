@@ -1,6 +1,8 @@
 package cn.com.xinli.portal;
 
 /**
+ * PWS server configuration.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/17.
@@ -23,6 +25,7 @@ public class ServerConfig {
     private int portalServerThreadSize;
     private String portalServerSharedSecret;
     private String portalServerHuaweiVersion;
+    private String serverIpAddress;
 
     public boolean useDerbyMemDb() {
         return useDerbyMemDb;
@@ -168,6 +171,14 @@ public class ServerConfig {
         this.restSchemeVersion = restSchemeVersion;
     }
 
+    public String getServerIpAddress() {
+        return serverIpAddress;
+    }
+
+    public void setServerIpAddress(String serverIpAddress) {
+        this.serverIpAddress = serverIpAddress;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
@@ -188,6 +199,7 @@ public class ServerConfig {
                 ", portalServerThreadSize=" + portalServerThreadSize +
                 ", portalServerSharedSecret='" + portalServerSharedSecret + '\'' +
                 ", portalServerHuaweiVersion=" + portalServerHuaweiVersion +
+                ", serverIpAddress='" + serverIpAddress + '\'' +
                 '}';
     }
 }

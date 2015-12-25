@@ -1,14 +1,17 @@
-package cn.com.xinli.portal.protocol;
+package cn.com.xinli.portal.protocol.support;
 
 import cn.com.xinli.portal.Nas;
+import cn.com.xinli.portal.protocol.PortalClient;
+import cn.com.xinli.portal.protocol.PortalProtocolException;
+import cn.com.xinli.portal.protocol.Protocol;
 import cn.com.xinli.portal.protocol.huawei.DefaultPortalClient;
-import cn.com.xinli.portal.protocol.huawei.HuaweiCodecFactory;
 import cn.com.xinli.portal.protocol.huawei.V1;
 import cn.com.xinli.portal.protocol.huawei.V2;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * PWS portal client factory.
@@ -19,7 +22,7 @@ import java.util.Optional;
  */
 public class PortalClients {
     /** Supported protocols. */
-    static Collection<Protocol> supportedProtocols = new ArrayList<>();
+    static Set<Protocol> supportedProtocols = new HashSet<>();
 
     static {
         supportedProtocols.add(new V1());
@@ -37,11 +40,15 @@ public class PortalClients {
      */
     public static PortalClient create(Nas nas) {
         Optional<Protocol> protocol = supportedProtocols.stream()
-                .filter(proto -> proto.getSupportedTypeName().equalsIgnoreCase(nas.getType()))
-                .findFirst();
+                .filter(proto ->
+                        Stream.of(proto.getSupportedNasTypeName())
+                                .filter(name -> name.equalsIgnoreCase(nas.getType()))
+                                .findAny()
+                                .isPresent())
+                .findAny();
 
         protocol.orElseThrow(() -> new PortalProtocolException("Unsupported nas type: " + nas.getType()));
 
-        return new DefaultPortalClient(protocol.get().getVersion(), nas, new HuaweiCodecFactory());
+        return new DefaultPortalClient(nas, protocol.get());
     }
 }

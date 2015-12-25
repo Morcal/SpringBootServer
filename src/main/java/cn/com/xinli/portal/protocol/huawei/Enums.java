@@ -116,7 +116,7 @@ public class Enums {
 
     public enum LogoutRequestError {
         PORTAL_SERVER_REQUEST(0x00),
-        NAS_RESPONSE_TIMEOUT(0x01);
+        REQUEST_TIMEOUT(0x01);
 
         private final int code;
 
@@ -131,9 +131,10 @@ public class Enums {
 
 
     public enum LogoutError {
-        OK(0x01, "下线成功"),
-        REJECTED(0x02, "下线被拒绝"),
-        FAILED(0x03, "下线失败");
+        OK(0x00, "下线成功"),
+        REJECTED(0x01, "下线被拒绝"),
+        FAILED(0x02, "下线失败"),
+        GONE(0x03, "此用户已经下线");
 
         private final int code;
         private final String description;
