@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest.token;
 
-import cn.com.xinli.portal.rest.SecureRandomStringGenerator;
+import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -42,7 +42,7 @@ public abstract class AbstractTokenService implements TokenManager, TokenService
 
     @Override
     public Token allocateToken(String extendedInformation) {
-        String key = secureRandomStringGenerator.generateUniqueRandomString();
+        String key = secureRandomStringGenerator.generateUniqueRandomString(256);
         Token token = createToken(key, extendedInformation);
         getCache().put(createTokenElement(token));
         return token;

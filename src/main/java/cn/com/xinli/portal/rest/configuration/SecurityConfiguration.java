@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest.configuration;
 
-import cn.com.xinli.portal.rest.SecureRandomStringGenerator;
+import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.auth.*;

@@ -17,7 +17,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -37,7 +37,9 @@ public class HuaweiNas {
 
     private static final AtomicInteger reqId = new AtomicInteger(0);
 
-    private Map<byte[], Integer> requestMapping = new ConcurrentHashMap<>();
+    private Map<String, Integer> requestMapping = new ConcurrentHashMap<>();
+
+    private Map<Integer, Challenge> challengeMapping = new ConcurrentHashMap<>();
 
     private Map<String, String> userCredentials = new HashMap<>();
 
@@ -49,6 +51,16 @@ public class HuaweiNas {
 
     private final PortalServer portalServer;
 
+    private final ExecutorService executorService;
+
+    private volatile boolean shutdown = false;
+
+    private static final int CHALLENGE_TTL = 60; // seconds.
+
+    private final PriorityBlockingQueue<Challenge> challenges;
+
+    private final AtomicLong challengeId = new AtomicLong(0);
+
     public HuaweiNas(Nas nas) {
         this.nas = nas;
         this.codecFactory = new HuaweiCodecFactory();
@@ -57,6 +69,12 @@ public class HuaweiNas {
             userCredentials.put("test" + i, "test" + i);
         }
         this.portalServer = new PortalServer(nas.getListenPort());
+        this.executorService = Executors.newCachedThreadPool();
+        this.challenges = new PriorityBlockingQueue<>(256, new ChallengeComparator());
+    }
+
+    private static int nextReqId() {
+        return reqId.updateAndGet(i -> (i >= Short.MAX_VALUE - 1 ? 0 : i + 1));
     }
 
     private void handleLogout(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
@@ -66,9 +84,13 @@ public class HuaweiNas {
         DatagramPacket out = codecFactory.getEncoder()
                 .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
         socket.send(out);
+
+        if (log.isDebugEnabled()) {
+            log.debug("> [NAS] logout, result: " + response.isSuccess() + ", sent.");
+        }
     }
 
-    private boolean authenticate(HuaweiPacket in) {
+    private boolean authenticate(HuaweiPacket in) throws IOException {
         Collection<HuaweiPacket.Attribute> attributes = in.getAttributes();
         Optional<HuaweiPacket.Attribute> username = attributes.stream()
                 .filter(attr -> attr.getType() == Enums.Attribute.USER_NAME.code())
@@ -86,9 +108,17 @@ public class HuaweiNas {
                 Optional<HuaweiPacket.Attribute> chapPwd = attributes.stream()
                         .filter(attr -> attr.getType() == Enums.Attribute.CHALLENGE_PASSWORD.code())
                         .findFirst();
+                Challenge challenge = challengeMapping.get(in.getReqId());
+                if (challenge == null) {
+                    log.warn("* [NAS] challenge not found.");
+                    return false;
+                }
+
                 authenticated = chapPwd.isPresent() && passwd != null &&
-                        Arrays.equals(Utils.md5sum(
-                                userCredentials.get(user).getBytes()), chapPwd.get().getValue());
+                        Arrays.equals(Utils.createChapPassword(
+                                in.getReqId(),
+                                userCredentials.get(user),
+                                challenge.value.getBytes()), chapPwd.get().getValue());
                 break;
 
             case PAP:
@@ -106,24 +136,31 @@ public class HuaweiNas {
         return authenticated;
     }
 
-    private void handleAuth(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) {
+    private void handleAuth(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
         Integer reqId;
         AuthType authType = AuthType.valueOf(in.getAuthType());
+        String ip = Utils.ipHexString(in.getIp());
         switch (authType) {
             case CHAP:
-                reqId = requestMapping.get(in.getIp());
+                reqId = requestMapping.get(ip);
                 if (reqId == null) {
-                    log.warn("* Can't find request mapping.");
+                    log.warn("* [NAS] Can't find request mapping, ip: " + ip + ".");
                     return;
                 }
+
+                if (reqId != in.getReqId()) {
+                    log.warn("* [NAS] mismatched request id.");
+                    return;
+                }
+
                 break;
 
             case PAP:
-                reqId = HuaweiNas.reqId.incrementAndGet();
+                reqId = nextReqId();
                 break;
 
             default:
-                log.error("* Unsupported authentication type, code: " + in.getAuthType());
+                log.error("* [NAS] Unsupported authentication type, code: " + in.getAuthType());
                 return;
         }
 
@@ -144,38 +181,135 @@ public class HuaweiNas {
                             port,
                             nas.getSharedSecret());
             socket.send(out);
+            if (log.isDebugEnabled()) {
+                log.debug("> [NAS] authenticated: " + authenticated + ", result sent.");
+            }
         } catch (IOException e) {
             log.error(e);
         }
     }
 
     private void handleChallenge(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
-        int reqId = HuaweiNas.reqId.incrementAndGet();
-        requestMapping.put(in.getIp(), reqId);
-        /* H3C vBRAS will response with a bas ip attribute. */
-        String challenge = RandomStringUtils.randomAlphanumeric(8);
+        int reqId = nextReqId();
+        String ip = Utils.ipHexString(in.getIp());
 
-        Packet response = Utils.createChallengeResponsePacket(nas.getInetAddress(), challenge, reqId, in);
+        requestMapping.put(ip, reqId);
+        /* Create challenge. */
+        Challenge challenge = createChallenge(reqId);
+
+        Packet response = Utils.createChallengeResponsePacket(nas.getInetAddress(), challenge.value, reqId, in);
         DatagramPacket out = codecFactory.getEncoder()
                 .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
         socket.send(out);
+
+        if (log.isDebugEnabled()) {
+            log.debug("> [NAS] CHAP mapped, ip: " + ip + ", response sent.");
+        }
+    }
+
+    private Challenge createChallenge(int reqId) {
+        Challenge challenge = new Challenge(reqId);
+        challengeMapping.put(reqId, challenge);
+        challenges.offer(challenge);
+        return challenge;
+    }
+
+    private void evictChallenges()  {
+        while (!shutdown) {
+            try {
+                Challenge challenge = challenges.take();
+
+                long now = System.currentTimeMillis();
+                long remaining = CHALLENGE_TTL * 1000L - (now - challenge.createTime);
+                if (remaining > 200L) {
+                    /*
+                     * Put challenge back to queue.
+                     * If other thread is checking mapping, it's ok.
+                     */
+                    challenges.offer(challenge);
+                    /* There's some time remaining, no need to poll that soon. */
+                    Thread.sleep(remaining);
+                } else if (remaining < 0L) {
+                    /* Remove challenge mapping. */
+                    challengeMapping.remove(challenge.reqId);
+                }
+            } catch (InterruptedException e) {
+                log.warn(e.getMessage());
+                break;
+            }
+        }
     }
 
     public void start() throws IOException {
+        this.executorService.submit(this::evictChallenges);
         this.portalServer.start();
-        log.info("> Mock Huawei NAS (portal server) started, listen on port: " + nas.getListenPort() + ".");
+        log.info("> [NAS] Mock Huawei NAS (portal server) started, listen on port: " + nas.getListenPort() + ".");
     }
 
-//    public void shutdown() {
-//        this.portalServer.shutdown();
-//    }
+    public void shutdown() {
+        this.shutdown = true;
+        this.portalServer.shutdown();
+        try {
+            executorService.shutdown();
+            executorService.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            log.error(e);
+        } finally {
+            executorService.shutdownNow();
+        }
+
+    }
+
+    class Challenge {
+        int reqId;
+        long id;
+        long createTime;
+        String value;
+
+        public Challenge(int reqId) {
+            this.reqId = reqId;
+            id = challengeId.incrementAndGet();
+            createTime = System.currentTimeMillis();
+            value = RandomStringUtils.randomAlphanumeric(16);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Challenge challenge = (Challenge) o;
+            return id == challenge.id && reqId == challenge.reqId && createTime == challenge.createTime && value.equals(challenge.value);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = reqId;
+            result = 31 * result + (int) (id ^ (id >>> 32));
+            result = 31 * result + (int) (createTime ^ (createTime >>> 32));
+            result = 31 * result + value.hashCode();
+            return result;
+        }
+    }
+
+    class ChallengeComparator implements Comparator<Challenge> {
+        @Override
+        public int compare(Challenge o1, Challenge o2) {
+            if (o1 == null || o2 == null) {
+                throw new IllegalArgumentException("cant' compare with empty.");
+            }
+
+            return o1.createTime < o2.createTime ? -1 : 1;
+        }
+    }
 
     class InMemorySessionService {
         AtomicLong sessionId = new AtomicLong(0);
 
-        private Map<byte[], Session> sessions = new ConcurrentHashMap<>();
+        private Map<String, Session> sessions = new ConcurrentHashMap<>();
 
         public Session createSession(byte[] ip) {
+            String tar = Utils.ipHexString(ip);
             Session session = sessions.get(ip);
             if (session != null)
                 return session;
@@ -185,12 +319,12 @@ public class HuaweiNas {
             entity.setDevice(new String(ip));
             entity.setNasId(nas.getId());
 
-            sessions.put(ip, entity);
+            sessions.put(tar, entity);
             return entity;
         }
 
         public Session removeSession(byte[] ip) {
-            return sessions.remove(ip);
+            return sessions.remove(Utils.ipHexString(ip));
         }
 
     }
@@ -230,11 +364,11 @@ public class HuaweiNas {
                             break;
 
                         case AFF_ACK_AUTH:
-                            log.debug("> Authentication affirmative acknowledged received.");
+                            log.debug("> [NAS] Authentication affirmative acknowledged received.");
                             break;
 
                         default:
-                            log.warn("> Unsupported operation type: " + type.get().name());
+                            log.warn("> [NAS] Unsupported operation type: " + type.get().name());
                             break;
                     }
                 }

@@ -77,13 +77,7 @@ public class HuaweiPacket implements Packet {
      * @return serial number.
      */
     public static int nextSerialNum() {
-        for (;;) {
-            int current = serial.get();
-            int next = current + 1;
-            next = next == MAX_SERIAL + 1 ? 0 : next;
-            if (serial.compareAndSet(current, next))
-                return next;
-        }
+        return serial.updateAndGet(i -> (i >= MAX_SERIAL + 1 ? 0 : i + 1));
     }
 
     /** Default <em>EMPTY</em> packet. */

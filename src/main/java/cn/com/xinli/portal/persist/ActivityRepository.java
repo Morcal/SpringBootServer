@@ -34,7 +34,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<ActivityE
     List<ActivityEntity> findByRemote(@Param("remote") String remote);
 
     /**
-     * Filter activies by {@link cn.com.xinli.portal.Activity.Severity}
+     * Filter activies by {@link Activity.Severity}
      * @param severity severity.
      * @return activities.
      */
@@ -42,7 +42,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<ActivityE
     List<ActivityEntity> filter(@Param("severity") Activity.Severity severity);
 
     /**
-     * Filter activies by {@link cn.com.xinli.portal.Activity.Facility}
+     * Filter activies by {@link Activity.Facility}
      * @param facility severity.
      * @return activities.
      */

@@ -8,11 +8,12 @@ import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.bean.*;
 import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
 import cn.com.xinli.portal.rest.token.AccessToken;
-import org.apache.catalina.Server;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.token.Token;
 
 /**
+ * Rest response builders.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/8.
@@ -23,22 +24,47 @@ public class RestResponseBuilders {
         T build();
     }
 
+    /**
+     * Acquire a success builder.
+     * @return builder.
+     */
     public static SuccessBuilder successBuilder() {
         return new SuccessBuilder();
     }
 
+    /**
+     * Acquire a error builder.
+     * @return builder.
+     */
     public static ErrorBuilder errorBuilder() {
         return new ErrorBuilder();
     }
 
+    /**
+     * Acquire an authentication builder.
+     * @param challenge challenge.
+     * @return builder.
+     */
     public static AuthenticationBuilder authenticationBuilder(Challenge challenge) {
         return new AuthenticationBuilder(challenge);
     }
 
+    /**
+     * Acquire a session builder.
+     * @param session session.
+     * @param token session token.
+     * @param serverConfig server configuration.
+     * @return builder
+     */
     public static SessionBuilder sessionBuilder(Session session, Token token, ServerConfig serverConfig) {
         return new SessionBuilder(session, token, serverConfig);
     }
 
+    /**
+     * Acquire an authorization builder.
+     * @param token access token.
+     * @return builder.
+     */
     public static AuthorizationBuilder authorizationBuilder(AccessToken token) {
         return new AuthorizationBuilder(token);
     }

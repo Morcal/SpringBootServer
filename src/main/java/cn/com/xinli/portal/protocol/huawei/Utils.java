@@ -8,6 +8,7 @@ import cn.com.xinli.portal.protocol.Protocol;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.crypto.codec.Hex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -24,9 +25,21 @@ import java.util.Arrays;
  * @author zhoupeng 2015/12/24.
  */
 final class Utils {
-    /** Log. */
+    /**
+     * Log.
+     */
     private static final Log log = LogFactory.getLog(Utils.class);
 
+    static String ipHexString(byte[] ip) {
+        return new String(Hex.encode(ip));
+    }
+
+    /**
+     * Calculate MD5 summary.
+     *
+     * @param data data to calculate.
+     * @return calculated bytes.
+     */
     static byte[] md5sum(byte[] data) {
         if (data == null)
             throw new IllegalArgumentException("md5 summary data can not be empty.");
@@ -40,6 +53,30 @@ final class Utils {
             log.fatal(e);
             return new byte[0];
         }
+    }
+
+    /**
+     * Create CHAP password.
+     * <p>
+     * <code>CHAP password = MD5(reqId & 0xFF + password + challenge)</code>
+     *
+     * @param reqId     original request id.
+     * @param password  password in plain text (ASCII).
+     * @param challenge challenge.
+     * @return CHAP password in bytes.
+     * @throws IOException
+     */
+    static byte[] createChapPassword(int reqId, String password, byte[] challenge) throws IOException {
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        try (DataOutputStream output = new DataOutputStream(bao)) {
+            output.writeByte(reqId & 0xFF);
+            output.flush();
+        }
+
+        bao.write(password.getBytes());
+        bao.write(challenge);
+        bao.flush();
+        return md5sum(bao.toByteArray());
     }
 
     /**
@@ -62,11 +99,12 @@ final class Utils {
 
     /**
      * Create Huawei portal CHAP authentiation packet.
-     *
+     * <p>
      * <p>
      * <code>CHAP password = MD5(CHAP id + Password + Challenge)</code>
      * </p>
-     * @param ack   challenge acknowledge packet.
+     *
+     * @param ack         challenge acknowledge packet.
      * @param credentials user credentials.
      * @return Huawei portal packet.
      * @throws IOException
@@ -89,18 +127,13 @@ final class Utils {
         }
 
         /* Calculate chap password. */
-        try (ByteArrayOutputStream bao = new ByteArrayOutputStream()) {
-            DataOutputStream output = new DataOutputStream(bao);
-            output.writeByte(packet.getReqId());
-            output.flush();
-
-            bao.write(credentials.getPassword().getBytes());
-            bao.write(packet.getAttribute(Enums.Attribute.CHALLENGE));
-            bao.flush();
-            packet.addAttribute(Enums.Attribute.CHALLENGE_PASSWORD, md5sum(bao.toByteArray()));
-            attrs++;
-            packet.setAttrs(attrs);
-        }
+        packet.addAttribute(Enums.Attribute.CHALLENGE_PASSWORD,
+                createChapPassword(
+                        hwAck.getReqId(),
+                        credentials.getPassword(),
+                        hwAck.getAttribute(Enums.Attribute.CHALLENGE)));
+        attrs++;
+        packet.setAttrs(attrs);
 
         return packet;
     }
@@ -108,7 +141,7 @@ final class Utils {
     /**
      * Create challenge request packet.
      *
-     * @param protocol protocol.
+     * @param protocol    protocol.
      * @param credentials user credentials.
      * @return challenge request packet.
      */
@@ -136,7 +169,7 @@ final class Utils {
     /**
      * Create PAP authentication packet.
      *
-     * @param protocol protocol.
+     * @param protocol    protocol.
      * @param credentials user credentials.
      * @return PAP authentication packet.
      */
@@ -164,7 +197,7 @@ final class Utils {
     /**
      * Create logout request packet.
      *
-     * @param protocol protocol.
+     * @param protocol    protocol.
      * @param authType    authentication type.
      * @param credentials user credentials.
      * @return logout request packet,
@@ -211,8 +244,9 @@ final class Utils {
      * NAK packet use {@link Enums.Type#REQ_LOGOUT} as packet type.
      * NAK (TIMEOUT) packet error code must be 1.
      * </p>
+     *
      * @param protocol protocol.
-     * @param request original request.
+     * @param request  original request.
      * @return request timeout packet.
      */
     static Packet createRequestTimeoutPacket(Protocol protocol, Packet request) {
@@ -231,9 +265,10 @@ final class Utils {
 
     /**
      * Create authentication response packet.
-     * @param reqId request id.
+     *
+     * @param reqId         request id.
      * @param authenticated if request authenticated.
-     * @param request authentication rqeuest.
+     * @param request       authentication rqeuest.
      * @return response packet.
      */
     static Packet createAuthenticationResponsePacket(int reqId, boolean authenticated, HuaweiPacket request) {
@@ -263,10 +298,13 @@ final class Utils {
 
     /**
      * Create challenge response packet.
+     * <p>H3C vBRAS will response with a bas ip attribute.
+     * </p>
+     *
      * @param nasAddress nas address.
-     * @param challenge challenge.
-     * @param reqId challenge request id.
-     * @param request challenge request.
+     * @param challenge  challenge.
+     * @param reqId      challenge request id.
+     * @param request    challenge request.
      * @return packet.
      */
     static Packet createChallengeResponsePacket(InetAddress nasAddress, String challenge, int reqId, HuaweiPacket request) {
@@ -289,9 +327,10 @@ final class Utils {
 
     /**
      * Craete logout response packet.
+     *
      * @param nasAddress nas address.
-     * @param session session.
-     * @param request logout request.
+     * @param session    session.
+     * @param request    logout request.
      * @return packet.
      */
     static Packet createLogoutResponsePacket(InetAddress nasAddress, Session session, HuaweiPacket request) {

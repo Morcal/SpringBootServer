@@ -19,7 +19,7 @@ public class V2 implements Protocol{
 
     @Override
     public String[] getSupportedNasTypeName() {
-        return new String[] { "Huawei v2", "HuaweiV2", "Huawei-v2", "mack-huawei-nas" };
+        return new String[] { "Huawei v2", "HuaweiV2", "Huawei-v2", "mock-huawei-nas" };
     }
 
     @Override

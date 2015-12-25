@@ -7,6 +7,7 @@ import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
@@ -16,6 +17,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
+ * Rest authentication entry point.
+ *
+ * <p>
+ * When rest authentication fails, PWS provides an entry point
+ * to send authentication associated message back to clients.
+ * <p>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/15.
@@ -29,22 +36,36 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         if (e instanceof InvalidAccessTokenException) {
             RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidAccessTokenException) e).getToken())
-                    .setError(RestResponse.ERROR_INVALID_CLIENT_GRANT).build();
+                    .setError(RestResponse.ERROR_INVALID_CLIENT_GRANT)
+                    .build();
             httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
-            httpServletResponse.getWriter().print(new ObjectMapper().writeValueAsString(invalidCredentials));
+            httpServletResponse.getWriter().print(
+                    new ObjectMapper().writeValueAsString(invalidCredentials));
         } else if (e instanceof InvalidSessionTokenException) {
             RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidSessionTokenException) e).getToken())
                     .setError(RestResponse.ERROR_INVALID_SESSION_GRANT)
                     .build();
             httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
-            httpServletResponse.getWriter().print(new ObjectMapper().writeValueAsString(invalidCredentials));
+            httpServletResponse.getWriter().print(
+                    new ObjectMapper().writeValueAsString(invalidCredentials));
+        } else if (e instanceof BadCredentialsException) {
+            RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_INVALID_REQUEST)
+                    .setDescription(e.getMessage())
+                    .build();
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            httpServletResponse.getWriter().print(
+                    new ObjectMapper().writeValueAsString(invalidCredentials));
         } else {
             /* Server internal error. */
-            RestBean internalError = RestResponseBuilders.errorBuilder().
-                    setError(RestResponse.ERROR_SERVER_ERROR).build();
+            RestBean internalError = RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setDescription(e.getMessage())
+                    .build();
             httpServletResponse.setStatus(HttpStatus.OK.value());
-            httpServletResponse.getWriter().print(new ObjectMapper().writeValueAsString(internalError));
+            httpServletResponse.getWriter().print(
+                    new ObjectMapper().writeValueAsString(internalError));
         }
     }
 }

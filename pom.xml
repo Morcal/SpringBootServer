@@ -187,4 +187,16 @@
             </plugin>
 		</plugins>
 	</build>
+
+    <developers>
+        <developer>
+            <name>Zhou Peng</name>
+            <id>zhoupeng</id>
+            <email>zhou.pen9@gmail.com</email>
+            <organization>Xinli Software Technology ltd., co.</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
 </project>
