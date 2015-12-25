@@ -219,7 +219,7 @@ public class SessionController {
         Message<Session> message = sessionService.removeSession(id);
         if (log.isDebugEnabled()) {
             log.debug(message);
-            Session rm = message.getContent();
+            Session rm = message.getContent().get();
             log.debug("session: " + rm + " removed.");
         }
 

@@ -7,7 +7,7 @@ import java.net.InetAddress;
 /**
  * Portal codec factory.
  * <p>
- * <p>Classes implements this interface should provide
+ * Classes implements this interface should provide
  * thread-safe implementations for {@link DatagramEncoder} and
  * {@link DatagramDecoder}.</p>
  * <p>

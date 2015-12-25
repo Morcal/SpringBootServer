@@ -22,6 +22,7 @@ public interface Activity {
         PORTAL
     }
 
+    /** Severity. */
     enum Severity {
         FATAL,
         WARN,
@@ -30,6 +31,7 @@ public interface Activity {
         VERBOSE
     }
 
+    /** Activity action. */
     enum Action {
         AUTHENTICATE,
         CREATE_SESSION,
@@ -38,19 +40,51 @@ public interface Activity {
         DELETE_SESSION
     }
 
+    /**
+     * Get id.
+     * @return id.
+     */
     long getId();
 
+    /**
+     * Get facility which activity occurred.
+     * @return activity facility.
+     */
     Facility getCategory();
 
+    /**
+     * Get activity severity.
+     * @return activity severity.
+     */
     Severity getSeverity();
 
+    /**
+     * Get remote information.
+     * @return remote information.
+     */
     String getRemote();
 
+    /**
+     * Get activity source information.
+     * @return activity source information.
+     */
     String getSource();
 
+    /**
+     * Get activity action.
+     * @return activity action.
+     */
     String getAction();
 
+    /**
+     * Get activity operation result.
+     * @return activity operation result.
+     */
     String getResult();
 
+    /**
+     * Get activity timestamp when it occurred.
+     * @return activity timestamp when it occurred.
+     */
     Date getTimestamp();
 }

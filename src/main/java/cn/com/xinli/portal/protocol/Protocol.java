@@ -1,12 +1,28 @@
 package cn.com.xinli.portal.protocol;
 
 /**
- * Project: xpws
+ * Portal protocol.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */
 public interface Protocol {
+    /**
+     * Get protocol version.
+     * @return protocol version.
+     */
     int getVersion();
 
-    String getSupportedTypeName();
+    /**
+     * Get supported Nas type name.
+     * @return supported nas type name.
+     */
+    String[] getSupportedNasTypeName();
+
+    /**
+     * Get protocol codec factory.
+     * @return protocol codec factory.
+     */
+    CodecFactory getCodecFactory();
 }

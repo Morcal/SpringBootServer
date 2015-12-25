@@ -8,7 +8,6 @@ import cn.com.xinli.portal.protocol.huawei.HuaweiNas;
 import cn.com.xinli.portal.rest.auth.RestAuthorizationServer;
 import cn.com.xinli.portal.support.ActivityServiceSupport;
 import cn.com.xinli.portal.support.CertificateServiceSupport;
-import cn.com.xinli.portal.support.NasMappingSupport;
 import cn.com.xinli.portal.support.SessionServiceSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * PWS configuration.
@@ -72,7 +72,11 @@ public class PortalConfiguration {
 
     @Value("${pws.rest.version}") private String restSchemeVersion;
 
-    @Value("${pws.nas.huawei.mock.enable}") private boolean mockHuaweiNas;
+    @Value("${pws.nas.huawei.mock.enable}") private boolean enableMockHuaweiNas;
+
+    @Value("${pws.nas.huawei.mock.nasid}") private String mockHuaweiNasId;
+
+    @Value("${pws.server.ip.address}") private String serverIpAddress;
 
     @Bean
     public ServerConfig serverConfig() {
@@ -93,6 +97,7 @@ public class PortalConfiguration {
         config.setRestSchemeScheme(restSchemeScheme);
         config.setRestSchemeServer(restSchemeServer);
         config.setRestSchemeVersion(restSchemeVersion);
+        config.setServerIpAddress(serverIpAddress);
         return config;
     }
 
@@ -117,19 +122,18 @@ public class PortalConfiguration {
     }
 
     @Bean
-    public NasMapping deviceMapping() {
-        return new NasMappingSupport();
-    }
-
-    @Bean
     public CertificateService certificateService() {
         return new CertificateServiceSupport();
     }
 
-    @Bean(initMethod = "start")
-    public DefaultPortalServer portalServer() {
-        if (mockHuaweiNas) {
-            HuaweiNas nas = new HuaweiNas();
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public DefaultPortalServer portalServer(NasMapping nasMapping) {
+        if (enableMockHuaweiNas) {
+            /* Find nas configuration for mocking. */
+            Optional<Nas> mockNas = nasMapping.getNasByNasId(mockHuaweiNasId);
+            mockNas.orElseThrow(() -> new NasNotFoundException("nas with id: " + mockHuaweiNasId + " not found."));
+
+            HuaweiNas nas = new HuaweiNas(mockNas.get());
             try {
                 nas.start();
             } catch (IOException e) {

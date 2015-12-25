@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.protocol.huawei;
 
+import cn.com.xinli.portal.protocol.CodecFactory;
 import cn.com.xinli.portal.protocol.Protocol;
 
 /**
@@ -8,9 +9,8 @@ import cn.com.xinli.portal.protocol.Protocol;
  * @author zhoupeng 2015/12/2.
  */
 public class V2 implements Protocol{
+    /** Huawei protocol v2 version. */
     public static final int Version = 0x02;
-    static final int MAX_PACKET_LENGTH = 1024;
-    static final int MIN_PACKET_LENGTH = 32;
 
     @Override
     public int getVersion() {
@@ -18,8 +18,13 @@ public class V2 implements Protocol{
     }
 
     @Override
-    public String getSupportedTypeName() {
-        return "Huawei v2";
+    public String[] getSupportedNasTypeName() {
+        return new String[] { "Huawei v2", "HuaweiV2", "Huawei-v2", "mack-huawei-nas" };
+    }
+
+    @Override
+    public CodecFactory getCodecFactory() {
+        return new HuaweiCodecFactory();
     }
 
 }

@@ -49,13 +49,16 @@ public class AuthorizeController {
         String description;
 
         while (true) {
+            /*
             if (StringUtils.isEmpty(ip) || StringUtils.isEmpty(mac)) {
                 description = "Missing ip address or mac.";
                 break; // missing ip or mac.
             }
+            */
 
-            if (!AddressUtil.validateIp(realIp, ip, request)) {
-                description = "Given ip differs from what the server knows.";
+            if ((!StringUtils.isEmpty(realIp) || !StringUtils.isEmpty(ip)) &&
+                    !AddressUtil.validateIp(realIp, ip, request)) {
+                description = "Given ip differs from which the server knows.";
                 break; // invalid ip.
             }
 

@@ -1,113 +1,248 @@
 package cn.com.xinli.portal.protocol.huawei;
 
-import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.Nas;
+import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.persist.SessionEntity;
+import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.protocol.CodecFactory;
 import cn.com.xinli.portal.protocol.Packet;
+import cn.com.xinli.portal.protocol.support.AbstractDatagramServer;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.util.Optional;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Project: xpws
+ * Mock Huawei NAS.
+ *
+ * <p>Mocked huawei nas supports Huawei portal protocol v1, v2.
+ * By default, this nas listens on port 2001.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/23.
  */
-public class HuaweiNas extends DefaultPortalServer {
+public class HuaweiNas {
     /** Log. */
     private static final Log log = LogFactory.getLog(HuaweiNas.class);
 
-    public HuaweiNas() {
-        super(createServerConfig(), createMockSessionService());
+    private static final AtomicInteger reqId = new AtomicInteger(0);
+
+    private Map<byte[], Integer> requestMapping = new ConcurrentHashMap<>();
+
+    private Map<String, String> userCredentials = new HashMap<>();
+
+    private final Nas nas;
+
+    private final InMemorySessionService sessionService;
+
+    private final CodecFactory codecFactory;
+
+    private final PortalServer portalServer;
+
+    public HuaweiNas(Nas nas) {
+        this.nas = nas;
+        this.codecFactory = new HuaweiCodecFactory();
+        this.sessionService = new InMemorySessionService();
+        for (int i = 0; i < 10; i++) {
+            userCredentials.put("test" + i, "test" + i);
+        }
+        this.portalServer = new PortalServer(nas.getListenPort());
     }
 
-    static ServerConfig createServerConfig() {
-        ServerConfig serverConfig = new ServerConfig();
-        serverConfig.setPortalServerSharedSecret("s3cr3t");
-        serverConfig.setPortalServerHuaweiVersion("v2");
-        serverConfig.setPortalServerListenPort(2000);
-        serverConfig.setPortalServerThreadSize(4);
-        return serverConfig;
+    private void handleLogout(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
+        requestMapping.remove(in.getIp());
+        Session session = sessionService.removeSession(in.getIp());
+        Packet response = Utils.createLogoutResponsePacket(nas.getInetAddress(), session, in);
+        DatagramPacket out = codecFactory.getEncoder()
+                .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
+        socket.send(out);
     }
 
-    static SessionService createMockSessionService() {
-        return new SessionService() {
-            @Override
-            public Message<Session> createSession(Nas nas, Session session) throws IOException {
-                return Message.of(session, true, "");
-            }
+    private boolean authenticate(HuaweiPacket in) {
+        Collection<HuaweiPacket.Attribute> attributes = in.getAttributes();
+        Optional<HuaweiPacket.Attribute> username = attributes.stream()
+                .filter(attr -> attr.getType() == Enums.Attribute.USER_NAME.code())
+                .findFirst();
 
-            @Override
-            public Session getSession(long id) throws SessionNotFoundException {
-                return null;
-            }
+        if (!username.isPresent())
+            return false;
 
-            @Override
-            public Message<Session> removeSession(long id) throws SessionNotFoundException {
-                return Message.of(null, true, "");
-            }
+        String user = new String(username.get().getValue()),
+                passwd = userCredentials.get(user);
 
-            @Override
-            public Optional<Session> find(String ip, String mac) {
-                return Optional.empty();
-            }
+        boolean authenticated = false;
+        switch (AuthType.valueOf(in.getAuthType())) {
+            case CHAP:
+                Optional<HuaweiPacket.Attribute> chapPwd = attributes.stream()
+                        .filter(attr -> attr.getType() == Enums.Attribute.CHALLENGE_PASSWORD.code())
+                        .findFirst();
+                authenticated = chapPwd.isPresent() && passwd != null &&
+                        Arrays.equals(Utils.md5sum(
+                                userCredentials.get(user).getBytes()), chapPwd.get().getValue());
+                break;
 
-            @Override
-            public Session update(long id, long timestamp) {
-                return null;
-            }
+            case PAP:
+                Optional<HuaweiPacket.Attribute> password = attributes.stream()
+                        .filter(attr -> attr.getType() == Enums.Attribute.PASSWORD.code())
+                        .findFirst();
+                authenticated = password.isPresent() && passwd != null &&
+                        StringUtils.equals(new String(password.get().getValue()), passwd);
+                break;
 
-            @Override
-            public Message removeSession(String ip) {
-                log.debug("> Removing session, ip: " + ip);
-                return Message.of(null, true, "");
-            }
-        };
+            default:
+                break;
+        }
+
+        return authenticated;
     }
 
-    @Override
-    protected void handlePacket(DatagramPacket packet) {
+    private void handleAuth(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) {
+        Integer reqId;
+        AuthType authType = AuthType.valueOf(in.getAuthType());
+        switch (authType) {
+            case CHAP:
+                reqId = requestMapping.get(in.getIp());
+                if (reqId == null) {
+                    log.warn("* Can't find request mapping.");
+                    return;
+                }
+                break;
+
+            case PAP:
+                reqId = HuaweiNas.reqId.incrementAndGet();
+                break;
+
+            default:
+                log.error("* Unsupported authentication type, code: " + in.getAuthType());
+                return;
+        }
+
+        boolean authenticated = authenticate(in);
+
+        if (authenticated) {
+            sessionService.createSession(in.getIp());
+        }
+
+        Packet response = Utils.createAuthenticationResponsePacket(reqId, authenticated, in);
+
         try {
-            if (codecFactory.verify(packet, sharedSecret)) {
-                Packet in = codecFactory.getDecoder().decode(packet, sharedSecret);
+            DatagramPacket out = codecFactory.getEncoder()
+                    .encode(
+                            in.getAuthenticator(),
+                            response,
+                            remote,
+                            port,
+                            nas.getSharedSecret());
+            socket.send(out);
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
+    private void handleChallenge(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
+        int reqId = HuaweiNas.reqId.incrementAndGet();
+        requestMapping.put(in.getIp(), reqId);
+        /* H3C vBRAS will response with a bas ip attribute. */
+        String challenge = RandomStringUtils.randomAlphanumeric(8);
+
+        Packet response = Utils.createChallengeResponsePacket(nas.getInetAddress(), challenge, reqId, in);
+        DatagramPacket out = codecFactory.getEncoder()
+                .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
+        socket.send(out);
+    }
+
+    public void start() throws IOException {
+        this.portalServer.start();
+        log.info("> Mock Huawei NAS (portal server) started, listen on port: " + nas.getListenPort() + ".");
+    }
+
+//    public void shutdown() {
+//        this.portalServer.shutdown();
+//    }
+
+    class InMemorySessionService {
+        AtomicLong sessionId = new AtomicLong(0);
+
+        private Map<byte[], Session> sessions = new ConcurrentHashMap<>();
+
+        public Session createSession(byte[] ip) {
+            Session session = sessions.get(ip);
+            if (session != null)
+                return session;
+
+            SessionEntity entity = new SessionEntity();
+            entity.setId(sessionId.incrementAndGet());
+            entity.setDevice(new String(ip));
+            entity.setNasId(nas.getId());
+
+            sessions.put(ip, entity);
+            return entity;
+        }
+
+        public Session removeSession(byte[] ip) {
+            return sessions.remove(ip);
+        }
+
+    }
+
+    class PortalServer extends AbstractDatagramServer {
+        PortalServer(int port) {
+            super(port);
+        }
+
+        @Override
+        protected boolean verifyPacket(DatagramPacket packet) throws IOException {
+            byte[] data = packet.getData();
+            /* Huawei v1 and v2 has a minimum length at 16. */
+            return !(data == null || data.length < 16) && (data[0] != V2.Version || HuaweiCodecFactory.verify(packet, nas.getSharedSecret()));
+        }
+
+        @Override
+        protected void handlePacket(DatagramSocket socket, DatagramPacket packet) {
+            try {
+                HuaweiPacket in = (HuaweiPacket) codecFactory.getDecoder()
+                        .decode(packet, nas.getSharedSecret());
+                InetAddress remote = packet.getAddress();
+                int port = packet.getPort();
                 Optional<Enums.Type> type = Enums.Type.valueOf(in.getType());
                 if (type.isPresent()) {
                     switch (type.get()) {
                         case REQ_CHALLENGE:
-                            handleChallenge(in);
+                            handleChallenge(socket, in, remote, port);
                             break;
-                        
+
                         case REQ_AUTH:
-                            handleAuth(in);
+                            handleAuth(socket, in, remote, port);
                             break;
 
                         case REQ_LOGOUT:
-                            handleLogout(in);
+                            handleLogout(socket, in, remote, port);
+                            break;
+
+                        case AFF_ACK_AUTH:
+                            log.debug("> Authentication affirmative acknowledged received.");
                             break;
 
                         default:
+                            log.warn("> Unsupported operation type: " + type.get().name());
                             break;
                     }
                 }
-            }
-        } catch (IOException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(e);
+            } catch (IOException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug(e);
+                }
             }
         }
-        super.handlePacket(packet);
-    }
-
-    private void handleLogout(Packet in) {
-
-    }
-
-    private void handleAuth(Packet in) {
-
-    }
-
-    private void handleChallenge(Packet in) {
-        
     }
 }
