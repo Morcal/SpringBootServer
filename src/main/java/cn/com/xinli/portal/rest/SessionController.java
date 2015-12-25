@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Calendar;
 import java.util.Optional;
 
 /**
@@ -59,6 +60,7 @@ public class SessionController {
         session.setPassword(password);
         session.setNasId(nas);
         session.setDevice(Session.pair(ip, mac));
+        session.setStartTime(Calendar.getInstance().getTime());
         return session;
     }
 
@@ -163,8 +165,6 @@ public class SessionController {
      * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
      * overrule anything and everything.
      *
-     * @param ip        source ip address.
-     * @param mac       source mac address.
      * @param timestamp source timestamp.
      * @param id        session id.
      * @return JSON.
@@ -175,32 +175,22 @@ public class SessionController {
             method = RequestMethod.POST)
     @PreAuthorize("(" + SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE + " and hasAuthority(#session)) " +
             " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
-    public RestBean update(@RequestParam(value = "user_ip") String ip,
-                           @RequestParam(value = "user_mac", defaultValue = "") String mac,
-                           @RequestParam long timestamp,
+    public RestBean update(@RequestParam long timestamp,
                            @P("session") @PathVariable long id,
                            @AuthenticationPrincipal Principal principal) {
-        Optional<Session> opt = sessionService.find(ip, mac);
-        opt.orElseThrow(() -> new SessionNotFoundException("Session not found."));
-
-        Session found = opt.get(), entity = sessionService.getSession(id);
-
-        if (entity.getId() == found.getId()) {
-            long now = System.currentTimeMillis();
-            if (Math.abs(now - timestamp) > SecurityConfiguration.MAX_TIME_DIFF) {
-                throw new OutOfRangeUpdateException("update out of range.");
-            }
-
-            Session updated = sessionService.update(id, timestamp);
-            /* send updated session information. */
-            return RestResponseBuilders.successBuilder()
-                    .setSession(updated)
-                    .setAccessAuthentication((AccessAuthentication) principal)
-                    .setServerConfig(serverConfig)
-                    .build();
-        } else {
-            throw new DeviceChangedException("device changed.");
+        //Session entity = sessionService.getSession(id);
+        long now = System.currentTimeMillis() / 1000L;
+        if (Math.abs(now - timestamp) > SecurityConfiguration.MAX_TIME_DIFF) {
+            throw new OutOfRangeUpdateException("update out of range.");
         }
+
+        Session updated = sessionService.update(id, timestamp);
+        /* send updated session information. */
+        return RestResponseBuilders.successBuilder()
+                .setSession(updated)
+                .setAccessAuthentication((AccessAuthentication) principal)
+                .setServerConfig(serverConfig)
+                .build();
     }
 
     /**

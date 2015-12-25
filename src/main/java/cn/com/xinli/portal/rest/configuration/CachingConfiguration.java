@@ -43,10 +43,10 @@ public class CachingConfiguration implements CachingConfigurer {
     public static final String CERTIFICATE_CACHE_NAME = "certificate-cache";
 
     /** Access token ttl in seconds. */
-    public static final int ACCESS_TOKEN_TTL = 25;
+    public static final int ACCESS_TOKEN_TTL = 660;
 
     /** Session token ttl in seconds. */
-    public static final int SESSION_TOKEN_TTL = 20;
+    public static final int SESSION_TOKEN_TTL = 600;
 
     /** Challenge ttl in seconds. */
     public static final int CHALLENGE_TTL = 10;

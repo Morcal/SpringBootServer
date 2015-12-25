@@ -6,6 +6,7 @@ import cn.com.xinli.portal.persist.SessionRepository;
 import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.protocol.PortalClient;
 import cn.com.xinli.portal.protocol.PortalClients;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
@@ -46,24 +48,48 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
                         .stream()
                         .findFirst();
 
+        Credentials credentials = new Credentials(
+                session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
+
         if (opt.isPresent()) {
-            log.warn("> session already exists.");
-            return Message.of(opt.get(), true, "Session already exists.");
-        } else {
-            Credentials credentials = new Credentials(
-                    session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
-            PortalClient client = PortalClients.create(nas);
-            Message message = client.login(credentials);
-            if (log.isDebugEnabled()) {
-                log.debug(message);
-            }
+            /* Check if already existed session was created by current user.
+             * If so, return existed session, or try to logout existed user
+             * and then login with current user.
+             */
+            Session existed = opt.get();
 
-            if (message.isSuccess()) {
-                sessionRepository.save((SessionEntity) session);
-            }
+            if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
+                log.warn("+ session already exists with different username.");
+                Credentials old = new Credentials(
+                        existed.getUsername(), existed.getPassword(), existed.getIp(), existed.getMac());
+                PortalClient client = PortalClients.create(nas);
+                Message message = client.logout(old);
+                if (log.isDebugEnabled()) {
+                    log.debug(message);
+                }
 
-            return Message.of(session, message.isSuccess(), message.getText());
+                if (!message.isSuccess()) {
+                    log.warn("+ logout existed different user failed, cause: " + message.getText());
+                }
+
+                removeSession(existed.getId());
+            } else {
+                return Message.of(opt.get(), true, "Session already exists.");
+            }
         }
+
+        PortalClient client = PortalClients.create(nas);
+        Message message = client.login(credentials);
+        if (log.isDebugEnabled()) {
+            log.debug(message);
+        }
+
+        if (message.isSuccess()) {
+            sessionRepository.save((SessionEntity) session);
+        }
+
+        return Message.of(session, message.isSuccess(), message.getText());
+
     }
 
     @Override
@@ -123,7 +149,9 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
             throw new SessionNotFoundException(id);
         }
 
-        found.setLastModified(new Date(timestamp));
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timestamp * 1000L);
+        found.setLastModified(calendar.getTime());
 
         return sessionRepository.save(found);
     }

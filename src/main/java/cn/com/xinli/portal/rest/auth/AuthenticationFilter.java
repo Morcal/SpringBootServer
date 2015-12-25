@@ -132,9 +132,9 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
         long now = System.currentTimeMillis();
         String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
         long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
-        long diff = Math.abs(now - timestamp);
+        long diff = Math.abs(now / 1000L - timestamp);
 
-        if (diff > SecurityConfiguration.MAX_TIME_DIFF * 1000L) {
+        if (diff > SecurityConfiguration.MAX_TIME_DIFF) {
             throw new BadCredentialsException("Way too inaccurate timestamp.");
         }
 

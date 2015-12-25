@@ -159,6 +159,7 @@ public class RestResponseBuilders {
             } else {
                 cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
                 session.setId(String.valueOf(this.session.getId()));
+                session.setStarttime(this.session.getStartTime().getTime() / 1000L);
                 if (serverConfig != null) {
                     session.setKeepaliveInterval(serverConfig.getKeepaliveInterval());
                     session.setKeepalive(serverConfig.requiresKeepalive());

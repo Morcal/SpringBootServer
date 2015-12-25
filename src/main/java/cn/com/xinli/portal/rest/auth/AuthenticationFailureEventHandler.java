@@ -6,6 +6,7 @@ import cn.com.xinli.portal.persist.ActivityEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -29,7 +30,7 @@ public class AuthenticationFailureEventHandler implements ApplicationListener<Au
             activity.setRemote(event.getRequest().getRemoteUser());
             activity.setResult("Failed");
             activity.setSeverity(event.getSeverity());
-            activity.setTimestamp(new Date());
+            activity.setTimestamp(Calendar.getInstance().getTime());
             activityService.log(activity);
         }
     }
