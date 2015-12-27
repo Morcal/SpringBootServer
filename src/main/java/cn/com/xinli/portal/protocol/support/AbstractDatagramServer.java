@@ -4,35 +4,69 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Abstract datagram server.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/25.
  */
 public abstract class AbstractDatagramServer {
-    /** Log. */
+    /**
+     * Log.
+     */
     private static final Log log = LogFactory.getLog(AbstractDatagramServer.class);
 
-    protected DatagramSocket socket;
+    /** Server datagram channel. */
+    protected DatagramChannel channel;
 
+    /** Server datagram channel selector. */
+    private Selector selector;
+
+    /** Shutdown indicator. */
     private volatile boolean shutdown = false;
 
+    /** Server listen port. */
     protected final int port;
 
-    /** Default worker thread size. */
+    /**
+     * Default worker thread size.
+     */
     private static final int DEFAULT_THREAD_SIZE = 4;
 
+    /** Internal executor service. */
     private ExecutorService executorService;
 
-    protected abstract boolean verifyPacket(DatagramPacket packet) throws IOException;
+    /**
+     * Verify incoming packet.
+     * @param buffer incoming datagram buffer.
+     * @return true if packet is valid.
+     * @throws IOException
+     */
+    protected abstract boolean verifyPacket(ByteBuffer buffer) throws IOException;
 
-    protected abstract void handlePacket(DatagramSocket socket, DatagramPacket packet);
+    /**
+     * Handle incoming datagram packet.
+     * @param buffer incoming packet.
+     */
+    protected abstract void handlePacket(ByteBuffer buffer, SocketAddress remote);
+
+    protected abstract ByteBuffer createReceiveBuffer();
+
+    protected SocketAddress receive(DatagramChannel channel, ByteBuffer buffer) throws IOException {
+        return channel.receive(buffer);
+    }
 
     public AbstractDatagramServer(int port) {
         this(port, DEFAULT_THREAD_SIZE);
@@ -46,16 +80,30 @@ public abstract class AbstractDatagramServer {
     private void startLoop() {
         while (!shutdown) {
             try {
-                byte[] buffer = new byte[1024];
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-                socket.receive(packet); /* This would be blocking. */
-                if (!verifyPacket(packet)) {
-                    log.warn("* Invalid portal request, dropped.");
+                int selected = selector.select(1000L);
+                if (selected < 1)
                     continue;
+
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                while (iterator.hasNext()) {
+                    SelectionKey key = iterator.next();
+                    iterator.remove();
+                    if (key.isReadable()) {
+                        DatagramChannel ch = (DatagramChannel) key.channel();
+                        assert ch == channel;
+                        ByteBuffer buffer = createReceiveBuffer();
+                        SocketAddress remote = receive(ch, buffer);
+                        buffer.flip();
+
+                        if (!verifyPacket(buffer)) {
+                            log.warn("* Invalid portal request, dropped.");
+                            continue;
+                        }
+                        buffer.rewind();
+                        executorService.submit(() -> handlePacket(buffer, remote));
+                    }
                 }
 
-                executorService.submit(() -> handlePacket(socket, packet));
             } catch (IOException e) {
                 // no-op.
                 if (log.isDebugEnabled()) {
@@ -66,21 +114,30 @@ public abstract class AbstractDatagramServer {
     }
 
     public void start() throws IOException {
-        socket = new DatagramSocket(port);
+        channel = DatagramChannel.open();
+        channel.configureBlocking(false);
+        selector = Selector.open();
+        channel.register(selector, SelectionKey.OP_READ);
+        channel.socket().bind(new InetSocketAddress(port));
         executorService.submit(this::startLoop);
     }
 
     public void shutdown() {
         shutdown = true;
+        log.info("> Shutting down datagram server...");
+        selector.wakeup();
+
         try {
+            channel.close();
             Thread.sleep(100);
             executorService.shutdown();
             executorService.awaitTermination(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             log.error(e);
         } finally {
             executorService.shutdownNow();
-            socket.close();
         }
+
+        log.info("> Datagram server quit.");
     }
 }

@@ -13,5 +13,11 @@ public interface ChallengeService extends ChallengeManager {
      */
     Challenge loadChallenge(String nonce) throws ChallengeNotFoundException;
 
+    /**
+     * Version challenge.
+     * @param challenge challenge to verify.
+     * @param answer challenge answer.
+     * @return true if answer matches.
+     */
     boolean verify(Challenge challenge, String answer);
 }

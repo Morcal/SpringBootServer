@@ -6,8 +6,8 @@ import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.bean.*;
-import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
-import cn.com.xinli.portal.rest.token.AccessToken;
+import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.rest.token.RestToken;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.token.Token;
 
@@ -65,7 +65,7 @@ public class RestResponseBuilders {
      * @param token access token.
      * @return builder.
      */
-    public static AuthorizationBuilder authorizationBuilder(AccessToken token) {
+    public static AuthorizationBuilder authorizationBuilder(RestToken token) {
         return new AuthorizationBuilder(token);
     }
 
@@ -192,7 +192,7 @@ public class RestResponseBuilders {
                 }
                 if (token != null) {
                     session.setToken(token.getKey());
-                    session.setTokenExpiresIn(CachingConfiguration.SESSION_TOKEN_TTL);
+                    session.setTokenExpiresIn(SecurityConfiguration.SESSION_TOKEN_TTL);
                 }
                 return session;
             }
@@ -212,7 +212,7 @@ public class RestResponseBuilders {
                 throw new IllegalStateException("Server failed to locate challenge.");
             } else {
                 Authentication authentication = new Authentication();
-                authentication.setExpiresIn(CachingConfiguration.CHALLENGE_TTL);
+                authentication.setExpiresIn(SecurityConfiguration.CHALLENGE_TTL);
                 authentication.setChallenge(challenge.getChallenge());
                 authentication.setNonce(challenge.getNonce());
                 return authentication;
@@ -221,9 +221,9 @@ public class RestResponseBuilders {
     }
 
     public static class AuthorizationBuilder implements Builder<Authorization> {
-        private final AccessToken token;
+        private final RestToken token;
 
-        public AuthorizationBuilder(AccessToken token) {
+        public AuthorizationBuilder(RestToken token) {
             this.token = token;
         }
 
@@ -234,8 +234,8 @@ public class RestResponseBuilders {
             } else {
                 Authorization authorization = new Authorization();
                 authorization.setToken(token.getKey());
-                authorization.setExpiresIn(CachingConfiguration.ACCESS_TOKEN_TTL);
-                authorization.setScope(token.getScope());
+                authorization.setExpiresIn(SecurityConfiguration.ACCESS_TOKEN_TTL);
+                authorization.setScope(token.getScope().alias());
                 authorization.setRefreshToken(""); /* Refresh token not supported yet. */
                 return authorization;
             }

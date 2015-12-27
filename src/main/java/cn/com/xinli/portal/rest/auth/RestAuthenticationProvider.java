@@ -4,10 +4,7 @@ import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
-import cn.com.xinli.portal.rest.token.AccessToken;
-import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
-import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
-import cn.com.xinli.portal.rest.token.SessionToken;
+import cn.com.xinli.portal.rest.token.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.token.Token;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -44,10 +42,10 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     private ChallengeService challengeService;
 
     @Autowired
-    private TokenService accessTokenService;
+    private AccessTokenService accessTokenService;
 
     @Autowired
-    private TokenService sessionTokenService;
+    private SessionTokenService sessionTokenService;
 
     /**
      * Handle challenge.
@@ -75,9 +73,9 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             authentication.setAuthenticated(true);
             /* TODO Provide better information, like Username for token allocation. */
             if (challenge.requiresToken()) {
-                org.springframework.security.core.token.Token token = accessTokenService.allocateToken(
+                Token token = accessTokenService.allocateToken(
                         credentials.getParameter(HttpDigestCredentials.CLIENT_ID));
-                authentication.setAccessToken(AccessToken.class.cast(token));
+                authentication.setAccessToken((RestToken) token);
             }
 
             authentication.setAuthenticated(true);
@@ -95,14 +93,14 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
                                    HttpDigestCredentials credentials,
                                    Collection<GrantedAuthority> authorities) {
         /* Credentials contains access token. */
-        org.springframework.security.core.token.Token verified = accessTokenService.verifyToken(
+        Token verified = accessTokenService.verifyToken(
                 credentials.getParameter(HttpDigestCredentials.CLIENT_TOKEN));
         if (verified == null) {
             throw new InvalidAccessTokenException("invalid client token.");
         }
         log.debug("> Session token verified.");
         authentication.setAuthenticated(true);
-        authentication.setAccessToken(AccessToken.class.cast(verified));
+        authentication.setAccessToken((RestToken) verified);
         authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
     }
 
@@ -115,12 +113,12 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     private void verifySessionToken(AccessAuthentication authentication,
                                     HttpDigestCredentials credentials,
                                     Collection<GrantedAuthority> authorities) {
-        org.springframework.security.core.token.Token verified = sessionTokenService.verifyToken(
+        Token verified = sessionTokenService.verifyToken(
                 credentials.getParameter(HttpDigestCredentials.SESSION_TOKEN));
         if (verified == null) {
             throw new InvalidSessionTokenException("Invalid session token.");
         }
-        authentication.setSessionToken(SessionToken.class.cast(verified));
+        authentication.setSessionToken((RestToken) verified);
         long sessionId = Long.parseLong(verified.getExtendedInformation());
         authorities.add(new SessionAuthority(sessionId));
     }

@@ -4,7 +4,7 @@ import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.rest.Constants;
 import cn.com.xinli.portal.rest.auth.SignatureUtil;
-import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
+import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.logging.Log;
@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * EhCache based challenge manager.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/10.
@@ -33,12 +35,12 @@ public class EhCacheChallengeManager implements ChallengeService {
         return new Element(
                 challenge.getNonce(),
                 challenge,
-                CachingConfiguration.EHCACHE_VERSION,
+                SecurityConfiguration.EHCACHE_VERSION,
                 now,
                 now,
                 0,
                 true,
-                CachingConfiguration.CHALLENGE_TTL,
+                SecurityConfiguration.CHALLENGE_TTL,
                 0,
                 now);
     }

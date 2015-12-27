@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.protocol;
+package cn.com.xinli.portal;
 
 /**
  * Portal authentication type.

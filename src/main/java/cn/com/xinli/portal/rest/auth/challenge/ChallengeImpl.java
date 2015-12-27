@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.rest.auth.challenge;
 
 /**
+ * PWS Challenge implementation.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/11.

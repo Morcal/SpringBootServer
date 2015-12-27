@@ -1,16 +1,12 @@
 package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.protocol.CodecFactory;
-import cn.com.xinli.portal.protocol.Packet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -24,7 +20,7 @@ import java.util.*;
  *
  * @author zhoupeng 2015/12/22.
  */
-final class HuaweiCodecFactory implements CodecFactory {
+final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
     /**
      * Log.
      */
@@ -33,21 +29,36 @@ final class HuaweiCodecFactory implements CodecFactory {
     /**
      * Decoder.
      */
-    private static final DatagramDecoder decoder = new Decoder();
+    private static final DatagramDecoder<HuaweiPacket> decoder = new Decoder();
 
     /**
      * Encoder.
      */
-    private static final DatagramEncoder encoder = new Encoder();
+    private static final DatagramEncoder<HuaweiPacket> encoder = new Encoder();
 
     @Override
-    public DatagramDecoder getDecoder() {
+    public DatagramDecoder<HuaweiPacket> getDecoder() {
         return decoder;
     }
 
     @Override
-    public DatagramEncoder getEncoder() {
+    public DatagramEncoder<HuaweiPacket> getEncoder() {
         return encoder;
+    }
+
+    /**
+     * Calculate authenticator.
+     * @param buffer content buffer.
+     * @param authenticator authenticator.
+     * @param sharedSecret shared secret.
+     * @return authenticator.
+     */
+    static byte[] calculateAuthenticator(ByteBuffer buffer, byte[] authenticator, String sharedSecret) {
+        if (!buffer.hasArray())
+            return new byte[0];
+
+        byte[] data = Arrays.copyOfRange(buffer.array(), 0, buffer.remaining());
+        return calculateAuthenticator(data, authenticator, sharedSecret);
     }
 
     /**
@@ -56,281 +67,268 @@ final class HuaweiCodecFactory implements CodecFactory {
      * <code>Authenticator = MD5(16bytes + 16bytes of 0 + attributes + shared secret)</code>
      * </p>
      *
-     * @param output       output stream.
+     * @param data          data.
+     * @param authenticator original request authenticator.
      * @param sharedSecret shared secret.
      * @return 16 bytes authenticator.
-     * @throws IOException
      */
-    static byte[] calculateAuthenticator(ByteArrayOutputStream output, String sharedSecret) throws IOException {
-        ByteArrayOutputStream cal = new ByteArrayOutputStream();
-        try (DataOutputStream dos = new DataOutputStream(cal)) {
-            if (StringUtils.isEmpty(sharedSecret)) {
-                log.warn("+ empty shared secret.");
-            } else {
-                dos.write(output.toByteArray());
-                dos.write(sharedSecret.getBytes());
-                dos.flush();
-            }
-
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.reset();
-            md5.update(cal.toByteArray());
-            return md5.digest();
-        } catch (NoSuchAlgorithmException e) {
-            log.warn(e.getMessage());
+    static byte[] calculateAuthenticator(byte[] data, byte[] authenticator, String sharedSecret) {
+        if (data == null || data.length < 32) {
             return new byte[0];
         }
+
+        if (authenticator != null && authenticator.length != 16) {
+            return new byte[0];
+        }
+
+        ByteBuffer buf = ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+        buf.put(data, 0, 16);
+
+        if (authenticator != null) {
+            buf.put(authenticator);
+        } else {
+            buf.putLong(0L);
+            buf.putLong(0L);
+        }
+
+        if (!StringUtils.isEmpty(sharedSecret)) {
+            buf.put(sharedSecret.getBytes());
+        }
+
+        if (data.length > 32) {
+            buf.put(data, 32, data.length - 32);
+        }
+
+        buf.flip();
+
+        return Packets.md5sum(buf.array());
     }
 
     /**
      * Read bytes from input stream.
      *
-     * @param input input stream.
-     * @param bytes bytes to read.
-     * @return bytes read.
-     * @throws IOException
+     * @param buffer input buffer.
+     * @param bytes bytes to receive.
+     * @return bytes receive.
      */
-    static byte[] readBytes(InputStream input, int bytes) throws IOException {
+    static byte[] readBytes(ByteBuffer buffer, int bytes) {
         byte[] data = new byte[bytes];
-        if (input.read(data, 0, data.length) != bytes) {
-            throw new IOException("not enough data.");
-        }
+        buffer.get(data);
         return data;
     }
 
     /**
      * Read {@link HuaweiPacket.Attribute}s from input stream.
      *
-     * @param input input stream.
+     * @param buffer input buffer.
      * @param size  attribute size.
      * @return collection of {@link HuaweiPacket.Attribute}s.
-     * @throws IOException
      */
-    static Collection<HuaweiPacket.Attribute> readAttributes(InputStream input, int size) throws IOException {
+    static Collection<HuaweiPacket.Attribute> readAttributes(ByteBuffer buffer, int size) {
         if (size == 0) {
             return Collections.emptyList();
         }
 
         List<HuaweiPacket.Attribute> attributes = new ArrayList<>();
         while (size-- > 0) {
-            int type = input.read() & 0xFF;
-            int length = input.read() & 0xFF;
-            attributes.add(new HuaweiPacket.Attribute(type, readBytes(input, length - 2)));
+            int type = buffer.get() & 0xFF;
+            int length = buffer.get() & 0xFF;
+            attributes.add(new HuaweiPacket.Attribute(type, readBytes(buffer, length - 2)));
         }
 
         return attributes;
     }
+//
+//    public static boolean verify(byte[] data, String sharedSecret) {
+//        return data.length >= 32 &&
+//                Arrays.equals(calculateAuthenticator(
+//                        data, null, sharedSecret), Arrays.copyOfRange(data, 16, 32));
+//    }
 
     /**
      * Verify request authenticator.
      *
-     * @param in           incoming packet.
+     * @param buffer           incoming packet.
      * @param sharedSecret shared secret.
      * @return true if incoming packet is valid.
-     * @throws IOException
      */
-    public static boolean verify(DatagramPacket in, String sharedSecret) throws IOException {
-        return verify(null, in, sharedSecret);
+    public static boolean verify(ByteBuffer buffer, String sharedSecret) {
+        if (!buffer.hasArray())
+            return false;
+
+        byte[] data = Arrays.copyOfRange(buffer.array(), 0, buffer.remaining());
+        return data.length >= 32 &&
+                Arrays.equals(calculateAuthenticator(
+                        data, null, sharedSecret), Arrays.copyOfRange(data, 16, 32));
     }
 
     /**
      * Verify response by authenticator.
      *
-     * @param in           incoming packet.
+     * @param authenticator original
+     * @param buffer           incoming packet.
      * @param sharedSecret shared secret.
      * @return true if incoming packet is valid.
-     * @throws IOException
      */
-    public static boolean verify(byte[] authenticator,
-                                 DatagramPacket in,
-                                 String sharedSecret) throws IOException {
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        byte[] data = Arrays.copyOfRange(in.getData(), 0, in.getLength());
-        if (data.length < 32) {
-            return false; // not enough size.
-        }
+    public static boolean verify(byte[] authenticator, ByteBuffer buffer, String sharedSecret) {
+        if (!buffer.hasArray())
+            return false;
+        byte[] data = Arrays.copyOfRange(buffer.array(), 0, buffer.remaining());
+        return data.length >= 32 &&
+                Arrays.equals(calculateAuthenticator(
+                        data, authenticator, sharedSecret), Arrays.copyOfRange(data, 16, 32));
 
-        try (DataOutputStream dos = new DataOutputStream(bao)) {
-            dos.write(data, 0, 16);
-            if (authenticator == null) {
-                /* incoming request. */
-                dos.writeLong(0);
-                dos.writeLong(0);
-            } else {
-                dos.write(authenticator);
-            }
-            if (data.length > 32) {
-                dos.write(data, 32, data.length - 32);
-            }
-            dos.flush();
-        }
-
-        return Arrays.equals(calculateAuthenticator(bao, sharedSecret),
-                Arrays.copyOfRange(data, 16, 32));
     }
 
-    static class Encoder implements CodecFactory.DatagramEncoder {
+    static class Encoder implements CodecFactory.DatagramEncoder<HuaweiPacket> {
         /**
          * Write attributes from a {@link HuaweiPacket} to a {@link DataOutputStream}.
          *
-         * @param output     output stream.
+         * @param buffer     output buffer.
          * @param attributes attributes.
-         * @throws IOException
          */
-        void writeAttributes(DataOutputStream output,
-                             Collection<HuaweiPacket.Attribute> attributes) throws IOException {
+        void writeAttributes(ByteBuffer buffer,
+                             Collection<HuaweiPacket.Attribute> attributes) {
             for (HuaweiPacket.Attribute attribute : attributes) {
-                output.writeByte(attribute.getType());
-                output.writeByte(attribute.getLength());
-                output.write(attribute.getValue());
+                buffer.put((byte) attribute.getType());
+                buffer.put((byte) attribute.getLength());
+                buffer.put(attribute.getValue());
             }
         }
 
         /**
          * Write authenticator to a {@link ByteArrayOutputStream}.
          *
-         * @param bao           output stream.
-         * @param authenticator authentiator to write.
-         * @throws IOException
+         * @param buffer           output buffer.
+         * @param authenticator authenticator to write.
          */
-        void writeAuthenticator(ByteArrayOutputStream bao, byte[] authenticator) throws IOException {
-            ByteArrayOutputStream o = new ByteArrayOutputStream();
-            byte[] array = Arrays.copyOf(bao.toByteArray(), bao.size());
-            try (DataOutputStream authDos = new DataOutputStream(o)) {
-                authDos.write(array, 0, 16);
-                authDos.write(authenticator);
-                authDos.write(array, 32, array.length - 32);
-                authDos.flush();
+        void writeAuthenticator(ByteBuffer buffer, byte[] authenticator) {
+            if (authenticator == null || authenticator.length != 16) {
+                throw new IllegalArgumentException("Invalid authenticator.");
             }
-            bao.reset();
-            o.writeTo(bao);
+
+            if (buffer.limit() < 32) {
+                throw new IllegalArgumentException("Not enough space buffer buffer.");
+            }
+
+            System.arraycopy(authenticator, 0, buffer.duplicate().array(), 16, 16);
+        }
+
+
+        ByteBuffer writePacket(HuaweiPacket packet, String sharedSecret) {
+            return writePacket(packet, sharedSecret, null);
         }
 
         /**
          * Write packet to datagram.
          *
-         * @param out           packet to write.
-         * @param server        remote server address.
-         * @param port          remote server port.
+         * @param packet           packet to write.
          * @param sharedSecret  shared secret.
          * @param authenticator authenticator.
          * @return datagram packet.
-         * @throws IOException
          */
-        DatagramPacket writePacket(Packet out,
-                                   InetAddress server,
-                                   int port,
-                                   String sharedSecret,
-                                   byte[] authenticator) throws IOException {
-            HuaweiPacket packet = (HuaweiPacket) out;
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            try (DataOutputStream output = new DataOutputStream(bao)) {
-                output.writeByte(packet.getVersion());
-                output.writeByte(packet.getType());
-                output.writeByte(packet.getAuthType());
-                output.writeByte(packet.getReserved());
-                output.writeShort(packet.getSerialNum());
-                output.writeShort(packet.getReqId());
-                assert packet.getIp().length == 4;
-                output.write(packet.getIp());
-                output.writeShort(packet.getPort());
-                output.writeByte(packet.getError());
-                output.writeByte(packet.getAttrs());
-                if (packet.getVersion() == V2.Version) {
-                    if (authenticator != null) {
-                        /* Write original request's authenticator. */
-                        output.write(authenticator);
-                    } else {
-                        /* Write 16 bytes of 0 placeholder. */
-                        output.writeLong(0);
-                        output.writeLong(0);
-                    }
-                }
-                writeAttributes(output, packet.getAttributes());
-                output.flush();
-
-                if (packet.getVersion() == V2.Version) {
-                    /* Calculate new authenticator. */
-                    byte[] authen = calculateAuthenticator(bao, sharedSecret);
-                    if (authen.length < 1) {
-                        throw new RuntimeException("Invalid calculated authenticator.");
-                    }
-                    packet.setAuthenticator(authen);
-                    writeAuthenticator(bao, authen);
-                }
-                return new DatagramPacket(bao.toByteArray(), bao.size(), server, port);
+        ByteBuffer writePacket(HuaweiPacket packet, String sharedSecret, byte[] authenticator) {
+            assert packet.getIp().length == 4;
+            ByteBuffer buffer = ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+            buffer.put((byte) packet.getVersion());
+            buffer.put((byte) packet.getType());
+            buffer.put((byte) packet.getAuthType());
+            buffer.put((byte) packet.getReserved());
+            buffer.putShort((short) packet.getSerialNum());
+            buffer.putShort(new Integer(packet.getReqId()).shortValue());
+            buffer.put(packet.getIp());
+            buffer.putShort((short) packet.getPort());
+            buffer.put((byte) packet.getError());
+            buffer.put((byte) packet.getAttrs());
+            if (packet.getVersion() == Enums.Version.v2.value()) {
+                /* Write 16 bytes of 0 placeholder. */
+                buffer.putLong(0L);
+                buffer.putLong(0L);
             }
+
+            writeAttributes(buffer, packet.getAttributes());
+
+            if (packet.getVersion() == Enums.Version.v2.value()) {
+                /* Calculate authenticator. */
+                byte[] result = calculateAuthenticator(buffer, authenticator, sharedSecret);
+                if (result.length < 1) {
+                    throw new RuntimeException("Invalid calculated authenticator.");
+                }
+                packet.setAuthenticator(result);
+                writeAuthenticator(buffer, result);
+            }
+
+            buffer.flip();
+            return buffer;
         }
 
         @Override
-        public DatagramPacket encode(Packet packet,
-                                     InetAddress server,
-                                     int port,
-                                     String sharedSecret) throws IOException {
-            return writePacket(packet, server, port, sharedSecret, null);
+        public ByteBuffer encode(HuaweiPacket packet,
+                                 String sharedSecret) {
+            return writePacket(packet, sharedSecret);
         }
 
         @Override
-        public DatagramPacket encode(byte[] authenticator,
-                                     Packet packet,
-                                     InetAddress server,
-                                     int port,
-                                     String sharedSecret) throws IOException {
-            return writePacket(packet, server, port, sharedSecret, authenticator);
+        public ByteBuffer encode(byte[] authenticator,
+                                 HuaweiPacket packet,
+                                 String sharedSecret) {
+            if (authenticator != null && authenticator.length != 16) {
+                throw new IllegalArgumentException("Invalid authenticator.");
+            }
+            return writePacket(packet, sharedSecret, authenticator);
         }
     }
 
-    static class Decoder implements CodecFactory.DatagramDecoder {
+    static class Decoder implements CodecFactory.DatagramDecoder<HuaweiPacket> {
 
         /**
          * Read {@link HuaweiPacket} from input stream.
          *
-         * @param input input stream.
+         * @param buffer input buffer.
          * @return HuaweiPacket.
-         * @throws IOException
          */
-        private HuaweiPacket readPacket(InputStream input) throws IOException {
+        private HuaweiPacket readPacket(ByteBuffer buffer) {
+            byte[] ip = new byte[4];
             HuaweiPacket packet = new HuaweiPacket();
-            packet.setVersion(input.read() & 0xFF);
-            packet.setType(input.read() & 0xFF);
-            packet.setAuthType(input.read() & 0xFF);
-            packet.setReserved(input.read() & 0xFF);
-            packet.setSerialNum(((input.read() & 0xff) << 8) | (input.read() & 0xff));
-            packet.setReqId(((input.read() & 0xff) << 8) | (input.read() & 0xff));
-            packet.setIp(readBytes(input, 4));
-            byte[] port = readBytes(input, 2);
+            packet.setVersion(buffer.get() & 0xFF);
+            packet.setType(buffer.get() & 0xFF);
+            packet.setAuthType(buffer.get() & 0xFF);
+            packet.setReserved(buffer.get() & 0xFF);
+            packet.setSerialNum(((buffer.get() & 0xff) << 8) | (buffer.get() & 0xff));
+            packet.setReqId(((buffer.get() & 0xff) << 8) | (buffer.get() & 0xff));
+            buffer.get(ip);
+            packet.setIp(ip);
+            byte[] port = readBytes(buffer, 2);
             packet.setPort(port[0] << 8 | port[1]);
-            packet.setError(input.read() & 0xFF);
-            packet.setAttrs(input.read() & 0xFF);
-            if (packet.getVersion() == V2.Version) {
-                packet.setAuthenticator(readBytes(input, 16));
+            packet.setError(buffer.get() & 0xFF);
+            packet.setAttrs(buffer.get() & 0xFF);
+            if (packet.getVersion() == Enums.Version.v2.value()) {
+                packet.setAuthenticator(readBytes(buffer, 16));
             }
-            packet.setAttributes(readAttributes(input, packet.getAttrs()));
+            packet.setAttributes(readAttributes(buffer, packet.getAttrs()));
             return packet;
         }
 
         @Override
-        public HuaweiPacket decode(DatagramPacket in, String sharedSecret) throws IOException {
+        public HuaweiPacket decode(ByteBuffer in, String sharedSecret) {
             return decode(null, in, sharedSecret);
         }
 
         @Override
         public HuaweiPacket decode(byte[] authenticator,
-                                   DatagramPacket in,
-                                   String sharedSecret) throws IOException {
-            ByteArrayInputStream bai = new ByteArrayInputStream(in.getData(), 0, in.getLength());
-            int ver = (int) Arrays.copyOfRange(in.getData(), 0, 1)[0];
+                                   ByteBuffer buffer,
+                                   String sharedSecret) {
+            int ver = (int) buffer.get();
 
-            if (ver == V2.Version) {
-                if (!verify(authenticator, in, sharedSecret)) {
+            if (ver == Enums.Version.v2.value()) {
+                buffer.rewind();
+                if (!verify(authenticator, buffer, sharedSecret)) {
                     log.warn("Invalid Huawei portal packet received.");
                     return null;
                 }
             }
 
-            try (InputStream input = new BufferedInputStream(bai)) {
-                return readPacket(input);
-            }
+            return readPacket(buffer);
         }
     }
 }

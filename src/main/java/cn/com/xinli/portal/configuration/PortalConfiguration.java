@@ -112,6 +112,11 @@ public class PortalConfiguration {
     }
 
     @Bean
+    public SessionManager sessionManager() {
+        return (SessionManager) sessionService();
+    }
+
+    @Bean
     public AuthorizationServer authorizationServer() {
         return new RestAuthorizationServer();
     }

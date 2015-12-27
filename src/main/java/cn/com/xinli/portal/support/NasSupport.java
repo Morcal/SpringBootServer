@@ -1,8 +1,9 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.Nas;
+import cn.com.xinli.portal.NasType;
 import cn.com.xinli.portal.PortalException;
-import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,7 +20,7 @@ public class NasSupport implements Nas {
     /**
      * Default nas type name.
      */
-    String DEFAULT_NAS_TYPE = "Huawei";
+    NasType DEFAULT_NAS_TYPE = NasType.HuaweiV2;
 
     /**
      * Default nas listen port.
@@ -55,7 +56,7 @@ public class NasSupport implements Nas {
     /**
      * Nas type.
      */
-    private final String type;
+    private final NasType type;
 
     /**
      * Portal listen port.
@@ -100,7 +101,7 @@ public class NasSupport implements Nas {
         this.sharedSecret = sharedSecret;
         this.ipv4Address = StringUtils.isEmpty(ipv4Address) ? "" : ipv4Address;
         this.ipv6Address = StringUtils.isEmpty(ipv6Address) ? "" : ipv6Address;
-        this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : type;
+        this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : NasType.valueOf(type);
         this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTEN_PORT : listenPort;
         this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHENTICATION_TYPE : AuthType.of(authType);
         this.ipv4start = ipv4start;
@@ -128,7 +129,7 @@ public class NasSupport implements Nas {
     }
 
     @Override
-    public String getType() {
+    public NasType getType() {
         return type;
     }
 

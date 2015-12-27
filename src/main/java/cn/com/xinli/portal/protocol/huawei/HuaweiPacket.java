@@ -67,6 +67,9 @@ public class HuaweiPacket implements Packet {
     /** Serial number random generator. */
     private static final Random random = new Random(System.currentTimeMillis());
 
+    /** Maximum packet length. */
+    static final int MAX_LENGTH = 1024;
+
     /** Serial number generator. */
     private static final AtomicInteger serial
             = new AtomicInteger((random.nextInt() & 0xFFFF) % MAX_SERIAL);
@@ -122,10 +125,10 @@ public class HuaweiPacket implements Packet {
         return null;
     }
 
-    @Override
-    public boolean isSuccess() {
-        return error == 0;
-    }
+//    @Override
+//    public boolean isSuccess() {
+//        return error == 0;
+//    }
 
     /** Huawei packet attribute (TLV). */
     public static class Attribute {

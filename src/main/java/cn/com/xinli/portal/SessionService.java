@@ -12,15 +12,6 @@ import java.util.Optional;
  */
 public interface SessionService {
     /**
-     * Create a new portal session.
-     *
-     * @param session session to create.
-     * @return session message.
-     * @throws PortalException
-     */
-    Message<Session> createSession(Nas nas, Session session) throws IOException;
-
-    /**
      * Get session by id.
      *
      * @param id session id.
@@ -28,14 +19,6 @@ public interface SessionService {
      * @throws SessionNotFoundException
      */
     Session getSession(long id) throws SessionNotFoundException;
-
-    /**
-     * Remove session by id.
-     * @param id session id.
-     * @return session message.
-     * @throws SessionNotFoundException
-     */
-    Message<Session> removeSession(long id) throws SessionNotFoundException;
 
     /**
      * Find session by ip and mac.
@@ -57,5 +40,5 @@ public interface SessionService {
      * Remove session by ip address.
      * @param ip ip address.
      */
-    Message removeSession(String ip);
+    Message<?> removeSession(String ip);
 }

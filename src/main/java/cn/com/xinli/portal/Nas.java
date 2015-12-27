@@ -1,6 +1,5 @@
 package cn.com.xinli.portal;
 
-import cn.com.xinli.portal.protocol.AuthType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetAddress;
@@ -46,7 +45,7 @@ public interface Nas {
      * Get nas type string.
      * @return nas type string.
      */
-    String getType();
+    NasType getType();
 
     /**
      * Get nas portal listen port.

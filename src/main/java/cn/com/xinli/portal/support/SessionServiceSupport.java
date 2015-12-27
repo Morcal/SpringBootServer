@@ -25,7 +25,7 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/6.
  */
 @Service
-public class SessionServiceSupport implements SessionService, InitializingBean {
+public class SessionServiceSupport implements SessionService, SessionManager, InitializingBean {
     /** Log. */
     private static final Log log = LogFactory.getLog(SessionServiceSupport.class);
 
@@ -62,7 +62,7 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
                 Credentials old = new Credentials(
                         existed.getUsername(), existed.getPassword(), existed.getIp(), existed.getMac());
                 PortalClient client = PortalClients.create(nas);
-                Message message = client.logout(old);
+                Message<?> message = client.logout(old);
                 if (log.isDebugEnabled()) {
                     log.debug(message);
                 }
@@ -78,7 +78,7 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
         }
 
         PortalClient client = PortalClients.create(nas);
-        Message message = client.login(credentials);
+        Message<?> message = client.login(credentials);
         if (log.isDebugEnabled()) {
             log.debug(message);
         }
@@ -117,7 +117,7 @@ public class SessionServiceSupport implements SessionService, InitializingBean {
 
         try {
             PortalClient client = PortalClients.create(nas.get());
-            Message message = client.logout(credentials);
+            Message<?> message = client.logout(credentials);
             if (log.isDebugEnabled()) {
                 log.debug(message);
             }

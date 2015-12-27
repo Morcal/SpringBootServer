@@ -27,7 +27,7 @@
                     <property name="name" value="mock-huawei-nas"/>
                     <property name="ipv4Address" value="192.168.3.26"/>
                     <property name="ipv6Address" value=""/>
-                    <property name="type" value="mock-huawei-nas"/>
+                    <property name="type" value="HuaweiV2"/>
                     <property name="authType" value="CHAP"/>
                     <property name="ipv4start" value="192.168.3.1"/>
                     <property name="ipv4end" value="192.168.3.254"/>

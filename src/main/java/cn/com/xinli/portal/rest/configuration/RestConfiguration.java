@@ -29,13 +29,12 @@ public class RestConfiguration {
     }
 
     @Bean
-    public TokenService accessTokenService() {
+    public AccessTokenService restTokenService() {
         return new AccessTokenService();
     }
 
     @Bean
-    public TokenService sessionTokenService() {
+    public SessionTokenService sessionTokenService() {
         return new SessionTokenService();
     }
-
 }

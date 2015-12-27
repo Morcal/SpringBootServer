@@ -1,14 +1,23 @@
 package cn.com.xinli.portal.protocol;
 
 /**
+ * Portal user credentials.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */
 public class Credentials {
+    /** user name. */
     private final String username;
+
+    /** user password. */
     private final String password;
+
+    /** User ip address. */
     private final String ip;
+
+    /** User mac address. */
     private final String mac;
 
     public Credentials(String username, String password, String ip, String mac) {

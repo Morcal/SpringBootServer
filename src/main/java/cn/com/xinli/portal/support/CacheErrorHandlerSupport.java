@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.rest.auth;
+package cn.com.xinli.portal.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,13 +6,15 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 
 /**
- * Project: portal
+ * Cache error handler.
  *
- * @author zhoupeng 2015/12/12.
+ * Project: xpws
+ *
+ * @author zhoupeng 2015/12/27.
  */
-public class RestCacheErrorHandler implements CacheErrorHandler {
+public class CacheErrorHandlerSupport implements CacheErrorHandler {
     /** Log. */
-    private static final Log log = LogFactory.getLog(RestCacheErrorHandler.class);
+    private static final Log log = LogFactory.getLog(CacheErrorHandlerSupport.class);
 
     @Override
     public void handleCacheGetError(RuntimeException e, Cache cache, Object o) {

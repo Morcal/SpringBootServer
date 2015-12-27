@@ -1,14 +1,6 @@
 package cn.com.xinli.portal.auth;
 
-import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.token.Token;
-
-import javax.security.cert.CertificateException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Authorization Server.
@@ -35,17 +27,4 @@ public interface AuthorizationServer {
      */
     Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken);
 
-    /**
-     * Revoke token.
-     * @param token token to revoke.
-     * @return true if revoked.
-     */
-    boolean revokeToken(Token token);
-
-    /**
-     * Allocate session token.
-     * @param session associated session.
-     * @return session token.
-     */
-    Token allocateToken(Session session);
 }

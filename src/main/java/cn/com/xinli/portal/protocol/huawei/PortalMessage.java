@@ -1,9 +1,9 @@
 package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.Message;
-import cn.com.xinli.portal.protocol.Packet;
 
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Huawei portal message.
@@ -12,7 +12,7 @@ import java.util.*;
  *
  * @author zhoupeng 2015/12/22.
  */
-public class PortalMessage implements Message<Packet> {
+public class PortalMessage implements Message<HuaweiPacket> {
     private boolean success = false;
     private String text;
     private HuaweiPacket packet;
@@ -23,7 +23,7 @@ public class PortalMessage implements Message<Packet> {
     }
 
     @Override
-    public Optional<Packet> getContent() {
+    public Optional<HuaweiPacket> getContent() {
         return Optional.ofNullable(packet);
     }
 
@@ -31,22 +31,6 @@ public class PortalMessage implements Message<Packet> {
     public boolean isSuccess() {
         return success;
     }
-
-//    public static PortalMessage success(String content) {
-//        return build(true, content);
-//    }
-//
-//    public static PortalMessage failure(String content) {
-//        return build(false, content);
-//    }
-//
-//    static PortalMessage build(boolean success, String text) {
-//        PortalMessage message = new PortalMessage();
-//        message.setSuccess(success);
-//        message.setText(text);
-//        message.packet = HuaweiPacket.empty();
-//        return message;
-//    }
 
     private static String buildText(HuaweiPacket packet) {
         try {

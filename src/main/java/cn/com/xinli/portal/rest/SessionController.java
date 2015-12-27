@@ -1,13 +1,13 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.*;
-import cn.com.xinli.portal.auth.AuthorizationServer;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.bean.RestBean;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
-import cn.com.xinli.portal.rest.token.SessionToken;
+import cn.com.xinli.portal.rest.token.RestToken;
+import cn.com.xinli.portal.rest.token.SessionTokenService;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +41,10 @@ public class SessionController {
     private SessionService sessionService;
 
     @Autowired
-    private AuthorizationServer authorizationServer;
+    private SessionManager sessionManager;
+
+    @Autowired
+    private SessionTokenService sessionTokenService;
 
     @Autowired
     private NasMapping nasMapping;
@@ -78,7 +81,8 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSIONS,
             method = RequestMethod.POST)
-    @PreAuthorize(SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE)
+    //@PreAuthorize(SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE)
+    @PreAuthorize("hasRole('USER')")
     public RestBean connect(@RequestParam String username,
                             @RequestParam String password,
                             @RequestParam(name = "user_ip") String ip,
@@ -99,7 +103,7 @@ public class SessionController {
         // Create portal session.
         Session session = buildSession(nas.getId(), username, password, ip, mac, os, version);
         try {
-            Message message = sessionService.createSession(nas, session);
+            Message message = sessionManager.createSession(nas, session);
             if (log.isDebugEnabled()) {
                 log.info(message);
             }
@@ -115,7 +119,7 @@ public class SessionController {
         }
 
         // create session authorization. FIXME session may be removed by other threads.
-        SessionToken token = (SessionToken) authorizationServer.allocateToken(session);
+        RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
         log.info("> " + token.toString() + " created.");
         AccessAuthentication authentication = (AccessAuthentication) principal;
         authentication.setSessionToken(token);
@@ -144,8 +148,7 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.GET)
-    @PreAuthorize("(" + SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE + " and hasAuthority(#session)) " +
-            " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean get(@P("session") @PathVariable long id,
                         @AuthenticationPrincipal Principal principal) {
         Session session = sessionService.getSession(id);
@@ -173,8 +176,7 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.POST)
-    @PreAuthorize("(" + SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE + " and hasAuthority(#session)) " +
-            " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean update(@RequestParam long timestamp,
                            @P("session") @PathVariable long id,
                            @AuthenticationPrincipal Principal principal) {
@@ -209,14 +211,10 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.DELETE)
-    @PreAuthorize("(" + SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE + " and hasAuthority(#session)) " +
-            " or " + SecurityConfiguration.SPRING_EL_SYSTEM_ADM_ROLE)
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean disconnect(@P("session") @PathVariable long id,
                                @AuthenticationPrincipal Principal principal) {
-        AccessAuthentication access = (AccessAuthentication) principal;
-        SessionToken token = access.getSessionToken();
-
-        Message<Session> message = sessionService.removeSession(id);
+        Message<Session> message = sessionManager.removeSession(id);
         if (log.isDebugEnabled()) {
             log.debug(message);
             Session rm = message.getContent().get();
@@ -229,8 +227,6 @@ public class SessionController {
                     .setDescription(message.getText())
                     .build();
         }
-        /* token may expired. */
-        authorizationServer.revokeToken(token);
 
         return RestResponseBuilders.successBuilder()
                 .setAccessAuthentication((AccessAuthentication) principal)
@@ -241,7 +237,7 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSIONS + "/" + ApiConfiguration.REST_API_FIND,
             method = RequestMethod.POST)
-    @PreAuthorize(SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE)
+    @PreAuthorize("hasRole('USER')")
     public RestBean find(@RequestParam(value = "user_ip") String ip,
                          @RequestParam(value = "user_mac", defaultValue = "") String mac,
                          @AuthenticationPrincipal Principal principal) {
@@ -252,15 +248,8 @@ public class SessionController {
 
         /* Revoke current session token if present. */
         AccessAuthentication authentication = (AccessAuthentication) principal;
-        if (authentication.getSessionToken() != null) {
-            authorizationServer.revokeToken(authentication.getSessionToken());
-            if (log.isDebugEnabled()) {
-                log.debug("> session token: " + authentication.getSessionToken() + " revoked.");
-            }
-        }
-
         /* reallocate a new session token. */
-        SessionToken token = (SessionToken) authorizationServer.allocateToken(session);
+        RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
         authentication.setSessionToken(token);
         if (log.isDebugEnabled()) {
             log.debug("> new session token: " + token + " allocated.");

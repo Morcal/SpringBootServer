@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public interface PortalClient {
 
-    Message login(Credentials credentials) throws IOException;
+    Message<?> login(Credentials credentials) throws IOException;
 
-    Message logout(Credentials credentials) throws IOException;
+    Message<?> logout(Credentials credentials) throws IOException;
 }

@@ -1,12 +1,17 @@
 package cn.com.xinli.portal.protocol.support;
 
+import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.Message;
-import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.protocol.*;
+import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.protocol.Packet;
+import cn.com.xinli.portal.protocol.PortalClient;
+import cn.com.xinli.portal.protocol.UnsupportedAuthenticationTypeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Optional;
 
 /**
@@ -20,11 +25,11 @@ public abstract class AbstractPortalClient implements PortalClient {
     /** Log. */
     private static final Log log = LogFactory.getLog(AbstractPortalClient.class);
 
-    /** Associated NAS. */
-    protected final Nas nas;
+    /** Portal client authentication type. */
+    protected final AuthType authType;
 
-    public AbstractPortalClient(Nas nas) {
-        this.nas = nas;
+    public AbstractPortalClient(AuthType authType) {
+        this.authType = authType;
     }
 
     /**
@@ -41,7 +46,7 @@ public abstract class AbstractPortalClient implements PortalClient {
      * @param credentials user credentials.
      * @return challenge request packet.
      */
-    protected abstract Packet createChapReqPacket(Credentials credentials);
+    protected abstract Packet createChapReqPacket(Credentials credentials) throws IOException;
 
     /**
      * Create CHAP authentication packet.
@@ -63,28 +68,76 @@ public abstract class AbstractPortalClient implements PortalClient {
     /**
      * Create logout request packet.
      *
-     * @param authType    authentication type.
      * @param credentials user credentials.
      * @return logout request packet, or null if ip address in credentials is unknown.
      */
-    protected abstract Packet createLogoutPacket(AuthType authType, Credentials credentials) throws IOException;
+    protected abstract Packet createLogoutPacket(Credentials credentials) throws IOException;
 
+    /**
+     * Handle CHAP request not respond.
+     * @param request request.
+     * @return message.
+     * @throws IOException
+     */
+    protected abstract Message<?> onChapRequestNotRespond(Packet request) throws IOException;
 
-    protected abstract Message<Packet> handleChapRequestNotRespond(Packet request) throws IOException;
+    /**
+     * Handle authentication request not respond.
+     * @param request request.
+     * @return message.
+     * @throws IOException
+     */
+    protected abstract Message<?> onAuthenticationNotRespond(Packet request) throws IOException;
 
-    protected abstract Message<Packet> handleAuthenticationNotRespond(Packet request) throws IOException;
+    /**
+     * Handle authentication response.
+     * @param response response.
+     * @return message.
+     * @throws IOException
+     */
+    protected abstract Message<?> onAuthenticationResponse(Packet response) throws IOException;
 
-    protected abstract Message<Packet> handleAuthenticationResponse(Packet response) throws IOException;
+    /**
+     * Handle logout response.
+     * @param response response.
+     * @return message.
+     * @throws IOException
+     */
+    protected abstract Message<?> onLogoutResponse(Packet response) throws IOException;
 
-    protected abstract Message<Packet> handleLogoutResponse(Packet response) throws IOException;
+    /**
+     * Handle logout not respond.
+     * @param request request.
+     * @return message.
+     * @throws IOException
+     */
+    protected abstract Message<?> onLogoutNotRespond(Packet request) throws IOException;
 
-    protected abstract Message<Packet> handleLogoutNotRespond(Packet request) throws IOException;
+    private boolean validateCredentials(Credentials credentials) {
+        if (credentials == null) {
+            return false;
+        }
+
+        String ip = credentials.getIp();
+
+        try {
+            return InetAddress.getByName(ip) != null;
+        } catch (UnknownHostException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Invalid ip: " + ip);
+            }
+            return false;
+        }
+    }
 
     @Override
-    public Message<Packet> login(Credentials credentials) throws IOException {
-        AuthType authType = nas.getAuthType();
+    public Message<?> login(Credentials credentials) throws IOException {
+        if (!validateCredentials(credentials)) {
+            return Message.of(null, false, "Invalid credentials.");
+        }
+
         Optional<Packet> response;
-        Packet authRequest;
+        Packet request;
 
         switch (authType) {
             case CHAP:
@@ -92,38 +145,41 @@ public abstract class AbstractPortalClient implements PortalClient {
                 response = request(challenge);
                 if (!response.isPresent()) {
                     /* Not respond, send timeout NAK, reqId = 0. */
-                    return handleChapRequestNotRespond(challenge);
+                    return onChapRequestNotRespond(challenge);
                 }
 
                 Packet chapAck = response.get();
-                authRequest = createChapAuthPacket(chapAck, credentials);
-                response = request(authRequest);
+                request = createChapAuthPacket(chapAck, credentials);
+                response = request(request);
                 break;
 
             case PAP:
-                authRequest = createPapAuthPacket(credentials);
-                response = request(authRequest);
+                request = createPapAuthPacket(credentials);
+                response = request(request);
                 break;
 
             default:
-                throw new PortalProtocolException("Unsupported authentication type: " + authType);
+                throw new UnsupportedAuthenticationTypeException(authType);
         }
 
         /* Check authentication response. */
         if (response.isPresent()) {
             log.debug("> Handle authentication response.");
-            return handleAuthenticationResponse(response.get());
+            return onAuthenticationResponse(response.get());
         } else {
             log.debug("> Handle authentication timeout.");
-            return handleAuthenticationNotRespond(authRequest);
+            return onAuthenticationNotRespond(request);
         }
     }
 
     @Override
-    public Message<Packet> logout(Credentials credentials) throws IOException {
-        AuthType authType = nas.getAuthType();
+    public Message<?> logout(Credentials credentials) throws IOException {
+        if (!validateCredentials(credentials)) {
+            return Message.of(null, false, "Invalid credentials.");
+        }
+
         /* Create portal request to logout. */
-        Packet logout = createLogoutPacket(authType, credentials);
+        Packet logout = createLogoutPacket(credentials);
         if (logout == null) {
             log.warn("+ Failed to create logout.");
             return Message.of(null ,false, "Failed to create logout request.");
@@ -133,10 +189,10 @@ public abstract class AbstractPortalClient implements PortalClient {
 
         if (!response.isPresent()) {
             log.debug("> Handle logout timeout.");
-            return handleLogoutNotRespond(logout);
+            return onLogoutNotRespond(logout);
         } else {
             log.debug("> Handle logout response.");
-            return handleLogoutResponse(response.get());
+            return onLogoutResponse(response.get());
         }
     }
 }

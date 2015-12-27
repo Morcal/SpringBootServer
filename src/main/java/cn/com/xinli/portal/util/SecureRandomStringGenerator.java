@@ -44,17 +44,6 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
 
     /**
      * {@inheritDoc}
-     * Generate an unique secure 32 characters random string.
-     *
-     * @return an unique secure 32 characters random string.
-     */
-    @Override
-    public String generateUniqueRandomString() {
-        return generateUniqueRandomString(32);
-    }
-
-    /**
-     * {@inheritDoc}
      * <p>
      * Each ASCII character takes '5' bits.
      * <code>2^5 = 32</code>.

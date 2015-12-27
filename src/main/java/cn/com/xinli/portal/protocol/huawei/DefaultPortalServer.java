@@ -7,9 +7,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 
 /**
  * Default portal server.
@@ -68,10 +69,10 @@ public class DefaultPortalServer  {
         }
 
         @Override
-        protected void handlePacket(DatagramSocket socket, DatagramPacket packet) {
+        protected void handlePacket(ByteBuffer buffer, SocketAddress remote) {
             try {
-                if (HuaweiCodecFactory.verify(packet, sharedSecret)) {
-                    HuaweiPacket in = (HuaweiPacket) codecFactory.getDecoder().decode(packet, sharedSecret);
+                if (HuaweiCodecFactory.verify(buffer, sharedSecret)) {
+                    HuaweiPacket in = codecFactory.getDecoder().decode(buffer, sharedSecret);
                     byte[] ip = in.getIp();
                     //byte[] mac = in.getAttribute(Enums.Attribute.USER_MAC);
                     String address = InetAddress.getByAddress(ip).getHostAddress();
@@ -86,8 +87,13 @@ public class DefaultPortalServer  {
         }
 
         @Override
-        protected boolean verifyPacket(DatagramPacket packet) throws IOException {
-            return HuaweiCodecFactory.verify(packet, sharedSecret);
+        protected ByteBuffer createReceiveBuffer() {
+            return ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+        }
+
+        @Override
+        protected boolean verifyPacket(ByteBuffer buffer) throws IOException {
+            return HuaweiCodecFactory.verify(buffer, sharedSecret);
         }
     }
 

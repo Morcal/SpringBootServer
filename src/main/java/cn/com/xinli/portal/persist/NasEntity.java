@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.persist;
 
 import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.AuthType;
+import cn.com.xinli.portal.NasType;
 
 import javax.persistence.*;
 
@@ -31,7 +32,7 @@ public class NasEntity implements Nas {
 
     /** Nas type. */
     @Column
-    private String type;
+    private NasType type;
 
     /** Portal listen port. */
     @Column
@@ -125,11 +126,11 @@ public class NasEntity implements Nas {
     }
 
     @Override
-    public String getType() {
+    public NasType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(NasType type) {
         this.type = type;
     }
 
@@ -150,7 +151,7 @@ public class NasEntity implements Nas {
                 ", nasId='" + nasId + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
-                ", type='" + type + '\'' +
+                ", type=" + type +
                 ", listenPort=" + listenPort +
                 ", sharedSecret='" + sharedSecret + '\'' +
                 ", ipv4start=" + ipv4start +

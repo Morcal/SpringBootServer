@@ -3,19 +3,18 @@ package cn.com.xinli.portal.protocol.huawei;
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.persist.SessionEntity;
-import cn.com.xinli.portal.protocol.AuthType;
-import cn.com.xinli.portal.protocol.CodecFactory;
-import cn.com.xinli.portal.protocol.Packet;
+import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.protocol.support.AbstractDatagramServer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.crypto.codec.Hex;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +46,7 @@ public class HuaweiNas {
 
     private final InMemorySessionService sessionService;
 
-    private final CodecFactory codecFactory;
+    private final HuaweiCodecFactory codecFactory;
 
     private final PortalServer portalServer;
 
@@ -59,7 +58,9 @@ public class HuaweiNas {
 
     private final PriorityBlockingQueue<Challenge> challenges;
 
-    private final AtomicLong challengeId = new AtomicLong(0);
+    private final static AtomicLong challengeId = new AtomicLong(0);
+
+    private final Object challengeSignal = new Object();
 
     public HuaweiNas(Nas nas) {
         this.nas = nas;
@@ -73,50 +74,69 @@ public class HuaweiNas {
         this.challenges = new PriorityBlockingQueue<>(256, new ChallengeComparator());
     }
 
+    /**
+     * Get next request id.
+     * @return request id.
+     */
     private static int nextReqId() {
         return reqId.updateAndGet(i -> (i >= Short.MAX_VALUE - 1 ? 0 : i + 1));
     }
 
-    private void handleLogout(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
-        requestMapping.remove(in.getIp());
-        Session session = sessionService.removeSession(in.getIp());
-        Packet response = Utils.createLogoutResponsePacket(nas.getInetAddress(), session, in);
-        DatagramPacket out = codecFactory.getEncoder()
-                .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
-        socket.send(out);
+    /**
+     * Convert ip address in a byte array to a hex string.
+     * @param ip ip address.
+     * @return hex string.
+     */
+    private static String ipHexString(byte[] ip) {
+        return new String(Hex.encode(ip));
+    }
+
+    private void handleLogout(DatagramChannel channel,
+                              HuaweiPacket request,
+                              SocketAddress remote) throws IOException {
+        String ip = ipHexString(request.getIp());
+        requestMapping.remove(ip);
+        Session session = sessionService.removeSession(ip);
+        Enums.LogoutError error = session == null ? Enums.LogoutError.GONE : Enums.LogoutError.OK;
+        channel.send(
+                codecFactory.getEncoder().encode(
+                        request.getAuthenticator(),
+                        Packets.newLogoutAck(nas.getInetAddress(), error, request),
+                        nas.getSharedSecret()),
+                remote);
 
         if (log.isDebugEnabled()) {
-            log.debug("> [NAS] logout, result: " + response.isSuccess() + ", sent.");
+            log.debug("> [NAS] logout, " + error.getDescription() + ", sent.");
         }
     }
 
-    private boolean authenticate(HuaweiPacket in) throws IOException {
-        Collection<HuaweiPacket.Attribute> attributes = in.getAttributes();
+    private Enums.AuthError authenticate(HuaweiPacket request) throws IOException {
+        Collection<HuaweiPacket.Attribute> attributes = request.getAttributes();
         Optional<HuaweiPacket.Attribute> username = attributes.stream()
                 .filter(attr -> attr.getType() == Enums.Attribute.USER_NAME.code())
                 .findFirst();
 
         if (!username.isPresent())
-            return false;
+            return Enums.AuthError.FAILED;
 
         String user = new String(username.get().getValue()),
                 passwd = userCredentials.get(user);
 
         boolean authenticated = false;
-        switch (AuthType.valueOf(in.getAuthType())) {
+        switch (AuthType.valueOf(request.getAuthType())) {
             case CHAP:
                 Optional<HuaweiPacket.Attribute> chapPwd = attributes.stream()
                         .filter(attr -> attr.getType() == Enums.Attribute.CHALLENGE_PASSWORD.code())
                         .findFirst();
-                Challenge challenge = challengeMapping.get(in.getReqId());
+                Challenge challenge = challengeMapping.get(request.getReqId());
                 if (challenge == null) {
                     log.warn("* [NAS] challenge not found.");
-                    return false;
+                    return Enums.AuthError.REJECTED;
                 }
 
                 authenticated = chapPwd.isPresent() && passwd != null &&
-                        Arrays.equals(Utils.createChapPassword(
-                                in.getReqId(),
+                        Arrays.equals(Packets.newChapPassword(
+                                request.getReqId(),
                                 userCredentials.get(user),
                                 challenge.value.getBytes()), chapPwd.get().getValue());
                 break;
@@ -133,13 +153,15 @@ public class HuaweiNas {
                 break;
         }
 
-        return authenticated;
+        return authenticated ? Enums.AuthError.OK : Enums.AuthError.REJECTED;
     }
 
-    private void handleAuth(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
+    private void handleAuth(DatagramChannel channel,
+                            HuaweiPacket request,
+                            SocketAddress remote) throws IOException {
         Integer reqId;
-        AuthType authType = AuthType.valueOf(in.getAuthType());
-        String ip = Utils.ipHexString(in.getIp());
+        AuthType authType = AuthType.valueOf(request.getAuthType());
+        String ip = ipHexString(request.getIp());
         switch (authType) {
             case CHAP:
                 reqId = requestMapping.get(ip);
@@ -148,7 +170,7 @@ public class HuaweiNas {
                     return;
                 }
 
-                if (reqId != in.getReqId()) {
+                if (reqId != request.getReqId()) {
                     log.warn("* [NAS] mismatched request id.");
                     return;
                 }
@@ -160,50 +182,65 @@ public class HuaweiNas {
                 break;
 
             default:
-                log.error("* [NAS] Unsupported authentication type, code: " + in.getAuthType());
+                log.error("* [NAS] Unsupported authentication type, code: " + request.getAuthType());
                 return;
         }
 
-        boolean authenticated = authenticate(in);
+        Enums.AuthError error = authenticate(request);
 
-        if (authenticated) {
-            sessionService.createSession(in.getIp());
+        if (error == Enums.AuthError.OK) {
+            sessionService.createSession(ip);
         }
 
-        Packet response = Utils.createAuthenticationResponsePacket(reqId, authenticated, in);
+        channel.send(
+                codecFactory.getEncoder().encode(
+                        request.getAuthenticator(),
+                        Packets.newAuthAck(nas.getInetAddress(), reqId, error, request),
+                        nas.getSharedSecret()),
+                remote);
 
-        try {
-            DatagramPacket out = codecFactory.getEncoder()
-                    .encode(
-                            in.getAuthenticator(),
-                            response,
-                            remote,
-                            port,
-                            nas.getSharedSecret());
-            socket.send(out);
-            if (log.isDebugEnabled()) {
-                log.debug("> [NAS] authenticated: " + authenticated + ", result sent.");
-            }
-        } catch (IOException e) {
-            log.error(e);
+        if (log.isDebugEnabled()) {
+            log.debug("> [NAS] authentication " + error.getDescription() + " sent.");
         }
     }
 
-    private void handleChallenge(DatagramSocket socket, HuaweiPacket in, InetAddress remote, int port) throws IOException {
+    private void handleChallenge(DatagramChannel channel,
+                                 HuaweiPacket request,
+                                 SocketAddress remote) throws IOException {
         int reqId = nextReqId();
-        String ip = Utils.ipHexString(in.getIp());
+        String ip = ipHexString(request.getIp());
 
-        requestMapping.put(ip, reqId);
-        /* Create challenge. */
-        Challenge challenge = createChallenge(reqId);
+        Session session = sessionService.getSession(ip);
+        HuaweiPacket ack;
+        Enums.ChallengeError error;
+        if (session != null) {
+            error = Enums.ChallengeError.ALREADY_ONLINE;
+            ack = Packets.newChallengeAck(
+                    nas.getInetAddress(), "", request.getReqId(), error, request);
+        } else {
+            requestMapping.put(ip, reqId);
 
-        Packet response = Utils.createChallengeResponsePacket(nas.getInetAddress(), challenge.value, reqId, in);
-        DatagramPacket out = codecFactory.getEncoder()
-                .encode(in.getAuthenticator(), response, remote, port, nas.getSharedSecret());
-        socket.send(out);
+            if (log.isDebugEnabled()) {
+                log.debug("> [NAS] CHAP mapped, ip: " + ip + ", response sent.");
+            }
+
+            /* Create challenge. */
+            Challenge challenge = createChallenge(reqId);
+            error = Enums.ChallengeError.OK;
+
+            ack = Packets.newChallengeAck(
+                    nas.getInetAddress(), challenge.value, reqId, error, request);
+            if (log.isDebugEnabled()) {
+                log.debug("> [NAS] challenge created: " + challenge.value);
+            }
+        }
+
+        channel.send(
+                codecFactory.getEncoder().encode(request.getAuthenticator(), ack, nas.getSharedSecret()),
+                remote);
 
         if (log.isDebugEnabled()) {
-            log.debug("> [NAS] CHAP mapped, ip: " + ip + ", response sent.");
+            log.debug("> [NAS] challenge " + error.getDescription() + " sent.");
         }
     }
 
@@ -218,26 +255,31 @@ public class HuaweiNas {
         while (!shutdown) {
             try {
                 Challenge challenge = challenges.take();
+                if (challenge.isEmpty())
+                    break;
 
                 long now = System.currentTimeMillis();
                 long remaining = CHALLENGE_TTL * 1000L - (now - challenge.createTime);
-                if (remaining > 200L) {
+                if (remaining < 0L) {
+                    /* Remove challenge mapping. */
+                    log.info("> [NAS] challenge expired: " + challenge.reqId);
+                    challengeMapping.remove(challenge.reqId);
+                } else {
                     /*
                      * Put challenge back to queue.
                      * If other thread is checking mapping, it's ok.
                      */
                     challenges.offer(challenge);
-                    /* There's some time remaining, no need to poll that soon. */
-                    Thread.sleep(remaining);
-                } else if (remaining < 0L) {
-                    /* Remove challenge mapping. */
-                    challengeMapping.remove(challenge.reqId);
+                    synchronized (challengeSignal) {
+                        challengeSignal.wait(remaining);
+                    }
                 }
             } catch (InterruptedException e) {
                 log.warn(e.getMessage());
                 break;
             }
         }
+        log.info("> [NAS] challenge eviction quit.");
     }
 
     public void start() throws IOException {
@@ -247,8 +289,16 @@ public class HuaweiNas {
     }
 
     public void shutdown() {
-        this.shutdown = true;
-        this.portalServer.shutdown();
+        shutdown = true;
+        log.info("> [NAS] Shutting down.");
+        /* Wake up eviction by putting an empty challenge. */
+        challenges.offer(Challenge.empty());
+
+        synchronized (challengeSignal) {
+            challengeSignal.notify();
+        }
+
+        portalServer.shutdown();
         try {
             executorService.shutdown();
             executorService.awaitTermination(3, TimeUnit.SECONDS);
@@ -258,19 +308,32 @@ public class HuaweiNas {
             executorService.shutdownNow();
         }
 
+        log.info("> [NAS] quit.");
     }
 
-    class Challenge {
+
+
+    static class Challenge {
         int reqId;
         long id;
         long createTime;
         String value;
+
+        private static final Challenge EMPTY = new Challenge(-1);
+
+        static Challenge empty() {
+            return EMPTY;
+        }
 
         public Challenge(int reqId) {
             this.reqId = reqId;
             id = challengeId.incrementAndGet();
             createTime = System.currentTimeMillis();
             value = RandomStringUtils.randomAlphanumeric(16);
+        }
+
+        boolean isEmpty() {
+            return equals(EMPTY);
         }
 
         @Override
@@ -308,23 +371,26 @@ public class HuaweiNas {
 
         private Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-        public Session createSession(byte[] ip) {
-            String tar = Utils.ipHexString(ip);
+        public Session createSession(String ip) {
             Session session = sessions.get(ip);
             if (session != null)
                 return session;
 
             SessionEntity entity = new SessionEntity();
             entity.setId(sessionId.incrementAndGet());
-            entity.setDevice(new String(ip));
+            entity.setDevice(ip);
             entity.setNasId(nas.getId());
 
-            sessions.put(tar, entity);
+            sessions.put(ip, entity);
             return entity;
         }
 
-        public Session removeSession(byte[] ip) {
-            return sessions.remove(Utils.ipHexString(ip));
+        public Session getSession(String ip) {
+            return sessions.get(ip);
+        }
+
+        public Session removeSession(String ip) {
+            return sessions.remove(ip);
         }
 
     }
@@ -334,33 +400,41 @@ public class HuaweiNas {
             super(port);
         }
 
+        /**
+         * {@inheritDoc}
+         *
+         * Since {@link AbstractDatagramServer} assumes that incoming packet will
+         * be received once, we only check if that packet is a valid huawei portal
+         * request packet.
+         * @param buffer incoming datagram buffer.
+         * @return true if incoming datagram packet is a valid huawei portal request.
+         * @throws IOException
+         */
         @Override
-        protected boolean verifyPacket(DatagramPacket packet) throws IOException {
-            byte[] data = packet.getData();
+        protected boolean verifyPacket(ByteBuffer buffer) throws IOException {
+            byte[] data = buffer.array();
             /* Huawei v1 and v2 has a minimum length at 16. */
-            return !(data == null || data.length < 16) && (data[0] != V2.Version || HuaweiCodecFactory.verify(packet, nas.getSharedSecret()));
+            return !(data.length < 16) &&
+                    (data[0] != Enums.Version.v2.value() || HuaweiCodecFactory.verify(buffer, nas.getSharedSecret()));
         }
 
         @Override
-        protected void handlePacket(DatagramSocket socket, DatagramPacket packet) {
+        protected void handlePacket(ByteBuffer buffer, SocketAddress remote) {
             try {
-                HuaweiPacket in = (HuaweiPacket) codecFactory.getDecoder()
-                        .decode(packet, nas.getSharedSecret());
-                InetAddress remote = packet.getAddress();
-                int port = packet.getPort();
+                HuaweiPacket in = codecFactory.getDecoder().decode(buffer, nas.getSharedSecret());
                 Optional<Enums.Type> type = Enums.Type.valueOf(in.getType());
                 if (type.isPresent()) {
                     switch (type.get()) {
                         case REQ_CHALLENGE:
-                            handleChallenge(socket, in, remote, port);
+                            handleChallenge(channel, in, remote);
                             break;
 
                         case REQ_AUTH:
-                            handleAuth(socket, in, remote, port);
+                            handleAuth(channel , in, remote);
                             break;
 
                         case REQ_LOGOUT:
-                            handleLogout(socket, in, remote, port);
+                            handleLogout(channel, in, remote);
                             break;
 
                         case AFF_ACK_AUTH:
@@ -378,5 +452,12 @@ public class HuaweiNas {
                 }
             }
         }
+
+        @Override
+        protected ByteBuffer createReceiveBuffer() {
+            return ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+        }
+
+
     }
 }

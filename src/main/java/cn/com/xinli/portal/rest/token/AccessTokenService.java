@@ -1,39 +1,35 @@
 package cn.com.xinli.portal.rest.token;
 
-import cn.com.xinli.portal.rest.configuration.CachingConfiguration;
-import net.sf.ehcache.Ehcache;
+import cn.com.xinli.portal.auth.CertificateService;
+import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.token.Token;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
+ * REST Access token service.
+ *
  * Project: portal
  *
- * @author zhoupeng 2015/12/11.
+ * @author zhoupeng 2015/12/13.
  */
 @Service
 public class AccessTokenService extends AbstractTokenService {
+
     @Autowired
-    private Ehcache accessTokenCache;
+    private CertificateService certificateService;
 
     @Override
-    protected Ehcache getCache() {
-        return accessTokenCache;
+    protected TokenScope getTokenScope() {
+        return TokenScope.PORTAL_ACCESS_TOKEN_SCOPE;
     }
 
     @Override
-    protected int getTokenTtl() {
-        return CachingConfiguration.ACCESS_TOKEN_TTL;
+    protected boolean verifyExtendedInformation(String extendedInformation) {
+        return certificateService.isCertified(extendedInformation);
     }
 
     @Override
-    protected Token createToken(String key, String extendedInformation) {
-        return new AccessToken(key, extendedInformation);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        Assert.notNull(accessTokenCache);
+    protected int getTtl() {
+        return SecurityConfiguration.ACCESS_TOKEN_TTL;
     }
 }

@@ -12,6 +12,8 @@ public class ServerConfig {
     private String privateKey;
     private boolean requiresKeepalive;
     private int keepaliveInterval;
+    private boolean enableSessionTtl;
+    private int sessionTtl;
     private String derbyScheme;
     private boolean useDerbyMemDb;
     private String initSql;
@@ -26,6 +28,7 @@ public class ServerConfig {
     private String portalServerSharedSecret;
     private String portalServerHuaweiVersion;
     private String serverIpAddress;
+    private int challengeTtl;
 
     public boolean useDerbyMemDb() {
         return useDerbyMemDb;
@@ -179,6 +182,30 @@ public class ServerConfig {
         this.serverIpAddress = serverIpAddress;
     }
 
+    public boolean isEnableSessionTtl() {
+        return enableSessionTtl;
+    }
+
+    public void setEnableSessionTtl(boolean enableSessionTtl) {
+        this.enableSessionTtl = enableSessionTtl;
+    }
+
+    public int getSessionTtl() {
+        return sessionTtl;
+    }
+
+    public void setSessionTtl(int sessionTtl) {
+        this.sessionTtl = sessionTtl;
+    }
+
+    public int getChallengeTtl() {
+        return challengeTtl;
+    }
+
+    public void setChallengeTtl(int challengeTtl) {
+        this.challengeTtl = challengeTtl;
+    }
+
     @Override
     public String toString() {
         return "ServerConfig{" +
@@ -187,6 +214,8 @@ public class ServerConfig {
                 ", privateKey='" + privateKey + '\'' +
                 ", requiresKeepalive=" + requiresKeepalive +
                 ", keepaliveInterval=" + keepaliveInterval +
+                ", enableSessionTtl=" + enableSessionTtl +
+                ", sessionTtl=" + sessionTtl +
                 ", derbyScheme='" + derbyScheme + '\'' +
                 ", useDerbyMemDb=" + useDerbyMemDb +
                 ", initSql='" + initSql + '\'' +
@@ -198,8 +227,9 @@ public class ServerConfig {
                 ", portalServerListenPort=" + portalServerListenPort +
                 ", portalServerThreadSize=" + portalServerThreadSize +
                 ", portalServerSharedSecret='" + portalServerSharedSecret + '\'' +
-                ", portalServerHuaweiVersion=" + portalServerHuaweiVersion +
+                ", portalServerHuaweiVersion='" + portalServerHuaweiVersion + '\'' +
                 ", serverIpAddress='" + serverIpAddress + '\'' +
+                ", challengeTtl=" + challengeTtl +
                 '}';
     }
 }

@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.rest.configuration;
 
+import cn.com.xinli.portal.rest.token.TokenScope;
 import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
@@ -45,18 +46,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private Provider restApiProvider;
 
-    public static final String PORTAL_USER_ROLE = "ROLE_USER";
-    public static final String SYSTEM_ADMIN_ROLE = "ROLE_SYSADM";
-    public static final String SESSION_TOKEN_SCOPE = "portal-session";
+    public static final String PORTAL_USER_ROLE = RestRole.ROLE_USER.name();
+    public static final String SYSTEM_ADMIN_ROLE = RestRole.ROLE_SYSTEM_ADMIN.name();
     public static final String TOKEN_TYPE = "Bearer";
-
-    public static final String SPRING_EL_PORTAL_USER_ROLE = " hasRole('" + PORTAL_USER_ROLE + "') ";
-    public static final String SPRING_EL_SYSTEM_ADM_ROLE = " hasRole('" + SYSTEM_ADMIN_ROLE + "') ";
 
     /** Challenge response type. */
     public static final String CHALLENGE_RESPONSE_TYPE = "challenge";
 
     public static final long MAX_TIME_DIFF = 1800; // seconds.
+
+    public static final long EHCACHE_VERSION = 1L;
+    public static final int ACCESS_TOKEN_TTL = 35;
+    public static final int SESSION_TOKEN_TTL = 35;
+    public static final int CHALLENGE_TTL = 35;
 
     @Bean
     public AuthenticationEntryPoint restAuthenticationEntryPoint() {

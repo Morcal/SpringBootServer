@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.rest.auth;
 
-import cn.com.xinli.portal.rest.token.AccessToken;
-import cn.com.xinli.portal.rest.token.SessionToken;
+import cn.com.xinli.portal.rest.token.RestToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
@@ -19,10 +18,10 @@ import java.util.Collection;
  */
 public class AccessAuthentication extends AbstractAuthentication {
     /** Associated session token. */
-    private SessionToken sessionToken;
+    private RestToken sessionToken;
 
     /** Associated access token. */
-    private AccessToken accessToken;
+    private RestToken accessToken;
 
     public AccessAuthentication(Collection<? extends GrantedAuthority> authorities,
                                 String principal, HttpDigestCredentials credentials) {
@@ -33,19 +32,19 @@ public class AccessAuthentication extends AbstractAuthentication {
         this(AuthorityUtils.NO_AUTHORITIES, principal, credentials);
     }
 
-    public void setAccessToken(AccessToken accessToken) {
+    public void setAccessToken(RestToken accessToken) {
         this.accessToken = accessToken;
     }
 
-    public void setSessionToken(SessionToken sessionSessionToken) {
+    public void setSessionToken(RestToken sessionSessionToken) {
         this.sessionToken = sessionSessionToken;
     }
 
-    public SessionToken getSessionToken() {
+    public RestToken getSessionToken() {
         return sessionToken;
     }
 
-    public AccessToken getAccessToken() {
+    public RestToken getAccessToken() {
         return accessToken;
     }
 }
