@@ -7,8 +7,8 @@ import cn.com.xinli.portal.PortalException;
  *
  * @author zhoupeng 2015/12/21.
  */
-public class OutOfRangeUpdateException extends PortalException {
-    public OutOfRangeUpdateException(String message) {
+public class UpdateOutOfRangeException extends PortalException {
+    public UpdateOutOfRangeException(String message) {
         super(message);
     }
 }

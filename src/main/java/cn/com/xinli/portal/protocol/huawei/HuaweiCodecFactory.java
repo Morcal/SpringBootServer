@@ -2,8 +2,8 @@ package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.protocol.CodecFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -24,17 +24,17 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(HuaweiCodecFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(HuaweiCodecFactory.class);
 
     /**
      * Decoder.
      */
-    private static final DatagramDecoder<HuaweiPacket> decoder = new Decoder();
+    private final DatagramDecoder<HuaweiPacket> decoder = new Decoder();
 
     /**
      * Encoder.
      */
-    private static final DatagramEncoder<HuaweiPacket> encoder = new Encoder();
+    private final DatagramEncoder<HuaweiPacket> encoder = new Encoder();
 
     @Override
     public DatagramDecoder<HuaweiPacket> getDecoder() {
@@ -180,7 +180,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
 
     }
 
-    static class Encoder implements CodecFactory.DatagramEncoder<HuaweiPacket> {
+    class Encoder implements CodecFactory.DatagramEncoder<HuaweiPacket> {
         /**
          * Write attributes from a {@link HuaweiPacket} to a {@link DataOutputStream}.
          *
@@ -279,7 +279,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
         }
     }
 
-    static class Decoder implements CodecFactory.DatagramDecoder<HuaweiPacket> {
+    class Decoder implements CodecFactory.DatagramDecoder<HuaweiPacket> {
 
         /**
          * Read {@link HuaweiPacket} from input stream.
@@ -323,7 +323,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
             if (ver == Enums.Version.v2.value()) {
                 buffer.rewind();
                 if (!verify(authenticator, buffer, sharedSecret)) {
-                    log.warn("Invalid Huawei portal packet received.");
+                    HuaweiCodecFactory.this.logger.warn("Invalid Huawei portal packet received.");
                     return null;
                 }
             }

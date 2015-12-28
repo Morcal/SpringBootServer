@@ -24,7 +24,7 @@ public class HuaweiNasTest extends TestBase {
     Nas nas = null;
     PortalClient client;
     Credentials credentials;
-    final int CONCURRENT_SIZE = 10, RUN_TIMES = 100;
+    final int CONCURRENT_SIZE = 10, RUN_TIMES = 1000;
     ExecutorService executorService;
 
     @Before
@@ -84,7 +84,7 @@ public class HuaweiNasTest extends TestBase {
                 try {
                     this.concurrentRun(credentials);
                 } catch (IOException e) {
-                    log.error(e);
+                    logger.error("Concurrent access error", e);
                 }
             });
         }
@@ -96,10 +96,15 @@ public class HuaweiNasTest extends TestBase {
         HuaweiNas server = new HuaweiNas(this.nas);
         server.start();
 
+        long now = System.currentTimeMillis();
         concurrentAccess();
 
         executorService.shutdown();
         executorService.awaitTermination(10L, TimeUnit.SECONDS);
+
+        now = System.currentTimeMillis() - now;
+        logger.warn("Testing run in {} threads, with {} times each, cost {} milliseconds.",
+                CONCURRENT_SIZE, RUN_TIMES, now);
 
 
         server.shutdown();

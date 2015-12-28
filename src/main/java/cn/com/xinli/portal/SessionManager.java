@@ -1,7 +1,5 @@
 package cn.com.xinli.portal;
 
-import java.io.IOException;
-
 /**
  * Session manager.
  *
@@ -15,15 +13,19 @@ public interface SessionManager {
      *
      * @param session session to create.
      * @return session message.
-     * @throws PortalException
+     * @throws SessionNotFoundException
+     * @throws SessionOperationException
+     * @throws NasNotFoundException
      */
-    Message<Session> createSession(Nas nas, Session session) throws IOException;
+    Message<Session> createSession(Nas nas, Session session) throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
 
     /**
      * Remove session by id.
      * @param id session id.
      * @return session message.
      * @throws SessionNotFoundException
+     * @throws NasNotFoundException
+     * @throws SessionOperationException
      */
-    Message<Session> removeSession(long id) throws SessionNotFoundException;
+    Message<Session> removeSession(long id) throws SessionNotFoundException, NasNotFoundException, SessionOperationException;
 }

@@ -1,14 +1,15 @@
 package cn.com.xinli.portal.rest.auth.challenge;
 
 import cn.com.xinli.portal.auth.Certificate;
+import cn.com.xinli.portal.auth.CertificateNotFoundException;
 import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.rest.Constants;
 import cn.com.xinli.portal.rest.auth.SignatureUtil;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class EhCacheChallengeManager implements ChallengeService {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(EhCacheChallengeManager.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(EhCacheChallengeManager.class);
 
     @Autowired
     private Ehcache challengeCache;
@@ -56,8 +57,8 @@ public class EhCacheChallengeManager implements ChallengeService {
         challengeCache.put(createChallengeElement(cha));
         Element element = challengeCache.get(cha.getNonce());
         assert element != null;
-        if (log.isDebugEnabled()) {
-            log.debug("> cached element: " + element);
+        if (logger.isDebugEnabled()) {
+            logger.debug("> cached element: " + element);
         }
 
         return cha;
@@ -65,7 +66,7 @@ public class EhCacheChallengeManager implements ChallengeService {
 
     @Override
     public void deleteChallenge(Challenge challenge) {
-        log.info("deleting challenge: " + challenge);
+        logger.info("deleting challenge: " + challenge);
         challengeCache.remove(challenge.getNonce());
     }
 
@@ -83,7 +84,13 @@ public class EhCacheChallengeManager implements ChallengeService {
         if (answer == null)
             return false;
 
-        Certificate certificate = certificateService.loadCertificate(challenge.getClientId());
+        Certificate certificate;
+        try {
+            certificate = certificateService.loadCertificate(challenge.getClientId());
+        } catch (CertificateNotFoundException e) {
+            return false;
+        }
+
         String signature = SignatureUtil.sign(
                 challenge.getChallenge().getBytes(),
                 certificate.getSharedSecret(),

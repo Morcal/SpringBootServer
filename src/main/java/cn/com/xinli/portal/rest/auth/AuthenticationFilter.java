@@ -1,13 +1,12 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.Certificate;
+import cn.com.xinli.portal.auth.CertificateNotFoundException;
 import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RestRequestSupport;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -41,8 +40,8 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/10.
  */
 public class AuthenticationFilter extends OncePerRequestFilter implements ApplicationEventPublisherAware {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(AuthenticationFilter.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     /** Should continue filter chain if filter failed. */
     private boolean continueFilterChainOnUnsuccessful = false;
@@ -94,8 +93,8 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
     }
 
     private void successfulAuthentication(Authentication authentication) {
-        if (log.isDebugEnabled()) {
-            log.debug("Authentication success: " + authentication);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Authentication success: " + authentication);
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -110,8 +109,8 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
                                             Authentication authentication,
                                             AuthenticationException failed) {
         SecurityContextHolder.clearContext();
-        if (log.isDebugEnabled()) {
-            log.debug("Cleared security context due to exception:" + failed.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cleared security context due to exception, {}", failed.getMessage());
         }
 
         request.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", failed);
@@ -129,14 +128,14 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
      * @throws BadCredentialsException
      */
     private void verifyRequest(HttpServletRequest request, HttpDigestCredentials credentials) {
-        long now = System.currentTimeMillis() / 1000L;
-        String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
-        long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
-        long diff = Math.abs(now - timestamp);
+//        long now = System.currentTimeMillis() / 1000L;
+//        String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
+//        long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
+//        long diff = Math.abs(now - timestamp);
 
-        if (diff > SecurityConfiguration.MAX_TIME_DIFF) {
-            throw new BadCredentialsException("Way too inaccurate timestamp.");
-        }
+//        if (diff > SecurityConfiguration.MAX_TIME_DIFF) {
+//            throw new BadCredentialsException("Way too inaccurate timestamp.");
+//        }
 
         /*
          * Create a REST request from incoming request and then sign it,
@@ -152,10 +151,16 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
 
         /* Retrieve shared secret. */
         String clientId = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
-        Certificate certificate = certificateService.loadCertificate(clientId);
 
-        if (log.isDebugEnabled()) {
-            log.debug("> certificate loaded: " + certificate);
+        Certificate certificate;
+        try {
+            certificate = certificateService.loadCertificate(clientId);
+        } catch (CertificateNotFoundException e) {
+            throw new BadCredentialsException("Certificate not found.");
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("> certificate loaded: {}", certificate);
         }
 
         /* Sign request and compare with incoming one. */
@@ -168,16 +173,16 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
             throw new BadCredentialsException("Missing signature.");
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("> Comparing signature, calculated: {" + signedSignature +
-                    "}, original: {" + signature + "}");
+        if (logger.isDebugEnabled()) {
+            logger.debug("> Comparing signature, calculated: {{}} , original: {{}}.",
+                    signedSignature, signature);
         }
 
         if (!signedSignature.equals(signature)) {
             throw new BadCredentialsException("Signature verify failed.");
         }
 
-        log.debug("> Request signature verified.");
+        logger.debug("> Request signature verified.");
     }
 
     @Override
@@ -185,6 +190,11 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         if (requiresAuthentication(request)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("==> {} {} Authentication filter checking...",
+                        request.getMethod(), request.getRequestURI());
+            }
+
             Optional<HttpDigestCredentials> opt = CredentialsUtil.getCredentials(request);
             if (opt.isPresent()) {
                 /*
@@ -192,8 +202,8 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
                  * and there's credentials inside the request.
                  */
                 try {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Checking secure context token: " +
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Checking secure context token: " +
                                 SecurityContextHolder.getContext().getAuthentication());
                     }
 
@@ -211,8 +221,8 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
                     Authentication result = authenticationManager.authenticate(authentication);
                     SecurityContextHolder.getContext().setAuthentication(result);
                     successfulAuthentication(result);
-                    if (log.isDebugEnabled()) {
-                        log.debug("> authorities: " + result.getAuthorities());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("> authorities: " + result.getAuthorities());
                     }
                 } catch (AuthenticationException e) {
                     unsuccessfulAuthentication(request, response, AbstractAuthentication.empty(), e);

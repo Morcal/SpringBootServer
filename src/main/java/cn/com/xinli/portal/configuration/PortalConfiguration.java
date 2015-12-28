@@ -9,12 +9,13 @@ import cn.com.xinli.portal.rest.auth.RestAuthorizationServer;
 import cn.com.xinli.portal.support.ActivityServiceSupport;
 import cn.com.xinli.portal.support.CertificateServiceSupport;
 import cn.com.xinli.portal.support.SessionServiceSupport;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -36,9 +37,10 @@ import java.util.Optional;
  */
 @Configuration
 @ImportResource("classpath:nas.xml")
+@PropertySource("pws.properties")
 public class PortalConfiguration {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(PortalConfiguration.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(PortalConfiguration.class);
 
     @Value("${pws.root}") private String application;
 
@@ -132,7 +134,7 @@ public class PortalConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultPortalServer portalServer(NasMapping nasMapping) {
+    public DefaultPortalServer portalServer(NasMapping nasMapping) throws NasNotFoundException {
         if (enableMockHuaweiNas) {
             /* Find nas configuration for mocking. */
             Optional<Nas> mockNas = nasMapping.getNasByNasId(mockHuaweiNasId);
@@ -142,7 +144,7 @@ public class PortalConfiguration {
             try {
                 nas.start();
             } catch (IOException e) {
-                log.error("Failed to start mock huawei nas", e);
+                logger.error("Failed to start mock huawei nas", e);
             }
         }
         return new DefaultPortalServer(serverConfig(), sessionService());

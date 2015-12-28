@@ -1,6 +1,5 @@
 package cn.com.xinli.portal;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -21,6 +20,13 @@ public interface SessionService {
     Session getSession(long id) throws SessionNotFoundException;
 
     /**
+     * Check if session with id exists.
+     * @param id session id.
+     * @return true if exists.
+     */
+    boolean exists(long id);
+
+    /**
      * Find session by ip and mac.
      * @param ip ip address.
      * @param mac mac address.
@@ -34,11 +40,11 @@ public interface SessionService {
      * @param timestamp last modified timestamp.
      * @return updated session.
      */
-    Session update(long id, long timestamp);
+    Session update(long id, long timestamp) throws SessionNotFoundException, InvalidPortalRequestException;
 
     /**
      * Remove session by ip address.
      * @param ip ip address.
      */
-    Message<?> removeSession(String ip);
+    Message<?> removeSession(String ip) throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
 }

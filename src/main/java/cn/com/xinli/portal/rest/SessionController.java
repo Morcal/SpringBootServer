@@ -9,15 +9,14 @@ import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestToken;
 import cn.com.xinli.portal.rest.token.SessionTokenService;
 import cn.com.xinli.portal.util.AddressUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Calendar;
 import java.util.Optional;
@@ -35,7 +34,7 @@ public class SessionController {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(SessionController.class);
+    private final Logger logger = LoggerFactory.getLogger(SessionController.class);
 
     @Autowired
     private SessionService sessionService;
@@ -89,7 +88,8 @@ public class SessionController {
                             @RequestParam(name = "user_mac") String mac,
                             @RequestParam(defaultValue = "") String os,
                             @RequestParam(defaultValue = "") String version,
-                            @AuthenticationPrincipal Principal principal) {
+                            @AuthenticationPrincipal Principal principal)
+            throws NasNotFoundException, SessionNotFoundException, SessionOperationException {
         // Get NAS if mapped.
         Nas nas = nasMapping.findNas(ip, mac);
         if (nas == null) {
@@ -102,25 +102,21 @@ public class SessionController {
 
         // Create portal session.
         Session session = buildSession(nas.getId(), username, password, ip, mac, os, version);
-        try {
-            Message message = sessionManager.createSession(nas, session);
-            if (log.isDebugEnabled()) {
-                log.info(message);
-            }
+        Message message = sessionManager.createSession(nas, session);
+        if (logger.isDebugEnabled()) {
+            logger.info("> Connect result: {}", message);
+        }
 
-            if (!message.isSuccess()) {
-                return RestResponseBuilders.errorBuilder()
-                        .setError(RestResponse.ERROR_SERVER_ERROR)
-                        .setDescription(message.getText())
-                        .build();
-            }
-        } catch (IOException e) {
-            throw new SessionOperationException("Failed to create session", e);
+        if (!message.isSuccess()) {
+            return RestResponseBuilders.errorBuilder()
+                    .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setDescription(message.getText())
+                    .build();
         }
 
         // create session authorization. FIXME session may be removed by other threads.
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
-        log.info("> " + token.toString() + " created.");
+        logger.info("> {} created.", token);
         AccessAuthentication authentication = (AccessAuthentication) principal;
         authentication.setSessionToken(token);
 
@@ -150,7 +146,7 @@ public class SessionController {
             method = RequestMethod.GET)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean get(@P("session") @PathVariable long id,
-                        @AuthenticationPrincipal Principal principal) {
+                        @AuthenticationPrincipal Principal principal) throws SessionNotFoundException {
         Session session = sessionService.getSession(id);
         return RestResponseBuilders.successBuilder()
                 .setSession(session)
@@ -179,13 +175,7 @@ public class SessionController {
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean update(@RequestParam long timestamp,
                            @P("session") @PathVariable long id,
-                           @AuthenticationPrincipal Principal principal) {
-        //Session entity = sessionService.getSession(id);
-        long now = System.currentTimeMillis() / 1000L;
-        if (Math.abs(now - timestamp) > SecurityConfiguration.MAX_TIME_DIFF) {
-            throw new OutOfRangeUpdateException("update out of range.");
-        }
-
+                           @AuthenticationPrincipal Principal principal) throws InvalidPortalRequestException, SessionNotFoundException {
         Session updated = sessionService.update(id, timestamp);
         /* send updated session information. */
         return RestResponseBuilders.successBuilder()
@@ -213,12 +203,12 @@ public class SessionController {
             method = RequestMethod.DELETE)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
     public RestBean disconnect(@P("session") @PathVariable long id,
-                               @AuthenticationPrincipal Principal principal) {
+                               @AuthenticationPrincipal Principal principal) throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
         Message<Session> message = sessionManager.removeSession(id);
-        if (log.isDebugEnabled()) {
-            log.debug(message);
+        if (logger.isDebugEnabled()) {
+            logger.debug("> disconnect result: {}", message);
             Session rm = message.getContent().get();
-            log.debug("session: " + rm + " removed.");
+            logger.debug("session: " + rm + " removed.");
         }
 
         if (!message.isSuccess()) {
@@ -240,7 +230,7 @@ public class SessionController {
     @PreAuthorize("hasRole('USER')")
     public RestBean find(@RequestParam(value = "user_ip") String ip,
                          @RequestParam(value = "user_mac", defaultValue = "") String mac,
-                         @AuthenticationPrincipal Principal principal) {
+                         @AuthenticationPrincipal Principal principal) throws SessionNotFoundException {
         Optional<Session> opt = sessionService.find(ip, mac);
         opt.orElseThrow(() -> new SessionNotFoundException("Session not found."));
 
@@ -251,8 +241,8 @@ public class SessionController {
         /* reallocate a new session token. */
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
         authentication.setSessionToken(token);
-        if (log.isDebugEnabled()) {
-            log.debug("> new session token: " + token + " allocated.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("> new session token: " + token + " allocated.");
         }
 
         return RestResponseBuilders.successBuilder()

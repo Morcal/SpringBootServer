@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * Message test.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/24.

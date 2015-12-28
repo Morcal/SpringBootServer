@@ -18,8 +18,8 @@ public class ByteArrayTest extends TestBase {
     @Test
     public void testByteArray() throws UnknownHostException {
         byte[] array = InetAddress.getByName("192.168.3.26").getAddress();
-        log.debug(Arrays.toString(array));
+        logger.debug(Arrays.toString(array));
         String string = new String(Hex.encode(array));
-        log.debug(string);
+        logger.debug(string);
     }
 }

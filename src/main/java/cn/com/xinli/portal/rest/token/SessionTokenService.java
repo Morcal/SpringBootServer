@@ -1,10 +1,9 @@
 package cn.com.xinli.portal.rest.token;
 
-import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +16,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SessionTokenService extends AbstractTokenService {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(SessionTokenService.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SessionTokenService.class);
 
     @Autowired
     private SessionService sessionService;
@@ -32,17 +31,11 @@ public class SessionTokenService extends AbstractTokenService {
     protected boolean verifyExtendedInformation(String extendedInformation) {
         try {
             long id = Long.parseLong(extendedInformation);
-            Session session = sessionService.getSession(id);
-            if (session == null) {
-                log.debug("> Session already gone.");
-                return false;
-            }
+            return sessionService.exists(id);
         } catch (NumberFormatException e) {
-            log.debug("* Invalid session id.");
+            logger.debug("* Invalid session id.");
             return false;
         }
-
-        return true;
     }
 
     @Override

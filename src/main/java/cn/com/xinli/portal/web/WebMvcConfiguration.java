@@ -3,8 +3,8 @@ package cn.com.xinli.portal.web;
 import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.Scheme;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 @EnableWebMvc
 @EnableSpringDataWebSupport
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(WebMvcConfiguration.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(WebMvcConfiguration.class);
 
     @Bean
     public String schemeHeaderName() {
@@ -78,12 +78,16 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
         return new InternalResourceView("/html/main.html");
     }
 
+    @Bean View errorPageView() {
+        return new InternalResourceView("/json/error.json");
+    }
+
     @Bean
     public ViewResolver viewResolver() {
         InternalResourceViewResolver resolver = new InternalResourceViewResolver();
         resolver.setPrefix("/WEB-INF/jsp/");
         resolver.setSuffix(".jsp");
-        log.debug("> configuring jsp view resolvers.");
+        logger.debug("> configuring jsp view resolvers.");
         return resolver;
     }
 

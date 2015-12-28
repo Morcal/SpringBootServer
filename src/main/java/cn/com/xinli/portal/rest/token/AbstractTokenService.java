@@ -2,8 +2,8 @@ package cn.com.xinli.portal.rest.token;
 
 import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.util.SecureRandomStringGenerator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.token.Sha512DigestUtils;
@@ -26,8 +26,8 @@ import java.util.StringJoiner;
  */
 @Service
 public abstract class AbstractTokenService implements TokenService, InitializingBean {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(AbstractTokenService.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(AbstractTokenService.class);
 
     @Autowired
     private SecureRandomStringGenerator secureRandomStringGenerator;
@@ -101,10 +101,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         try {
             scope = TokenScope.valueOf(tokens[0]);
             if (scope != getTokenScope()) {
-                log.debug("> Invalid token scope.");
+                logger.debug("> Invalid token scope.");
             }
         } catch (IllegalArgumentException e) {
-            log.debug("> Invalid token scope.");
+            logger.debug("> Invalid token scope.");
             return null;
         }
 
@@ -112,7 +112,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         try {
             creationTime = Long.decode(tokens[1]);
         } catch (NumberFormatException e) {
-            log.debug("> Invalid token creation time.");
+            logger.debug("> Invalid token creation time.");
             return null;
         }
 
@@ -121,24 +121,24 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         String sha512Hex = tokens[4];
 
         if (StringUtils.isEmpty(extendedInformation)) {
-            log.debug("> Empty token extended information.");
+            logger.debug("> Empty token extended information.");
             return null;
         }
 
         if ((now - creationTime) / 1000L > getTtl()) {
-            log.debug("> Token expired.");
+            logger.debug("> Token expired.");
             return null;
         }
 
         String expectedSha512Hex = sha(createContent(scope, creationTime, extendedInformation, random));
 
         if (!sha512Hex.equals(expectedSha512Hex)) {
-            log.debug("> Key verification failed.");
+            logger.debug("> Key verification failed.");
             return null;
         }
 
         if (!verifyExtendedInformation(extendedInformation)) {
-            log.debug("> Token information verification failed.");
+            logger.debug("> Token information verification failed.");
             return null;
         }
 

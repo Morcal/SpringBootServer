@@ -6,8 +6,8 @@ import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.protocol.Packet;
 import cn.com.xinli.portal.protocol.PortalClient;
 import cn.com.xinli.portal.protocol.UnsupportedAuthenticationTypeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -22,8 +22,8 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/22.
  */
 public abstract class AbstractPortalClient implements PortalClient {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(AbstractPortalClient.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(AbstractPortalClient.class);
 
     /** Portal client authentication type. */
     protected final AuthType authType;
@@ -123,8 +123,8 @@ public abstract class AbstractPortalClient implements PortalClient {
         try {
             return InetAddress.getByName(ip) != null;
         } catch (UnknownHostException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Invalid ip: " + ip);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Invalid ip: " + ip);
             }
             return false;
         }
@@ -164,10 +164,10 @@ public abstract class AbstractPortalClient implements PortalClient {
 
         /* Check authentication response. */
         if (response.isPresent()) {
-            log.debug("> Handle authentication response.");
+            logger.debug("> Handle authentication response.");
             return onAuthenticationResponse(response.get());
         } else {
-            log.debug("> Handle authentication timeout.");
+            logger.debug("> Handle authentication timeout.");
             return onAuthenticationNotRespond(request);
         }
     }
@@ -181,17 +181,17 @@ public abstract class AbstractPortalClient implements PortalClient {
         /* Create portal request to logout. */
         Packet logout = createLogoutPacket(credentials);
         if (logout == null) {
-            log.warn("+ Failed to create logout.");
+            logger.warn("+ Failed to create logout.");
             return Message.of(null ,false, "Failed to create logout request.");
         }
 
         Optional<Packet> response = request(logout);
 
         if (!response.isPresent()) {
-            log.debug("> Handle logout timeout.");
+            logger.debug("> Handle logout timeout.");
             return onLogoutNotRespond(logout);
         } else {
-            log.debug("> Handle logout response.");
+            logger.debug("> Handle logout response.");
             return onLogoutResponse(response.get());
         }
     }

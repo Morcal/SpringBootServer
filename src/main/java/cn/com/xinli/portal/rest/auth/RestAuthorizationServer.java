@@ -5,8 +5,8 @@ import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeManager;
 import cn.com.xinli.portal.util.RandomStringGenerator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RestAuthorizationServer implements AuthorizationServer {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(RestAuthorizationServer.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(RestAuthorizationServer.class);
 
     @Autowired
     private RandomStringGenerator secureRandomGenerator;
@@ -40,7 +40,7 @@ public class RestAuthorizationServer implements AuthorizationServer {
                 challenge = secureRandomGenerator.generateUniqueRandomString(32);
 
         Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
-        log.info("challenge created: " + cha);
+        logger.info("challenge created: " + cha);
         return cha;
     }
 

@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.protocol.support;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,7 +26,7 @@ public abstract class AbstractDatagramServer {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(AbstractDatagramServer.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractDatagramServer.class);
 
     /** Server datagram channel. */
     protected DatagramChannel channel;
@@ -96,7 +96,7 @@ public abstract class AbstractDatagramServer {
                         buffer.flip();
 
                         if (!verifyPacket(buffer)) {
-                            log.warn("* Invalid portal request, dropped.");
+                            logger.warn("* Invalid portal request, dropped.");
                             continue;
                         }
                         buffer.rewind();
@@ -106,8 +106,8 @@ public abstract class AbstractDatagramServer {
 
             } catch (IOException e) {
                 // no-op.
-                if (log.isDebugEnabled()) {
-                    log.debug(e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Datagram Server error", e);
                 }
             }
         }
@@ -124,7 +124,7 @@ public abstract class AbstractDatagramServer {
 
     public void shutdown() {
         shutdown = true;
-        log.info("> Shutting down datagram server...");
+        logger.info("> Shutting down datagram server...");
         selector.wakeup();
 
         try {
@@ -133,11 +133,11 @@ public abstract class AbstractDatagramServer {
             executorService.shutdown();
             executorService.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException | IOException e) {
-            log.error(e);
+            logger.error("Datagram server shutdown error", e);
         } finally {
             executorService.shutdownNow();
         }
 
-        log.info("> Datagram server quit.");
+        logger.info("> Datagram server quit.");
     }
 }

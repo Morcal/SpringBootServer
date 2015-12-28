@@ -5,10 +5,11 @@ import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
 import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.protocol.PortalClient;
+import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import cn.com.xinli.portal.protocol.support.PortalClients;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,17 +18,20 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 
 /**
+ * Session Service Support.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/6.
  */
 @Service
 public class SessionServiceSupport implements SessionService, SessionManager, InitializingBean {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(SessionServiceSupport.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SessionServiceSupport.class);
 
     @Autowired
     private SessionRepository sessionRepository;
@@ -41,7 +45,12 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    public Message<Session> createSession(Nas nas, Session session) throws IOException {
+    public boolean exists(long id) {
+        return sessionRepository.findOne(id) != null;
+    }
+
+    @Override
+    public Message<Session> createSession(Nas nas, Session session) throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
         Optional<Session> opt =
                 sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
                         .stream()
@@ -50,45 +59,48 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
-        if (opt.isPresent()) {
-            /* Check if already existed session was created by current user.
-             * If so, return existed session, or try to logout existed user
-             * and then login with current user.
-             */
-            Session existed = opt.get();
+        try {
+            if (opt.isPresent()) {
+                /* Check if already existed session was created by current user.
+                 * If so, return existed session, or try to logout existed user
+                 * and then login with current user.
+                 */
+                Session existed = opt.get();
 
-            if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
-                log.warn("+ session already exists with different username.");
-                Credentials old = new Credentials(
-                        existed.getUsername(), existed.getPassword(), existed.getIp(), existed.getMac());
-                PortalClient client = PortalClients.create(nas);
-                Message<?> message = client.logout(old);
-                if (log.isDebugEnabled()) {
-                    log.debug(message);
+                if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
+                    logger.warn("+ session already exists with different username.");
+                    Credentials old = new Credentials(
+                            existed.getUsername(), existed.getPassword(), existed.getIp(), existed.getMac());
+                    PortalClient client = PortalClients.create(nas);
+                    Message<?> message = client.logout(old);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("> Create session, logout already existed, portal result: {}", message.toString());
+                    }
+
+                    if (!message.isSuccess()) {
+                        logger.warn("+ logout existed different user failed, cause: " + message.getText());
+                    }
+
+                    removeSession(existed.getId());
+                } else {
+                    return Message.of(opt.get(), true, "Session already exists.");
                 }
-
-                if (!message.isSuccess()) {
-                    log.warn("+ logout existed different user failed, cause: " + message.getText());
-                }
-
-                removeSession(existed.getId());
-            } else {
-                return Message.of(opt.get(), true, "Session already exists.");
             }
+
+            PortalClient client = PortalClients.create(nas);
+            Message<?> message = client.login(credentials);
+            if (logger.isDebugEnabled()) {
+                logger.debug("> Portal login result: {}" + message);
+            }
+
+            if (message.isSuccess()) {
+                sessionRepository.save((SessionEntity) session);
+            }
+
+            return Message.of(session, message.isSuccess(), message.getText());
+        } catch (IOException e) {
+            throw new SessionOperationException("Create session error", e);
         }
-
-        PortalClient client = PortalClients.create(nas);
-        Message<?> message = client.login(credentials);
-        if (log.isDebugEnabled()) {
-            log.debug(message);
-        }
-
-        if (message.isSuccess()) {
-            sessionRepository.save((SessionEntity) session);
-        }
-
-        return Message.of(session, message.isSuccess(), message.getText());
-
     }
 
     @Override
@@ -103,7 +115,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Override
     @Transactional
-    public Message<Session> removeSession(long id) throws SessionNotFoundException {
+    public Message<Session> removeSession(long id)
+            throws SessionNotFoundException, NasNotFoundException, SessionOperationException {
         Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
@@ -118,8 +131,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         try {
             PortalClient client = PortalClients.create(nas.get());
             Message<?> message = client.logout(credentials);
-            if (log.isDebugEnabled()) {
-                log.debug(message);
+            if (logger.isDebugEnabled()) {
+                logger.debug("> Portal logout result: {}", message);
             }
 
             if (message.isSuccess()) {
@@ -127,7 +140,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             }
             return Message.of(session, message.isSuccess(), message.getText());
         } catch (IOException e) {
-            log.error(e);
+            logger.error("Portal logout error", e);
             throw new SessionOperationException("Failed to logout", e);
         }
     }
@@ -140,10 +153,21 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Override
     @Transactional
-    public Session update(long id, long timestamp) {
+    public Session update(long id, long timestamp) throws SessionNotFoundException, InvalidPortalRequestException {
         SessionEntity found = sessionRepository.findOne(id);
         if (found == null) {
             throw new SessionNotFoundException(id);
+        }
+
+        Date lastModifyDate = found.getLastModified();
+
+        if (lastModifyDate != null) {
+            long lastModify = lastModifyDate.getTime() / 1000L;
+
+            if (Math.abs(lastModify - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
+                /* Assume it's a replay attack. */
+                throw new InvalidPortalRequestException("Update within an invalid range.");
+            }
         }
 
         Calendar calendar = Calendar.getInstance();
@@ -155,7 +179,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Override
     @Transactional
-    public Message removeSession(String ip) {
+    public Message removeSession(String ip)
+            throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
         Session found = sessionRepository.find1(ip);
         if (found == null) {
             throw new SessionNotFoundException("session with ip: " + ip + " not found.");

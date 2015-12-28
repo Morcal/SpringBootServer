@@ -1,12 +1,11 @@
 package cn.com.xinli.portal.rest.configuration;
 
 import cn.com.xinli.portal.ServerConfig;
-import cn.com.xinli.portal.rest.RestException;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.api.Registration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +22,8 @@ import java.util.StringJoiner;
  */
 @Configuration
 public class ApiConfiguration {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(ApiConfiguration.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(ApiConfiguration.class);
 
     /** API path. */
     public static final String API_PATH = "api";
@@ -51,11 +50,7 @@ public class ApiConfiguration {
     public Provider restApiProvider() {
         Provider provider = new Provider();
         provider.setVendor("Xinli Software Technology ltd., co.");
-        try {
-            provider.addRegistration(restApiRegistration());
-        } catch (RestException e) {
-            e.printStackTrace();
-        }
+        provider.addRegistration(restApiRegistration());
         return provider;
     }
 
@@ -65,18 +60,14 @@ public class ApiConfiguration {
                 API_TYPE,
                 REST_API_VERSION,
                 "/" + serverConfig.getApplication() + "/" + REST_API_VERSION + "/" + REST_API_AUTHORIZE);
-        log.debug("> Creating: " + registration);
+        logger.debug("> Creating: " + registration);
 
-        try {
-            registration.registerApi(authorize());
-            registration.registerApi(connect());
-            registration.registerApi(disconnect());
-            registration.registerApi(get());
-            registration.registerApi(update());
-            registration.registerApi(find());
-        } catch (RestException e) {
-            e.printStackTrace();
-        }
+        registration.registerApi(authorize());
+        registration.registerApi(connect());
+        registration.registerApi(disconnect());
+        registration.registerApi(get());
+        registration.registerApi(update());
+        registration.registerApi(find());
 
         return registration;
     }
@@ -90,7 +81,7 @@ public class ApiConfiguration {
                 RequestMethod.GET.name(),
                 "JSON",
                 false);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 
@@ -103,7 +94,7 @@ public class ApiConfiguration {
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 
@@ -116,7 +107,7 @@ public class ApiConfiguration {
                 RequestMethod.DELETE.name(),
                 "JSON",
                 true);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 
@@ -129,7 +120,7 @@ public class ApiConfiguration {
                 RequestMethod.GET.name(),
                 "JSON",
                 true);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 
@@ -142,7 +133,7 @@ public class ApiConfiguration {
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 
@@ -156,7 +147,7 @@ public class ApiConfiguration {
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        log.debug("> Creating: " + api);
+        logger.debug("> Creating: " + api);
         return api;
     }
 }

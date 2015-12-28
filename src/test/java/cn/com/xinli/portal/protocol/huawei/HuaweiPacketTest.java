@@ -54,7 +54,7 @@ public class HuaweiPacketTest extends TestBase {
         Assert.assertTrue(Arrays.equals(papAuth.getAuthenticator(), decoded.getAuthenticator()));
 
         Assert.assertEquals(papAuth.toString(), decoded.toString());
-        log.debug(decoded);
+        logger.debug("decoded: {}", decoded);
     }
 
     @Test
@@ -72,6 +72,6 @@ public class HuaweiPacketTest extends TestBase {
         Assert.assertTrue(Arrays.equals(chapAuth.getAuthenticator(), decoded.getAuthenticator()));
 
         Assert.assertEquals(chapAuth.toString(), decoded.toString());
-        log.debug(decoded);
+        logger.debug("decoded: {}", decoded);
     }
 }

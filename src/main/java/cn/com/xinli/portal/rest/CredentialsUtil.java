@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 /**
+ * Credentials utility.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/16.

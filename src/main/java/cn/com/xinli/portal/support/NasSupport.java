@@ -1,9 +1,8 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.NasType;
-import cn.com.xinli.portal.PortalException;
-import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -179,14 +178,13 @@ public class NasSupport implements Nas {
      *
      * @param configuration nas configuration.
      * @return NAS.
-     * @throws PortalException
      */
-    public static Nas build(NasConfiguration configuration) throws PortalException {
+    public static Nas build(NasConfiguration configuration) {
         if (StringUtils.isEmpty(configuration.getIpv4Address())
                 && StringUtils.isEmpty(configuration.getIpv6Address())) {
-            throw new PortalException("NAS must has ipv4 or ipv6 address at lest.") {
-            };
+            throw new RuntimeException("NAS must has ipv4 or ipv6 address at lest.");
         }
+
         String ipv4start = configuration.getIpv4start(),
                 ipv4end = configuration.getIpv4end();
 

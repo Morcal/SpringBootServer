@@ -1,21 +1,23 @@
 package cn.com.xinli.portal.web;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.View;
 
 /**
+ * Web exception advisor.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */
 @ControllerAdvice(basePackages = "cn.com.xinli.portal.web")
 public class WebExceptionAdvisor {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(ExceptionHandler.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(WebExceptionAdvisor.class);
 
 //    /** Default error view name. */
 //    public static final String DEFAULT_ERROR_VIEW = "error";
@@ -25,8 +27,8 @@ public class WebExceptionAdvisor {
 
     @ExceptionHandler(value = { RuntimeException.class })
     public View handleRuntimeException(RuntimeException e) {
-        if (log.isDebugEnabled()) {
-            log.error(e);
+        if (logger.isDebugEnabled()) {
+            logger.error("{} runtime exception", this.getClass(), e);
         }
 
         return defaultErrorView;

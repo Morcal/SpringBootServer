@@ -1,10 +1,11 @@
 package cn.com.xinli.portal.web;
 
 import cn.com.xinli.portal.NasMapping;
+import cn.com.xinli.portal.NasNotFoundException;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -60,8 +61,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Controller
 public class WebController {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(WebController.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(WebController.class);
 
     @Autowired
     private NasMapping nasMapping;
@@ -85,7 +86,7 @@ public class WebController {
      * @return springframework mvc result.
      */
     @RequestMapping(value = "/${pws.root}", method = RequestMethod.GET)
-    public Object main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
+    public View main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
                        @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
                        @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
                        @RequestParam(value="nas-ip", defaultValue = "") String nasIp,
@@ -103,15 +104,20 @@ public class WebController {
             }
 
             if (!AddressUtil.validateIp(realIp, sourceIp, request)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("> invalid ip: " + sourceIp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("> invalid ip: " + sourceIp);
                 }
                 break;
             }
 
-            nasMapping.map(sourceIp, sourceMac, nasIp);
-            if (log.isDebugEnabled()) {
-                log.debug("> mapping {" + sourceIp + " " + sourceMac + "} -> {" + nasIp + "}");
+            try {
+                nasMapping.map(sourceIp, sourceMac, nasIp);
+            } catch (NasNotFoundException e) {
+                logger.debug(" Nas not found, not mapped.");
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("> mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
             }
         } while (false);
 
@@ -119,7 +125,7 @@ public class WebController {
     }
 
     @RequestMapping(value = "/${pws.root}", method = RequestMethod.POST)
-    public Object post() {
+    public View post() {
         return mainPageView;
     }
 

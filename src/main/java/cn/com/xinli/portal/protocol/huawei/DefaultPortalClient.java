@@ -7,8 +7,8 @@ import cn.com.xinli.portal.protocol.Packet;
 import cn.com.xinli.portal.protocol.Protocol;
 import cn.com.xinli.portal.protocol.UnsupportedProtocolException;
 import cn.com.xinli.portal.protocol.support.AbstractPortalClient;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -28,7 +28,7 @@ public class DefaultPortalClient extends AbstractPortalClient {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(DefaultPortalClient.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultPortalClient.class);
 
     /**
      * Associated protocol.
@@ -136,7 +136,7 @@ public class DefaultPortalClient extends AbstractPortalClient {
                     .decode(req.getAuthenticator(), buffer, nas.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            log.warn("* Receive from nas timeout, nas: " + nas);
+            logger.warn("* Receive from nas timeout, nas: " + nas);
             return Optional.empty();
         } finally {
             if (socket != null) {

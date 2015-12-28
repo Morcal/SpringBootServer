@@ -1,12 +1,11 @@
 package cn.com.xinli.portal.rest.configuration;
 
-import cn.com.xinli.portal.rest.token.TokenScope;
-import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.auth.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import cn.com.xinli.portal.util.SecureRandomStringGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
@@ -40,8 +39,8 @@ import java.util.stream.Collectors;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(10)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(SecurityConfiguration.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
     @Autowired
     private Provider restApiProvider;
@@ -54,6 +53,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public static final String CHALLENGE_RESPONSE_TYPE = "challenge";
 
     public static final long MAX_TIME_DIFF = 1800; // seconds.
+
+    /** Minimum update time diff in seconds. */
+    public static final long MIN_TIME_UPDATE_DIFF = 3; // seconds.
 
     public static final long EHCACHE_VERSION = 1L;
     public static final int ACCESS_TOKEN_TTL = 35;
@@ -104,8 +106,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         Set<String> urls = new HashSet<>();
         list.forEach(strings -> strings.forEach(urls::add));
 
-        if (log.isDebugEnabled()) {
-            urls.forEach(url -> log.debug("> Add filter: " + url));
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.debug("> Adding filter path: " + url));
         }
 
         AuthenticationFilter filter = new AuthenticationFilter();

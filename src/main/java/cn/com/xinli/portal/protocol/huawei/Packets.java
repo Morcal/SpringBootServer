@@ -4,8 +4,8 @@ import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.protocol.Credentials;
 import cn.com.xinli.portal.protocol.Protocol;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,7 +26,7 @@ final class Packets {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(Packets.class);
+    private static Logger logger = LoggerFactory.getLogger(Packets.class);
 
     /**
      * Calculate MD5 summary.
@@ -44,7 +44,7 @@ final class Packets {
             md5.update(data);
             return md5.digest();
         } catch (NoSuchAlgorithmException e) {
-            log.fatal(e);
+            logger.error("Missing MD5", e);
             return new byte[0];
         }
     }
@@ -154,7 +154,7 @@ final class Packets {
             packet.setAttrs(attrs);
             return packet;
         } catch (UnknownHostException e) {
-            log.error(e);
+            logger.error("Unknown host", e);
             return null;
         }
     }

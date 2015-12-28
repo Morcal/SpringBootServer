@@ -1,7 +1,7 @@
 package cn.com.xinli.portal;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +19,7 @@ import javax.servlet.ServletContextListener;
 @SpringBootApplication
 public class PortalApplication {
 
-    private static Log logger = LogFactory.getLog(PortalApplication.class);
+    private final Logger logger = LoggerFactory.getLogger(PortalApplication.class);
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(PortalApplication.class, args);

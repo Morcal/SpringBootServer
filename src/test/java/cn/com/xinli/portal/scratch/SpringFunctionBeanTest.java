@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.scratch;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -38,14 +38,14 @@ class TestConfiguration {
 
 @Service
 class FoobarService {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(FoobarService.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(FoobarService.class);
 
     Random random = new Random(System.currentTimeMillis());
     public static AtomicInteger counter = new AtomicInteger(0);
 
     public FoobarService() {
-        log.warn(">>>> Creating foobar service.");
+        logger.warn(">>>> Creating foobar service.");
         counter.incrementAndGet();
     }
 
@@ -74,8 +74,8 @@ class ReferencingService {
 }
 
 public class SpringFunctionBeanTest {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(SpringFunctionBeanTest.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SpringFunctionBeanTest.class);
 
     @Test
     public void testIt() {
@@ -83,15 +83,15 @@ public class SpringFunctionBeanTest {
         ReferencingService referencingService = context.getBean(ReferencingService.class);
         int i = referencingService.referenceIt();
 
-        log.warn(i);
+        logger.debug("result: {}", i);
 
         int references = FoobarService.counter.get();
-        log.warn(references);
+        logger.debug("reference: {}", references);
 
         FoobarService another = context.getBean("anotherService", FoobarService.class);
         another.getValue();
 
         references = FoobarService.counter.get();
-        log.warn(references);
+        logger.debug("new reference: {}", references);
     }
 }

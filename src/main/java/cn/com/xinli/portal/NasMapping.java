@@ -47,9 +47,9 @@ public interface NasMapping {
      * @param userIp  user ip.
      * @param userMac user mac.
      * @param nasIp   NAS ip.
-     * @throws PortalException
+     * @throws NasNotFoundException
      */
-    void map(String userIp, String userMac, String nasIp) throws PortalException;
+    void map(String userIp, String userMac, String nasIp) throws NasNotFoundException;
 
     /**
      * Find NAS for given user ip and user mac.

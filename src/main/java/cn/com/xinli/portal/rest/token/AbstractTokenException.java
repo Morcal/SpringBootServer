@@ -3,6 +3,8 @@ package cn.com.xinli.portal.rest.token;
 import org.springframework.security.core.AuthenticationException;
 
 /**
+ * Abstract Token Exception.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/22.

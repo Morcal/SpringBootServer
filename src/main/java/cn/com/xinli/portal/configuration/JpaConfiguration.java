@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.configuration;
 
 import cn.com.xinli.portal.ServerConfig;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.derby.jdbc.EmbeddedDriver;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,8 +35,8 @@ import java.io.File;
 @Configuration
 @EnableJpaRepositories(basePackages = "cn.com.xinli.portal.persist")
 public class JpaConfiguration implements BeanFactoryAware {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(JpaConfiguration.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(JpaConfiguration.class);
 
     /** Bean factory. */
     private BeanFactory beanFactory;
@@ -48,7 +48,7 @@ public class JpaConfiguration implements BeanFactoryAware {
     public boolean firstRun() {
         if (serverConfig.useDerbyMemDb()) {
             /* Within derby memory database, always return true. */
-            log.info("> Running on derby memory database.");
+            logger.info("> Running on derby memory database.");
             return true;
         } else {
             /* Check derby database directory to determine if we're on the first run. */

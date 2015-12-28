@@ -17,7 +17,7 @@ public interface ActivityService {
      * {@link Activity.Action}.
      * </p>
      *
-     * @param activity activity to log.
+     * @param activity activity to logger.
      */
     void log(Activity activity);
 }

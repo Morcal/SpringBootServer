@@ -5,8 +5,9 @@ import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.token.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -17,7 +18,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.token.Token;
-import org.springframework.security.core.token.TokenService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -33,8 +33,8 @@ import java.util.Collection;
  */
 @Component
 public class RestAuthenticationProvider implements AuthenticationProvider, InitializingBean, Ordered {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(RestAuthenticationProvider.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(RestAuthenticationProvider.class);
 
     private static final int ORDER = -1;
 
@@ -62,10 +62,10 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         Challenge challenge = challengeService.loadChallenge(nonce);
 
         if (!challengeService.verify(challenge, response)) {
-            log.debug("> failed to verify challenge.");
+            logger.debug("> failed to verify challenge.");
             throw new InvalidChallengeException("Incorrect challenge answer.");
         } else {
-            log.debug("> challenge verified.");
+            logger.debug("> challenge verified.");
             /* Remove challenge immediately. */
             challengeService.deleteChallenge(challenge);
 
@@ -98,7 +98,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         if (verified == null) {
             throw new InvalidAccessTokenException("invalid client token.");
         }
-        log.debug("> Session token verified.");
+        logger.debug("> Session token verified.");
         authentication.setAuthenticated(true);
         authentication.setAccessToken((RestToken) verified);
         authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
@@ -113,11 +113,16 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     private void verifySessionToken(AccessAuthentication authentication,
                                     HttpDigestCredentials credentials,
                                     Collection<GrantedAuthority> authorities) {
-        Token verified = sessionTokenService.verifyToken(
-                credentials.getParameter(HttpDigestCredentials.SESSION_TOKEN));
-        if (verified == null) {
-            throw new InvalidSessionTokenException("Invalid session token.");
+        String key = credentials.getParameter(HttpDigestCredentials.SESSION_TOKEN);
+        if (StringUtils.isEmpty(key)) {
+            throw new BadCredentialsException("Empty session token.");
         }
+
+        Token verified = sessionTokenService.verifyToken(key);
+        if (verified == null) {
+            throw new InvalidSessionTokenException(key);
+        }
+
         authentication.setSessionToken((RestToken) verified);
         long sessionId = Long.parseLong(verified.getExtendedInformation());
         authorities.add(new SessionAuthority(sessionId));
@@ -140,7 +145,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         /* Handle challenge/access token first. */
         if (HttpDigestCredentials.containsChallenge(credentials)) {
             handleChallenge(restAccessAuth, credentials, authorities);
-        } else if (HttpDigestCredentials.containsToken(credentials)) {
+        } else if (HttpDigestCredentials.containsAccessToken(credentials)) {
             verifyAccessToken(restAccessAuth ,credentials, authorities);
         } else {
             throw new BadCredentialsException("invalid digest credentials.");

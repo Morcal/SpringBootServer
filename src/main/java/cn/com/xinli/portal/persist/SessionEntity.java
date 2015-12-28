@@ -6,6 +6,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
+ * Session entity.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/9.

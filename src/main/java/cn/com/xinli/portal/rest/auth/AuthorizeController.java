@@ -9,8 +9,8 @@ import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 @RequestMapping("/${pws.root}/" + ApiConfiguration.REST_API_VERSION)
 public class AuthorizeController {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(AuthorizeController.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(AuthorizeController.class);
 
     @Autowired
     private AuthorizationServer authorizationServer;
@@ -62,8 +62,8 @@ public class AuthorizeController {
                 break; // invalid ip.
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("> incoming authorize request, from: " + ip + ", mac: " + mac);
+            if (logger.isDebugEnabled()) {
+                logger.debug("> incoming authorize request, from: " + ip + ", mac: " + mac);
             }
 
             if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {

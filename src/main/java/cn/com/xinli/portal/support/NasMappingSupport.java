@@ -2,8 +2,8 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.NasRepository;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zhoupeng 2015/12/19.
  */
 public class NasMappingSupport implements NasMapping {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(NasMappingSupport.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(NasMappingSupport.class);
 
     @Autowired
     private NasRepository nasRepository;
@@ -45,9 +45,9 @@ public class NasMappingSupport implements NasMapping {
     public void reload() {
         userNasMapping.clear();
         synchronized (devices) {
-            log.info("> Loading configured nas, count: " + configured.size());
+            logger.info("> Loading configured nas, count: " + configured.size());
             configured.forEach(configuration -> devices.put(configuration.getId(), NasSupport.build(configuration)));
-            log.info("> Loading nas from database.");
+            logger.info("> Loading nas from database.");
             nasRepository.all().forEach(nas -> devices.put(nas.getId(), nas));
         }
     }
@@ -62,7 +62,7 @@ public class NasMappingSupport implements NasMapping {
     }
 
     @Override
-    public void map(String userIp, String userMac, String nasIp) throws PortalException {
+    public void map(String userIp, String userMac, String nasIp) throws NasNotFoundException {
         String pair = Session.pair(userIp, userMac);
         synchronized (devices) {
             Optional<Nas> nas = devices.values().stream()
@@ -71,8 +71,8 @@ public class NasMappingSupport implements NasMapping {
                     ).findFirst();
 
             nas.ifPresent(n -> {
-                if (log.isDebugEnabled()) {
-                    log.debug("> mapping nas: " + n + ", pair: " + pair);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("> mapping nas: " + n + ", pair: " + pair);
                 }
                 userNasMapping.put(pair, n.getId());
             });

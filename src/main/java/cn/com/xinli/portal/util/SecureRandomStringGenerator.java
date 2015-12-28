@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -20,7 +20,7 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
     /**
      * Log.
      */
-    private static final Log log = LogFactory.getLog(SecureRandomStringGenerator.class);
+    private final Logger logger = LoggerFactory.getLogger(SecureRandomStringGenerator.class);
 
     /**
      * Secure random generator.
@@ -32,11 +32,14 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
      */
     private final Set<String> generated = Collections.synchronizedSet(new HashSet<>());
 
+    private static final int MAX_CACHED_STRING_SIZE = 1000;
+
     public SecureRandomStringGenerator() {
         try {
+            logger.debug("> Trying to get SHA1PRNG random generator.");
             random = SecureRandom.getInstance("SHA1PRNG");
         } catch (Exception e) {
-            log.warn(e);
+            logger.warn("Missing secure random of SHA1PRNG", e);
             random = new SecureRandom();
         }
         random.setSeed(random.generateSeed(64));
@@ -53,8 +56,18 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
      */
     @Override
     public String generateUniqueRandomString(int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("String length must be positive.");
+        }
+
         String randomString;
         synchronized (generated) {
+            /* Sanity check. */
+            if (generated.size() > MAX_CACHED_STRING_SIZE) {
+                logger.info("> Discarding generated random strings.");
+                generated.clear();
+            }
+
             do {
                 randomString = new BigInteger(5 * size, random).toString(32);
             } while (!generated.add(randomString));

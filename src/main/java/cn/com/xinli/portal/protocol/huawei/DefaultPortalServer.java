@@ -3,14 +3,13 @@ package cn.com.xinli.portal.protocol.huawei;
 import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.protocol.support.AbstractDatagramServer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 
 /**
  * Default portal server.
@@ -23,8 +22,8 @@ import java.nio.channels.DatagramChannel;
  * @author zhoupeng 2015/12/23.
  */
 public class DefaultPortalServer  {
-    /** Log. */
-    private static final Log log = LogFactory.getLog(DefaultPortalServer.class);
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(DefaultPortalServer.class);
 
     /** Default listen port. */
     private static final int DEFAULT_LISTEN_PORT = 2000;
@@ -55,7 +54,7 @@ public class DefaultPortalServer  {
 
     public void start() throws IOException {
         this.datagramPortalServer.start();
-        log.info("> Portal Server started, listen on: " + this.portalServerPort + ".");
+        logger.info("> Portal Server started, listen on: " + this.portalServerPort + ".");
     }
 
     public void shutdown() {
@@ -76,13 +75,11 @@ public class DefaultPortalServer  {
                     byte[] ip = in.getIp();
                     //byte[] mac = in.getAttribute(Enums.Attribute.USER_MAC);
                     String address = InetAddress.getByAddress(ip).getHostAddress();
-                    log.info("> NTF_LOGOUT, ip: " + address + " already offline");
+                    logger.info("> NTF_LOGOUT, ip: " + address + " already offline");
                     sessionService.removeSession(address);
                 }
-            } catch (IOException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug(e);
-                }
+            } catch (Exception e) {
+                logger.error("Portal server handle packet error", e);
             }
         }
 

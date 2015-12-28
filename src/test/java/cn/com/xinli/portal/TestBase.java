@@ -1,7 +1,8 @@
 package cn.com.xinli.portal;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Project: portal
@@ -11,8 +12,8 @@ import org.apache.commons.logging.LogFactory;
 public abstract class TestBase {
 
     /**
-     * Log.
+     * Logger.
      */
-    protected Log log = LogFactory.getLog(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 }

@@ -5,9 +5,12 @@ import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.support.CacheErrorHandlerSupport;
+import cn.com.xinli.portal.support.SessionCacheEventListener;
+import cn.com.xinli.portal.support.SessionCacheEventListenerFactory;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
+import net.sf.ehcache.event.NotificationScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
@@ -37,16 +40,26 @@ public class CachingConfiguration implements CachingConfigurer {
     public static final String CHALLENGE_CACHE_NAME = "challenge-cache";
 
     /** Max cache entries. */
-    private static final long MAX_SESSION_CACHE_ENTRIES = 10_000;
+    private static final int MAX_SESSION_CACHE_ENTRIES = 10_000;
 
     /** Max challenge entries. */
-    private static final long MAX_CHALLENGE_CACHE_ENTRIES = 10_000;
+    private static final int MAX_CHALLENGE_CACHE_ENTRIES = 10_000;
 
     /** EhCache version. */
     public static final long EHCACHE_VERSION = 1L;
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private SessionCacheEventListener sessionCacheEventListener() {
+        return new SessionCacheEventListener();
+    }
+
+    @Autowired
+    private SessionCacheEventListenerFactory sessionCacheEventListenerFactory() {
+        return new SessionCacheEventListenerFactory();
+    }
 
     @Bean(destroyMethod = "shutdown")
     public net.sf.ehcache.CacheManager ehcacheManager() {
@@ -58,24 +71,33 @@ public class CachingConfiguration implements CachingConfigurer {
         net.sf.ehcache.config.Configuration ehcacheConfig = new net.sf.ehcache.config.Configuration();
 
         /* Add session token cache. */
-        sessionCache.setName(SESSION_CACHE_NAME);
-        sessionCache.setTimeToLiveSeconds(serverConfig.isEnableSessionTtl() ? serverConfig.getSessionTtl() : 0);
-        sessionCache.setMaxEntriesLocalHeap(MAX_SESSION_CACHE_ENTRIES);
-        sessionCache.persistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.NONE));
+        sessionCache.name(SESSION_CACHE_NAME)
+                .timeToLiveSeconds(serverConfig.isEnableSessionTtl() ? serverConfig.getSessionTtl() : 0)
+                .maxEntriesLocalHeap(MAX_SESSION_CACHE_ENTRIES)
+                .persistence(new PersistenceConfiguration()
+                        .strategy(PersistenceConfiguration.Strategy.NONE));
+
+        CacheConfiguration.CacheEventListenerFactoryConfiguration celfc = new CacheConfiguration.CacheEventListenerFactoryConfiguration();
+        celfc.setListenFor(NotificationScope.LOCAL.name());
+        //celfc.className("cn.com.xinli.portal.support.SessionCacheEventListenerFactory");
+        sessionCache.cacheEventListenerFactory(celfc);
+
         ehcacheConfig.addCache(sessionCache);
 
         /* Add certificate cache. */
-        certificateCache.setName(CERTIFICATE_CACHE_NAME);
-        certificateCache.setTimeToLiveSeconds(0);
-        certificateCache.setMaxEntriesLocalHeap(100);
-        certificateCache.persistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.NONE));
+        certificateCache.name(CERTIFICATE_CACHE_NAME)
+                .timeToLiveSeconds(0)
+                .maxEntriesLocalHeap(100)
+                .persistence(new PersistenceConfiguration()
+                        .strategy(PersistenceConfiguration.Strategy.NONE));
         ehcacheConfig.addCache(certificateCache);
 
         /* Add challenge token cache. */
-        challengeCache.setName(CHALLENGE_CACHE_NAME);
-        challengeCache.setTimeToLiveSeconds(serverConfig.getChallengeTtl());
-        challengeCache.setMaxEntriesLocalHeap(MAX_CHALLENGE_CACHE_ENTRIES);
-        challengeCache.persistence(new PersistenceConfiguration().strategy(PersistenceConfiguration.Strategy.NONE));
+        challengeCache.name(CHALLENGE_CACHE_NAME)
+                .timeToLiveSeconds(serverConfig.getChallengeTtl())
+                .maxEntriesLocalHeap(MAX_CHALLENGE_CACHE_ENTRIES)
+                .persistence(new PersistenceConfiguration()
+                        .strategy(PersistenceConfiguration.Strategy.NONE));
         ehcacheConfig.addCache(challengeCache);
 
         ehcacheConfig.setName("service-cache");

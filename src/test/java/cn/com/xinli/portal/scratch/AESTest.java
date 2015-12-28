@@ -31,12 +31,12 @@ public class AESTest extends TestBase {
         byte[] byteContent = content.getBytes("utf-8");
         cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化
         byte[] result = cipher.doFinal(byteContent);
-        log.debug(Arrays.toString(result));
+        logger.debug(Arrays.toString(result));
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         md5.reset();
         md5.update(content.getBytes());
         result = md5.digest();
-        log.debug(Arrays.toString(result));
+        logger.debug(Arrays.toString(result));
     }
 }

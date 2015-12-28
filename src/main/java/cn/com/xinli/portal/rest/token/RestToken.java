@@ -1,14 +1,14 @@
 package cn.com.xinli.portal.rest.token;
 
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
-import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.core.token.Token;
-import org.springframework.security.crypto.codec.Base64;
-import org.springframework.security.crypto.codec.Utf8;
-
-import java.util.StringJoiner;
 
 /**
+ * REST token.
+ *
+ * REST tokens covers {@link TokenScope#PORTAL_ACCESS_TOKEN_SCOPE},
+ * {@link TokenScope#PORTAL_SESSION_TOKEN_SCOPE} and {@link TokenScope#SYSTEM_ADMIN_TOKEN_SCOPE}.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/12.
