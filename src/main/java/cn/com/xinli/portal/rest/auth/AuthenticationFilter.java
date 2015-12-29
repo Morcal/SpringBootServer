@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.portal.rest.AbstractRestFilter;
 import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RestRequest;
 import cn.com.xinli.portal.rest.RestRequestSupport;
@@ -15,38 +16,30 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 /**
  * Rest Authentication Filter.
  *
- * This filter extends from spring-security {@link OncePerRequestFilter}.
- *
  * Project: portal
  *
  * @author zhoupeng 2015/12/10.
  */
-public class AuthenticationFilter extends OncePerRequestFilter implements ApplicationEventPublisherAware {
+@Component
+public class AuthenticationFilter extends AbstractRestFilter implements ApplicationEventPublisherAware {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     /** Should continue filter chain if filter failed. */
     private boolean continueFilterChainOnUnsuccessful = false;
-
-    /** Inclusive path array. */
-    private final List<String> filterPathMatches = new ArrayList<>();
-
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -61,17 +54,11 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-
     @Override
     public void afterPropertiesSet() throws ServletException {
         super.afterPropertiesSet();
-        Assert.notNull(filterPathMatches);
         Assert.notNull(authenticationManager);
         Assert.notNull(authenticationEntryPoint);
-    }
-
-    public void setFilterPathMatches(Collection<String> filterPathMatches) {
-        this.filterPathMatches.addAll(filterPathMatches);
     }
 
     /**
@@ -80,16 +67,6 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
      */
     public void setContinueFilterChainOnUnsuccessful(boolean continueFilterChainOnUnsuccessful) {
         this.continueFilterChainOnUnsuccessful = continueFilterChainOnUnsuccessful;
-    }
-
-    /**
-     * Check if target resource need authentication.
-     * @param request request.
-     * @return true if authentiation needed.
-     */
-    private boolean requiresAuthentication(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return filterPathMatches.stream().anyMatch(uri::startsWith);
     }
 
     /**
@@ -151,7 +128,7 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Applic
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (requiresAuthentication(request)) {
+        if (requiresFilter(request)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("==> {} {} Authentication filter checking...",
                         request.getMethod(), request.getRequestURI());

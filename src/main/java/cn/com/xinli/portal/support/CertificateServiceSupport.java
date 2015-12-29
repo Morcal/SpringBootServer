@@ -9,8 +9,6 @@ import cn.com.xinli.portal.persist.CertificateRepository;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -60,7 +58,11 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public boolean isCertified(String clientId) {
-        return certificateRepository.find(clientId).stream().findAny().isPresent();
+        try {
+            return loadCertificate(clientId) != null;
+        } catch (CertificateNotFoundException e) {
+            return false;
+        }
     }
 
     @Override

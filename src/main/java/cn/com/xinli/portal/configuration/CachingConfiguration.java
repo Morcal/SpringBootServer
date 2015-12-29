@@ -42,20 +42,27 @@ public class CachingConfiguration implements CachingConfigurer {
     /** {@linkplain Challenge} cache name. */
     public static final String CHALLENGE_CACHE_NAME = "challenge-cache";
 
+    public static final String RATE_LIMITING_CACHE_NAME = "rate-limiting-cache";
+
     /** Max cache entries. */
     private static final int MAX_SESSION_CACHE_ENTRIES = 10_000;
 
     /** Max challenge entries. */
     private static final int MAX_CHALLENGE_CACHE_ENTRIES = 10_000;
 
+    /** Max limiting entries. */
+    private static final int MAX_RATE_LIMITING_CACHE_ENTRIES = 200;
+
     /** {@link Ehcache} element version. */
     public static final long EHCACHE_VERSION = 1L;
 
-    @Value("${pws.session.ttl.enable}") private boolean isSessionTtlEnabled;
+    @Value("${pws.session.tti.enable}") private boolean isSessionTtiEnabled;
 
-    @Value("${pws.session.ttl.value}") private int sessionTtl;
+    @Value("${pws.session.tti.value}") private int sessionTti;
 
     @Value("${pws.rest.challenge.ttl}") private int challengeTtl;
+
+    @Value("${pws.rest.rate.limiting.ttl}") private int rateLimitingTtl;
 
     @Bean(name = "session-cache-event-listener")
     public CacheEventListener sessionCacheEventListener() {
@@ -67,7 +74,8 @@ public class CachingConfiguration implements CachingConfigurer {
         /* Use ehcache as memory only cache. */
         CacheConfiguration sessionCache = new CacheConfiguration(),
                 challengeCache = new CacheConfiguration(),
-                certificateCache = new CacheConfiguration();
+                certificateCache = new CacheConfiguration(),
+                rateLimitingCache = new CacheConfiguration();
 
         net.sf.ehcache.config.Configuration ehcacheConfig = new net.sf.ehcache.config.Configuration();
 
@@ -78,10 +86,10 @@ public class CachingConfiguration implements CachingConfigurer {
                 .searchAttribute(new SearchAttribute().name("nas_id").type(Long.class).expression("value.getNasId()"))
                 .searchAttribute(new SearchAttribute().name("username").type(String.class).expression("value.getUsername()"));
 
-        logger.info("> session ttl enabled: {}, ttl: {}", isSessionTtlEnabled, sessionTtl);
+        logger.info("> session ttl enabled: {}, ttl: {}", isSessionTtiEnabled, sessionTti);
 
         sessionCache.name(SESSION_CACHE_NAME)
-                .timeToIdleSeconds(isSessionTtlEnabled ? sessionTtl : 0)
+                .timeToIdleSeconds(isSessionTtiEnabled ? sessionTti : 0)
                 .maxEntriesLocalHeap(MAX_SESSION_CACHE_ENTRIES)
                 .searchable(searchable)
                 .diskExpiryThreadIntervalSeconds(10)
@@ -105,6 +113,14 @@ public class CachingConfiguration implements CachingConfigurer {
                         .strategy(PersistenceConfiguration.Strategy.NONE));
         ehcacheConfig.addCache(challengeCache);
 
+        /* Add rate-limiting cache. */
+        rateLimitingCache.name(RATE_LIMITING_CACHE_NAME)
+                .timeToIdleSeconds(rateLimitingTtl)
+                .maxEntriesLocalHeap(MAX_RATE_LIMITING_CACHE_ENTRIES)
+                .persistence(new PersistenceConfiguration()
+                        .strategy(PersistenceConfiguration.Strategy.NONE));
+        ehcacheConfig.addCache(rateLimitingCache);
+
         ehcacheConfig.setName("service-cache");
 
         return net.sf.ehcache.CacheManager.create(ehcacheConfig);
@@ -123,6 +139,11 @@ public class CachingConfiguration implements CachingConfigurer {
     @Bean(name = "sessionCache")
     public Ehcache sessionCache() {
         return ehcacheManager().getEhcache(SESSION_CACHE_NAME);
+    }
+
+    @Bean(name = "rateLimitingCache")
+    public Ehcache rateLimitingCache() {
+        return ehcacheManager().getEhcache(RATE_LIMITING_CACHE_NAME);
     }
 
     @Override

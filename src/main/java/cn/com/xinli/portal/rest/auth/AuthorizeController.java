@@ -58,7 +58,9 @@ public class AuthorizeController {
 
             if ((!StringUtils.isEmpty(realIp) || !StringUtils.isEmpty(ip)) &&
                     !AddressUtil.validateIp(realIp, ip, request)) {
-                description = "Given ip differs from which the server knows.";
+                description = "Given ip differs from which the server knows." +
+                        " real: " + realIp + ", remote: " + request.getRemoteAddr() +
+                        ", given: " + ip + ".";
                 break; // invalid ip.
             }
 

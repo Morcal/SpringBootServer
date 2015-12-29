@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.rest.configuration;
 
 import cn.com.xinli.portal.auth.CertificateService;
+import cn.com.xinli.portal.rest.RateLimitingFilter;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.auth.*;
@@ -74,6 +75,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     /** Challenge token time to live in seconds. */
     public static final int CHALLENGE_TTL = 35;
 
+    /** Rate limiting (requests per second). */
+    public static final int RATE_LIMITING = 3;
+
     @Value("${pws.root}") private String application;
 
     @Bean
@@ -112,6 +116,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public RateLimitingFilter rateLimitingFilter() {
+        List<List<String>> list = restApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        list.forEach(strings -> strings.forEach(urls::add));
+
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.debug("> Adding rate-limiting filter path: {}.", url));
+        }
+
+        RateLimitingFilter filter = new RateLimitingFilter();
+        filter.setFilterPathMatches(urls);
+        return filter;
+    }
+
+    @Bean
     public AuthenticationFilter restAuthenticationFilter() {
         List<List<String>> list = restApiProvider.getRegistrations().stream()
                 .map(registration ->
@@ -125,7 +150,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         list.forEach(strings -> strings.forEach(urls::add));
 
         if (logger.isDebugEnabled()) {
-            urls.forEach(url -> logger.debug("> Adding filter path: {}.", url));
+            urls.forEach(url -> logger.debug("> Adding auth filter path: {}.", url));
         }
 
         AuthenticationFilter filter = new AuthenticationFilter();
@@ -136,9 +161,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        //http.authorizeRequests().
         /* Configure filter as http header filter. */
         http.addFilterAfter(restAuthenticationFilter(), ConcurrentSessionFilter.class);
+
+        /* Add Rate-Limiting filter before authentication filter. */
+        http.addFilterBefore(restAuthenticationFilter(), AuthenticationFilter.class);
 
         http.authenticationProvider(authenticationProvider());
 

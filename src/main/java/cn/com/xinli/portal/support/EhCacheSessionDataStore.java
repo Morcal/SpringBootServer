@@ -44,9 +44,9 @@ public class EhCacheSessionDataStore implements SessionStore {
     @Autowired
     private SessionCacheEventListener sessionCacheEventListener;
 
-    @Value("${pws.session.ttl.enable}") private boolean isSessionTtlEnabled;
+    @Value("${pws.session.tti.enable}") private boolean isSessionTtiEnabled;
 
-    @Value("${pws.session.ttl.value}") private int sessionTtl;
+    @Value("${pws.session.tti.value}") private int sessionTti;
 
     @Override
     public void init() {
@@ -58,7 +58,7 @@ public class EhCacheSessionDataStore implements SessionStore {
 
     @Scheduled(fixedDelay = 10L)
     public void evictExpiredSessions() {
-        if (isSessionTtlEnabled) {
+        if (isSessionTtiEnabled) {
             sessionCache.evictExpiredElements();
         }
     }
@@ -83,12 +83,12 @@ public class EhCacheSessionDataStore implements SessionStore {
     public void put(Session session) {
         Element element;
 
-        if (isSessionTtlEnabled) {
+        if (isSessionTtiEnabled) {
             element = new Element(
                     session.getId(),
                     session,
-                    sessionTtl,
-                    sessionTtl);
+                    sessionTti,
+                    sessionTti);
         } else {
             /* Create cache element without time to idle and time to live. */
             element = new Element(session.getId(), session);
