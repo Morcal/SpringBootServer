@@ -45,7 +45,7 @@ public class NasMappingSupport implements NasMapping {
     public void reload() {
         userNasMapping.clear();
         synchronized (devices) {
-            logger.info("> Loading configured nas, count: " + configured.size());
+            logger.info("> Loading configured nas, count: {}.", configured.size());
             configured.forEach(configuration -> devices.put(configuration.getId(), NasSupport.build(configuration)));
             logger.info("> Loading nas from database.");
             nasRepository.all().forEach(nas -> devices.put(nas.getId(), nas));
@@ -72,7 +72,7 @@ public class NasMappingSupport implements NasMapping {
 
             nas.ifPresent(n -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("> mapping nas: " + n + ", pair: " + pair);
+                    logger.debug("> mapping nas: {}, pair: {}.", n, pair);
                 }
                 userNasMapping.put(pair, n.getId());
             });

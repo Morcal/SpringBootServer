@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
@@ -53,11 +52,10 @@ public class RestResponseBuilders {
      * Acquire a session builder.
      * @param session session.
      * @param token session token.
-     * @param serverConfig server configuration.
      * @return builder
      */
-    public static SessionBuilder sessionBuilder(Session session, Token token, ServerConfig serverConfig) {
-        return new SessionBuilder(session, token, serverConfig);
+    public static SessionBuilder sessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
+        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval);
     }
 
     /**
@@ -74,7 +72,8 @@ public class RestResponseBuilders {
         private Challenge challenge = null;
         private AccessAuthentication accessAuthentication = null;
         private boolean grantToken = false;
-        private ServerConfig serverConfig;
+        private boolean requiresKeepAlive;
+        private int keepAliveInterval;
 
         public SuccessBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
             this.accessAuthentication = accessAuthentication;
@@ -91,8 +90,13 @@ public class RestResponseBuilders {
             return this;
         }
 
-        public SuccessBuilder setServerConfig(ServerConfig serverConfig) {
-            this.serverConfig = serverConfig;
+        public SuccessBuilder setRequiresKeepAlive(boolean requiresKeepAlive) {
+            this.requiresKeepAlive = requiresKeepAlive;
+            return this;
+        }
+
+        public SuccessBuilder setKeepAliveInterval(int keepAliveInterval) {
+            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -108,9 +112,11 @@ public class RestResponseBuilders {
             if (session == null) {
                 success.setSession(null);
             } else if (accessAuthentication == null || !grantToken) {
-                success.setSession(sessionBuilder(session, null, serverConfig).build());
+                success.setSession(
+                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval).build());
             } else {
-                success.setSession(sessionBuilder(session, accessAuthentication.getSessionToken(), serverConfig).build());
+                success.setSession(
+                        sessionBuilder(session, accessAuthentication.getSessionToken(), requiresKeepAlive, keepAliveInterval).build());
             }
 
             /* Build authorization if challenge response in credentials. */
@@ -170,12 +176,14 @@ public class RestResponseBuilders {
     public static class SessionBuilder implements Builder<cn.com.xinli.portal.rest.bean.Session> {
         private final Session session;
         private final Token token;
-        private final ServerConfig serverConfig;
+        private final boolean requiresKeepAlive;
+        private final int keepAliveInterval;
 
-        public SessionBuilder(Session session, Token token, ServerConfig serverConfig) {
+        public SessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
             this.session = session;
             this.token = token;
-            this.serverConfig = serverConfig;
+            this.requiresKeepAlive = requiresKeepAlive;
+            this.keepAliveInterval = keepAliveInterval;
         }
 
         @Override
@@ -186,10 +194,8 @@ public class RestResponseBuilders {
                 cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
                 session.setId(String.valueOf(this.session.getId()));
                 session.setStarttime(this.session.getStartTime().getTime() / 1000L);
-                if (serverConfig != null) {
-                    session.setKeepaliveInterval(serverConfig.getKeepaliveInterval());
-                    session.setKeepalive(serverConfig.requiresKeepalive());
-                }
+                session.setKeepaliveInterval(keepAliveInterval);
+                session.setKeepalive(requiresKeepAlive);
                 if (token != null) {
                     session.setToken(token.getKey());
                     session.setTokenExpiresIn(SecurityConfiguration.SESSION_TOKEN_TTL);

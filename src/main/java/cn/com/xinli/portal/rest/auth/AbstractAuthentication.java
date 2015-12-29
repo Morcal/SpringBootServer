@@ -13,7 +13,10 @@ import java.util.Collection;
  * @author zhoupeng 2015/12/16.
  */
 public abstract class AbstractAuthentication extends AbstractAuthenticationToken {
+    /** Authentication principal. */
     private final String principal;
+
+    /** Authentication credentials. */
     private HttpDigestCredentials credentials;
 
     private static final AbstractAuthentication empty = new AbstractAuthentication(null, null, null) {

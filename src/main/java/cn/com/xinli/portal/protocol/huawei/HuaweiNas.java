@@ -106,7 +106,7 @@ public class HuaweiNas {
                 remote);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("> [NAS] logout, " + error.getDescription() + ", sent.");
+            logger.debug("> [NAS] {} sent.", error.getDescription());
         }
     }
 
@@ -166,7 +166,7 @@ public class HuaweiNas {
             case CHAP:
                 reqId = requestMapping.get(ip);
                 if (reqId == null) {
-                    logger.warn("* [NAS] Can't find request mapping, ip: " + ip + ".");
+                    logger.warn("* [NAS] Can't find request mapping, ip: {}.", ip);
                     return;
                 }
 
@@ -182,7 +182,7 @@ public class HuaweiNas {
                 break;
 
             default:
-                logger.error("* [NAS] Unsupported authentication type, code: " + request.getAuthType());
+                logger.error("* [NAS] Unsupported authentication type, code: {}.", request.getAuthType());
                 return;
         }
 
@@ -200,7 +200,7 @@ public class HuaweiNas {
                 remote);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("> [NAS] authentication " + error.getDescription() + " sent.");
+            logger.debug("> [NAS] {} sent.", error.getDescription());
         }
     }
 
@@ -221,7 +221,7 @@ public class HuaweiNas {
             requestMapping.put(ip, reqId);
 
             if (logger.isDebugEnabled()) {
-                logger.debug("> [NAS] CHAP mapped, ip: " + ip + ", response sent.");
+                logger.debug("> [NAS] CHAP mapped, ip: {}.", ip);
             }
 
             /* Create challenge. */
@@ -231,7 +231,7 @@ public class HuaweiNas {
             ack = Packets.newChallengeAck(
                     nas.getInetAddress(), challenge.value, reqId, error, request);
             if (logger.isDebugEnabled()) {
-                logger.debug("> [NAS] challenge created: " + challenge.value);
+                logger.debug("> [NAS] challenge created: {}.", challenge.value);
             }
         }
 
@@ -240,7 +240,7 @@ public class HuaweiNas {
                 remote);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("> [NAS] challenge " + error.getDescription() + " sent.");
+            logger.debug("> [NAS] {} sent.", error.getDescription());
         }
     }
 
@@ -262,7 +262,7 @@ public class HuaweiNas {
                 long remaining = CHALLENGE_TTL * 1000L - (now - challenge.createTime);
                 if (remaining < 0L) {
                     /* Remove challenge mapping. */
-                    logger.info("> [NAS] challenge expired: " + challenge.reqId);
+                    logger.info("> [NAS] challenge expired: {}.", challenge.reqId);
                     challengeMapping.remove(challenge.reqId);
                 } else {
                     /*
@@ -285,7 +285,8 @@ public class HuaweiNas {
     public void start() throws IOException {
         this.executorService.submit(this::evictChallenges);
         this.portalServer.start();
-        logger.info("> [NAS] Mock Huawei NAS (portal server) started, listen on port: " + nas.getListenPort() + ".");
+        logger.info("> [NAS] Mock Huawei NAS (portal server) started, listen on port: {}.",
+                nas.getListenPort());
     }
 
     public void shutdown() {
@@ -442,7 +443,7 @@ public class HuaweiNas {
                             break;
 
                         default:
-                            logger.warn("> [NAS] Unsupported operation type: " + type.get().name());
+                            logger.warn("> [NAS] Unsupported operation type: {}.", type.get().name());
                             break;
                     }
                 }

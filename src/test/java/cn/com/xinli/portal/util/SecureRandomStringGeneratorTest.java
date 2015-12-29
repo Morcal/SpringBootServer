@@ -27,8 +27,8 @@ public class SecureRandomStringGeneratorTest extends TestBase {
         }
 
         took = System.nanoTime() - took;
-        logger.debug("Generate " + TEST_STRINGS_COUNT + " unique strings with size: " + TEST_STRINGS_SIZE +
-                " took " + took / 1_000_000L + " milliseconds.");
+        logger.debug("Generate {} unique strings with size:  {} took {} milliseconds.",
+                TEST_STRINGS_COUNT, TEST_STRINGS_SIZE, took / 1_000_000L);
 
         Assert.assertEquals(TEST_STRINGS_COUNT, strings.size());
     }

@@ -1,11 +1,10 @@
 package cn.com.xinli.portal.web;
 
-import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.rest.Scheme;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -37,18 +36,21 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
         return "X-PWS-Scheme";
     }
 
-    @Autowired
-    private ServerConfig serverConfig;
+    @Value("${pws.rest.version}") private String restSchemeVersion;
+    @Value("${pws.rest.server}") private String restSchemeServer;
+    @Value("${pws.rest.port}") private int portalServerListenPort;
+    @Value("${pws.rest.host}") private String restSchemeHost;
+    @Value("${pws.rest.scheme}") private String restSchemeScheme;
 
     @Bean
     public Scheme scheme() {
         Scheme scheme = new Scheme();
         scheme.setUri(ApiConfiguration.API_PATH);
-        scheme.setVersion(serverConfig.getRestSchemeVersion());
-        scheme.setServer(serverConfig.getRestSchemeServer());
-        scheme.setPort(serverConfig.getPortalServerListenPort());
-        scheme.setHost(serverConfig.getRestSchemeHost());
-        scheme.setScheme(serverConfig.getRestSchemeScheme());
+        scheme.setVersion(restSchemeVersion);
+        scheme.setServer(restSchemeServer);
+        scheme.setPort(portalServerListenPort);
+        scheme.setHost(restSchemeHost);
+        scheme.setScheme(restSchemeScheme);
         return scheme;
     }
 

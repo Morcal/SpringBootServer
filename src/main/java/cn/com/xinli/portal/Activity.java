@@ -1,5 +1,7 @@
 package cn.com.xinli.portal;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 
 /**
@@ -33,11 +35,36 @@ public interface Activity {
 
     /** Activity action. */
     enum Action {
-        AUTHENTICATE,
-        CREATE_SESSION,
-        GET_SESSION,
-        UPDATE_SESSION,
-        DELETE_SESSION
+        AUTHENTICATE("authorize"),
+        CREATE_SESSION("connect"),
+        GET_SESSION("get-session"),
+        UPDATE_SESSION("update-session"),
+        FIND_SESSION("find-session"),
+        DELETE_SESSION("disconnect"),
+        UNKNOWN("unknown");
+
+        private String alias;
+
+        Action(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
+
+        public static Action ofAlias(String alias) {
+            if (StringUtils.isEmpty(alias)) {
+                return UNKNOWN;
+            }
+
+            for (Action action : values()) {
+                if (action.alias.equals(alias)) {
+                    return action;
+                }
+            }
+            return UNKNOWN;
+        }
     }
 
     /**

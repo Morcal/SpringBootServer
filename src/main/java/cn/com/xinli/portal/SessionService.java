@@ -38,7 +38,7 @@ public interface SessionService {
      * Update session's last modified timestamp.
      * @param id session id.
      * @param timestamp last modified timestamp.
-     * @return updated session.
+     * @return true if session updated.
      */
     Session update(long id, long timestamp) throws SessionNotFoundException, InvalidPortalRequestException;
 

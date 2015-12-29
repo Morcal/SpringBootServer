@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.auth;
 
 /**
+ * Certificate service.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/21.

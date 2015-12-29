@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.rest.configuration;
 
+import cn.com.xinli.portal.auth.AuthorizationServer;
+import cn.com.xinli.portal.rest.auth.RestAuthorizationServer;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeManager;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.EhCacheChallengeManager;
@@ -7,7 +9,6 @@ import cn.com.xinli.portal.rest.token.AccessTokenService;
 import cn.com.xinli.portal.rest.token.SessionTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.token.TokenService;
 
 /**
  * PWS REST modules configurations.
@@ -19,6 +20,11 @@ import org.springframework.security.core.token.TokenService;
 @Configuration
 public class RestConfiguration {
     @Bean
+    public AuthorizationServer authorizationServer() {
+        return new RestAuthorizationServer();
+    }
+
+    @Bean
     public ChallengeManager challengeManager() {
         return new EhCacheChallengeManager();
     }
@@ -28,12 +34,12 @@ public class RestConfiguration {
         return (ChallengeService) challengeManager();
     }
 
-    @Bean
+    @Bean(name = "rest-token-service")
     public AccessTokenService restTokenService() {
         return new AccessTokenService();
     }
 
-    @Bean
+    @Bean(name = "session-token-service")
     public SessionTokenService sessionTokenService() {
         return new SessionTokenService();
     }

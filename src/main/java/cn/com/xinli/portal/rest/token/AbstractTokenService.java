@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.rest.token;
 
-import cn.com.xinli.portal.ServerConfig;
 import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.core.token.Token;
 import org.springframework.security.core.token.TokenService;
@@ -32,12 +32,14 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     @Autowired
     private SecureRandomStringGenerator secureRandomStringGenerator;
 
-    @Autowired
-    private ServerConfig serverConfig;
+//    @Autowired
+//    private PortalServerConfig serverConfig;
+
+    @Value("${pws.private_key") private String serverPrivateKey;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(serverConfig);
+//        Assert.notNull(serverConfig);
         Assert.notNull(secureRandomStringGenerator);
     }
 
@@ -80,7 +82,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return SHA summary.
      */
     private String sha(String content) {
-        return Sha512DigestUtils.shaHex(content + ":" + serverConfig.getPrivateKey());
+        return Sha512DigestUtils.shaHex(content + ":" + serverPrivateKey/*serverConfig.getPrivateKey()*/);
     }
 
     @Override

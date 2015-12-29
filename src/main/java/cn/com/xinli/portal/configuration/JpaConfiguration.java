@@ -1,14 +1,9 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.ServerConfig;
+import org.apache.derby.jdbc.EmbeddedDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.derby.jdbc.EmbeddedDriver;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
@@ -24,6 +19,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.io.File;
 
@@ -34,32 +30,30 @@ import java.io.File;
  */
 @Configuration
 @EnableJpaRepositories(basePackages = "cn.com.xinli.portal.persist")
-public class JpaConfiguration implements BeanFactoryAware {
+public class JpaConfiguration {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(JpaConfiguration.class);
 
-    /** Bean factory. */
-    private BeanFactory beanFactory;
+    @Value("${pws.database.derby.scheme}") private String derbyScheme;
 
-    @Autowired
-    private ServerConfig serverConfig;
+    @Value("${pws.database.derby.mem.enable}") private boolean enableDerbyMemDb;
 
-    @Bean
+    //@Bean
     public boolean firstRun() {
-        if (serverConfig.useDerbyMemDb()) {
+        if (enableDerbyMemDb) {
             /* Within derby memory database, always return true. */
             logger.info("> Running on derby memory database.");
             return true;
         } else {
             /* Check derby database directory to determine if we're on the first run. */
-            File pws = new File(serverConfig.getDerbyScheme());
+            File pws = new File(derbyScheme);
             return !(pws.exists() && pws.isDirectory());
         }
     }
 
-    @Bean
+    //@Bean(name = "datasource")
     public DataSource dataSource() {
-        if (!serverConfig.useDerbyMemDb()) {
+        if (!enableDerbyMemDb) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EmbeddedDriver.class.getName());
             //dataSource.setUrl("jdbc:derby:PWS;create=true");
@@ -69,17 +63,19 @@ public class JpaConfiguration implements BeanFactoryAware {
         } else {
             EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
             return builder.setType(EmbeddedDatabaseType.DERBY)
-                    .setName(serverConfig.getDerbyScheme())
+                    .setName(derbyScheme)
                     .build();
         }
     }
 
+    //@Autowired
     @Bean
-    public PlatformTransactionManager transactionManager() {
-        return new JpaTransactionManager(entityManagerFactory().getObject());
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+//        return new JpaTransactionManager(entityManagerFactory().getObject());
     }
 
-    @Bean
+    //@Bean(name = "jpa-vendor-adapter")
     public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(firstRun());
@@ -87,33 +83,29 @@ public class JpaConfiguration implements BeanFactoryAware {
         return vendorAdapter;
     }
 
-    @Bean
+    //@Bean(name = "jpa-dialect")
     public JpaDialect jpaDialect() {
         HibernateJpaDialect dialect = new HibernateJpaDialect();
         dialect.setPrepareConnection(true);
         return dialect;
     }
 
+    //@Bean(name = "jpa-exception-processor")
     @Bean
-    public BeanPostProcessor exceptionProcessor() {
+    public PersistenceExceptionTranslationPostProcessor exceptionProcessor() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    @Bean
+    @Bean(name = "entityManagerFactory")
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());
 //        factory.setPersistenceUnitManager(persistenceUnitManager());
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
-        factory.setBeanFactory(beanFactory);
+        //factory.setBeanFactory(beanFactory);
         factory.setPackagesToScan("cn.com.xinli.portal.persist");
 
         return factory;
-    }
-
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
     }
 }

@@ -5,13 +5,14 @@ import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.bean.RestBean;
 import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.rest.auth.RestRole;
 import cn.com.xinli.portal.rest.token.RestToken;
 import cn.com.xinli.portal.rest.token.SessionTokenService;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,8 +49,11 @@ public class SessionController {
     @Autowired
     private NasMapping nasMapping;
 
-    @Autowired
-    private ServerConfig serverConfig;
+    @Value("${pws.session.keepalive.requires}") private boolean requiresKeepAlive;
+
+    @Value("${pws.session.keepalive.interval}") private int keepAliveInterval;
+//    @Autowired
+//    private PortalServerConfig serverConfig;
 
     private Session buildSession(long nas, String username, String password, String ip,
                                  String mac, String os, String version) {
@@ -69,7 +73,7 @@ public class SessionController {
     /**
      * Create a portal session so that user can access broadband connection.
      * <p>
-     * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
+     * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.</p>
      *
      * @param ip  source ip address.
@@ -123,7 +127,8 @@ public class SessionController {
         return RestResponseBuilders.successBuilder()
                 .setSession(session)
                 .setAccessAuthentication(authentication)
-                .setServerConfig(serverConfig)
+                .setRequiresKeepAlive(requiresKeepAlive)
+                .setKeepAliveInterval(keepAliveInterval)
                 .setGrantToken(true)
                 .build();
     }
@@ -131,10 +136,10 @@ public class SessionController {
     /**
      * Get portal session information.
      * <p>
-     * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
+     * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.</p>
      * <p>
-     * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
+     * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
      * @param id session id.
@@ -144,24 +149,25 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.GET)
-    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestBean get(@P("session") @PathVariable long id,
                         @AuthenticationPrincipal Principal principal) throws SessionNotFoundException {
         Session session = sessionService.getSession(id);
         return RestResponseBuilders.successBuilder()
                 .setSession(session)
                 .setAccessAuthentication((AccessAuthentication) principal)
-                .setServerConfig(serverConfig)
+                .setRequiresKeepAlive(requiresKeepAlive)
+                .setKeepAliveInterval(keepAliveInterval)
                 .build();
     }
 
     /**
      * Update portal session.
      * <p>
-     * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
+     * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.</p>
      * <p>
-     * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
+     * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
      * @param timestamp source timestamp.
@@ -172,7 +178,7 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.POST)
-    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestBean update(@RequestParam long timestamp,
                            @P("session") @PathVariable long id,
                            @AuthenticationPrincipal Principal principal) throws InvalidPortalRequestException, SessionNotFoundException {
@@ -181,17 +187,18 @@ public class SessionController {
         return RestResponseBuilders.successBuilder()
                 .setSession(updated)
                 .setAccessAuthentication((AccessAuthentication) principal)
-                .setServerConfig(serverConfig)
+                .setRequiresKeepAlive(requiresKeepAlive)
+                .setKeepAliveInterval(keepAliveInterval)
                 .build();
     }
 
     /**
      * Disconnect portal session.
      * <p>
-     * <p>Only request authenticated with role of {@link SecurityConfiguration#PORTAL_USER_ROLE}
+     * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.</p>
      * <p>
-     * <p>AFAIK, Administrators with role of {@link SecurityConfiguration#SYSTEM_ADMIN_ROLE}
+     * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
      * @param id session id.
@@ -201,14 +208,14 @@ public class SessionController {
     @RequestMapping(
             value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
             method = RequestMethod.DELETE)
-    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestBean disconnect(@P("session") @PathVariable long id,
                                @AuthenticationPrincipal Principal principal) throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
         Message<Session> message = sessionManager.removeSession(id);
         if (logger.isDebugEnabled()) {
             logger.debug("> disconnect result: {}", message);
             Session rm = message.getContent().get();
-            logger.debug("session: " + rm + " removed.");
+            logger.debug("session removed {}.", rm);
         }
 
         if (!message.isSuccess()) {
@@ -225,7 +232,7 @@ public class SessionController {
 
     @ResponseBody
     @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_SESSIONS + "/" + ApiConfiguration.REST_API_FIND,
+            value = "/" + ApiConfiguration.REST_API_FIND,
             method = RequestMethod.POST)
     @PreAuthorize("hasRole('USER')")
     public RestBean find(@RequestParam(value = "user_ip") String ip,
@@ -242,13 +249,14 @@ public class SessionController {
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
         authentication.setSessionToken(token);
         if (logger.isDebugEnabled()) {
-            logger.debug("> new session token: " + token + " allocated.");
+            logger.debug("> new session token allocated {}.", token);
         }
 
         return RestResponseBuilders.successBuilder()
                 .setSession(session)
                 .setAccessAuthentication((AccessAuthentication) principal)
-                .setServerConfig(serverConfig)
+                .setRequiresKeepAlive(requiresKeepAlive)
+                .setKeepAliveInterval(keepAliveInterval)
                 .setGrantToken(true)
                 .build();
     }

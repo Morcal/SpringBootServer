@@ -1,9 +1,8 @@
 package cn.com.xinli.portal.web;
 
-import cn.com.xinli.portal.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,8 +22,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(WebSecurityConfiguration.class);
 
-    @Autowired
-    private ServerConfig serverConfig;
+    @Value("${pws.root}") private String application;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -37,9 +35,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         logger.warn("> configuring http security... ");
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/" + serverConfig.getApplication(),
-                        "/" + serverConfig.getApplication() + "/api")
+                .antMatchers("/" + application, "/" + application + "/api")
                 .permitAll();
-        //http.anonymous().disable();
     }
 }

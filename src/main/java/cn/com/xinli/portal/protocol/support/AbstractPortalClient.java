@@ -124,7 +124,7 @@ public abstract class AbstractPortalClient implements PortalClient {
             return InetAddress.getByName(ip) != null;
         } catch (UnknownHostException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Invalid ip: " + ip);
+                logger.debug("Invalid ip: {}.", ip);
             }
             return false;
         }

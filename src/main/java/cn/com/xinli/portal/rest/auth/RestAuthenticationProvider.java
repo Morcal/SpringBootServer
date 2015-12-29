@@ -1,5 +1,9 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.portal.auth.Certificate;
+import cn.com.xinli.portal.auth.CertificateNotFoundException;
+import cn.com.xinli.portal.auth.CertificateService;
+import cn.com.xinli.portal.rest.RestRequest;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
@@ -42,10 +46,86 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     private ChallengeService challengeService;
 
     @Autowired
+    private CertificateService certificateService;
+
+    @Autowired
     private AccessTokenService accessTokenService;
 
     @Autowired
     private SessionTokenService sessionTokenService;
+
+    @Override
+    public boolean supports(Class<?> aClass) {
+        return AccessAuthentication.class.isAssignableFrom(aClass);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(challengeService);
+    }
+
+    @Override
+    public int getOrder() {
+        return ORDER;
+    }
+
+    private Certificate verifyCertificate(HttpDigestCredentials credentials) throws CertificateNotFoundException {
+        /* Retrieve shared secret. */
+        String clientId = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
+
+        Certificate certificate = certificateService.loadCertificate(clientId);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("> certificate loaded: {}", certificate);
+        }
+
+        return certificate;
+    }
+
+    /**
+     * Verify request by checking its integrity and checking if
+     * request was originated in allowed time range.
+     *
+     * Create a REST request from incoming request and then sign it,
+     * so that we can verify incoming request with signed one.
+     *
+     * @param authentication authentication.
+     * @throws CertificateNotFoundException
+     * @throws BadCredentialsException
+     */
+    private void verifySignature(AccessAuthentication authentication) throws CertificateNotFoundException {
+//        long now = System.currentTimeMillis() / 1000L;
+//        String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
+//        long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
+//        long diff = Math.abs(now - timestamp);
+
+//        if (diff > SecurityConfiguration.MAX_TIME_DIFF) {
+//            throw new BadCredentialsException("Way too inaccurate timestamp.");
+//        }
+        Certificate certificate = verifyCertificate(authentication.getCredentials());
+
+        /* Sign request and compare with incoming one. */
+        RestRequest request = (RestRequest) authentication.getDetails();
+        request.sign(certificate.getSharedSecret());
+
+        String signature = authentication.getCredentials().getParameter(HttpDigestCredentials.SIGNATURE);
+        String signedSignature = request.getCredentials().getParameter(HttpDigestCredentials.SIGNATURE);
+
+        if (signature == null) {
+            throw new BadCredentialsException("Missing signature.");
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("> Comparing signature, calculated: {{}} , original: {{}}.",
+                    signedSignature, signature);
+        }
+
+        if (!signedSignature.equals(signature)) {
+            throw new BadCredentialsException("Signature verify failed.");
+        }
+
+        logger.debug("> Request signature verified.");
+    }
 
     /**
      * Handle challenge.
@@ -69,8 +149,6 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             /* Remove challenge immediately. */
             challengeService.deleteChallenge(challenge);
 
-            /* Authenticated, allocate a token. */
-            authentication.setAuthenticated(true);
             /* TODO Provide better information, like Username for token allocation. */
             if (challenge.requiresToken()) {
                 Token token = accessTokenService.allocateToken(
@@ -78,8 +156,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
                 authentication.setAccessToken((RestToken) token);
             }
 
-            authentication.setAuthenticated(true);
-            authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + RestRole.USER.name()));
         }
     }
 
@@ -98,10 +175,10 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         if (verified == null) {
             throw new InvalidAccessTokenException("invalid client token.");
         }
-        logger.debug("> Session token verified.");
+        logger.debug("> Access token verified.");
         authentication.setAuthenticated(true);
         authentication.setAccessToken((RestToken) verified);
-        authorities.add(new SimpleGrantedAuthority(SecurityConfiguration.PORTAL_USER_ROLE));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + RestRole.USER.name()));
     }
 
     /**
@@ -123,6 +200,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             throw new InvalidSessionTokenException(key);
         }
 
+        logger.debug("> Session token verified.");
         authentication.setSessionToken((RestToken) verified);
         long sessionId = Long.parseLong(verified.getExtendedInformation());
         authorities.add(new SessionAuthority(sessionId));
@@ -140,6 +218,13 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
 
         AccessAuthentication restAccessAuth = (AccessAuthentication) authentication;
         HttpDigestCredentials credentials = restAccessAuth.getCredentials();
+
+        try {
+            verifySignature(restAccessAuth);
+        } catch (CertificateNotFoundException e) {
+            throw new BadCredentialsException(e.getMessage());
+        }
+
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
         /* Handle challenge/access token first. */
@@ -166,20 +251,5 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         populate.setAuthenticated(true);
 
         return populate;
-    }
-
-    @Override
-    public boolean supports(Class<?> aClass) {
-        return AccessAuthentication.class.isAssignableFrom(aClass);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        Assert.notNull(challengeService);
-    }
-
-    @Override
-    public int getOrder() {
-        return ORDER;
     }
 }

@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
+ * Certificate Repository.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/17.

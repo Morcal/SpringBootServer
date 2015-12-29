@@ -105,7 +105,7 @@ public class WebController {
 
             if (!AddressUtil.validateIp(realIp, sourceIp, request)) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("> invalid ip: " + sourceIp);
+                    logger.debug("> invalid ip: {}.", sourceIp);
                 }
                 break;
             }

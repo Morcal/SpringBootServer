@@ -9,14 +9,20 @@ import cn.com.xinli.portal.persist.CertificateRepository;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 /**
+ * Certificate Service Support.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/21.
  */
+@Service
 public class CertificateServiceSupport implements CertificateService, CertificateManager {
     @Autowired
     private CertificateRepository certificateRepository;

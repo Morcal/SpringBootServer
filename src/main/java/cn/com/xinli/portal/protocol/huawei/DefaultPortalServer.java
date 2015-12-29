@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.protocol.huawei;
 
-import cn.com.xinli.portal.ServerConfig;
+import cn.com.xinli.portal.PortalServerConfig;
 import cn.com.xinli.portal.SessionService;
 import cn.com.xinli.portal.protocol.support.AbstractDatagramServer;
 import org.slf4j.Logger;
@@ -42,19 +42,19 @@ public class DefaultPortalServer  {
 
     private final int portalServerPort;
 
-    public DefaultPortalServer(ServerConfig serverConfig, SessionService sessionService) {
+    public DefaultPortalServer(PortalServerConfig portalServerConfig, SessionService sessionService) {
         this.sessionService = sessionService;
         this.codecFactory = new HuaweiCodecFactory();
-        this.sharedSecret = serverConfig.getPortalServerSharedSecret();
-        this.portalServerPort = serverConfig.getPortalServerListenPort() > 0 ?
-                serverConfig.getPortalServerListenPort() : DEFAULT_LISTEN_PORT;
+        this.sharedSecret = portalServerConfig.getPortalServerSharedSecret();
+        this.portalServerPort = portalServerConfig.getPortalServerListenPort() > 0 ?
+                portalServerConfig.getPortalServerListenPort() : DEFAULT_LISTEN_PORT;
         this.datagramPortalServer
-                = new DatagramPortalServer(portalServerPort, serverConfig.getPortalServerThreadSize());
+                = new DatagramPortalServer(portalServerPort, portalServerConfig.getPortalServerThreadSize());
     }
 
     public void start() throws IOException {
         this.datagramPortalServer.start();
-        logger.info("> Portal Server started, listen on: " + this.portalServerPort + ".");
+        logger.info("> Portal Server started, listen on: {}.", this.portalServerPort);
     }
 
     public void shutdown() {
@@ -75,7 +75,7 @@ public class DefaultPortalServer  {
                     byte[] ip = in.getIp();
                     //byte[] mac = in.getAttribute(Enums.Attribute.USER_MAC);
                     String address = InetAddress.getByAddress(ip).getHostAddress();
-                    logger.info("> NTF_LOGOUT, ip: " + address + " already offline");
+                    logger.info("> NTF_LOGOUT, ip: {} already offline", ip);
                     sessionService.removeSession(address);
                 }
             } catch (Exception e) {

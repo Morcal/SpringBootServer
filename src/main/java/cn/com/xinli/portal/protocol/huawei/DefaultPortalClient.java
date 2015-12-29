@@ -136,7 +136,7 @@ public class DefaultPortalClient extends AbstractPortalClient {
                     .decode(req.getAuthenticator(), buffer, nas.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from nas timeout, nas: " + nas);
+            logger.warn("* Receive from nas timeout, nas: ", nas);
             return Optional.empty();
         } finally {
             if (socket != null) {

@@ -3,6 +3,7 @@ package cn.com.xinli.portal.rest.auth.challenge;
 import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.auth.CertificateNotFoundException;
 import cn.com.xinli.portal.auth.CertificateService;
+import cn.com.xinli.portal.configuration.CachingConfiguration;
 import cn.com.xinli.portal.rest.Constants;
 import cn.com.xinli.portal.rest.auth.SignatureUtil;
 import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
@@ -36,7 +37,7 @@ public class EhCacheChallengeManager implements ChallengeService {
         return new Element(
                 challenge.getNonce(),
                 challenge,
-                SecurityConfiguration.EHCACHE_VERSION,
+                CachingConfiguration.EHCACHE_VERSION,
                 now,
                 now,
                 0,
@@ -58,7 +59,7 @@ public class EhCacheChallengeManager implements ChallengeService {
         Element element = challengeCache.get(cha.getNonce());
         assert element != null;
         if (logger.isDebugEnabled()) {
-            logger.debug("> cached element: " + element);
+            logger.debug("> cached element: {}.", element);
         }
 
         return cha;
@@ -66,15 +67,15 @@ public class EhCacheChallengeManager implements ChallengeService {
 
     @Override
     public void deleteChallenge(Challenge challenge) {
-        logger.info("deleting challenge: " + challenge);
         challengeCache.remove(challenge.getNonce());
+        logger.info("> challenge: {} deleted.", challenge);
     }
 
     @Override
     public Challenge loadChallenge(String nonce) throws ChallengeNotFoundException {
         Element element = challengeCache.get(nonce);
         if (element == null) {
-            throw new ChallengeNotFoundException("challenge not found for:" + nonce + ".");
+            throw new ChallengeNotFoundException("challenge not found for: " + nonce + ".");
         }
         return (Challenge) element.getObjectValue();
     }

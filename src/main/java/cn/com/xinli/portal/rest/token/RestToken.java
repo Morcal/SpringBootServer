@@ -63,4 +63,15 @@ public final class RestToken implements Token {
     public String getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "RestToken{" +
+                "creationTime=" + creationTime +
+                ", key='" + key + '\'' +
+                ", scope=" + scope +
+                ", type='" + type + '\'' +
+                ", extendedInformation='" + extendedInformation + '\'' +
+                '}';
+    }
 }

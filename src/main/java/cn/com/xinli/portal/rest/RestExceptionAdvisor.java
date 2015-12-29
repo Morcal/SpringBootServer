@@ -1,7 +1,11 @@
 package cn.com.xinli.portal.rest;
 
+import cn.com.xinli.portal.Activity;
+import cn.com.xinli.portal.ActivityService;
 import cn.com.xinli.portal.SessionNotFoundException;
 import cn.com.xinli.portal.protocol.ProtocolException;
+import cn.com.xinli.portal.rest.api.EntryPoint;
+import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeNotFoundException;
 import cn.com.xinli.portal.rest.bean.Failure;
@@ -10,6 +14,7 @@ import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,6 +25,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Spring web MVC controller advice.
@@ -38,6 +49,33 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
      */
     private final Logger logger = LoggerFactory.getLogger(RestExceptionAdvisor.class);
 
+    @Autowired
+    private ActivityService activityService;
+
+    @Autowired
+    private Provider restApiProvider;
+
+    private Activity.Action getActivityAction(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        Set<Optional<EntryPoint>> entryPoints = restApiProvider.getRegistrations().stream()
+                .map(reg -> reg.getApis().stream().filter(api -> api.getUrl().equals(uri)).findFirst())
+                .collect(Collectors.toSet());
+
+        Optional<Optional<EntryPoint>> target = entryPoints.stream()
+                .filter(Optional::isPresent)
+                .findFirst();
+
+        Activity.Action action = null;
+        if (target.isPresent()) {
+            Optional<EntryPoint> ep = target.get();
+            if (ep.isPresent()) {
+                action = Activity.Action.ofAlias(ep.get().getAction());
+            }
+        }
+
+        return action == null ? Activity.Action.UNKNOWN : action;
+    }
+
     /**
      * REST controller exception handler.
      * <p>
@@ -54,9 +92,9 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(value = {AuthenticationException.class})
-    public RestBean handleAuthenticationException(AuthenticationException e) {
+    public RestBean handleAuthenticationException(AuthenticationException e, HttpServletRequest request) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         return RestResponseBuilders.errorBuilder()
@@ -71,7 +109,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {BadCredentialsException.class})
     public RestBean handleAuthenticationException(BadCredentialsException e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         return RestResponseBuilders.errorBuilder()
@@ -86,7 +124,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {SessionNotFoundException.class})
     public RestBean handleSessionNotFoundException(SessionNotFoundException e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception: {}", this.getClass().getName(), e.getMessage());
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         AccessAuthentication authentication =
@@ -102,7 +140,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {InvalidAccessTokenException.class, ChallengeNotFoundException.class})
     public RestBean handleChallengeException(Exception e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         return RestResponseBuilders.errorBuilder()
@@ -119,7 +157,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             InvalidSessionTokenException.class})
     public RestBean handleSessionException(Exception e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         return RestResponseBuilders.errorBuilder()
@@ -134,7 +172,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             AccessDeniedException.class})
     public RestBean handleAccessDeniedException(AccessDeniedException e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
 
         return RestResponseBuilders.errorBuilder()
@@ -148,7 +186,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {ProtocolException.class})
     public RestBean handlePortalProtocolException(ProtocolException e) {
         if (logger.isDebugEnabled()) {
-            logger.error("{} handle exception:", this.getClass().getName(), e);
+            logger.error("handle exception: {} ", e.getMessage());
         }
         return RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_SERVER_ERROR)

@@ -63,7 +63,7 @@ public class AuthorizeController {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("> incoming authorize request, from: " + ip + ", mac: " + mac);
+                logger.debug("> incoming authorize request, from: {}, mac: {}.", ip, mac);
             }
 
             if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {

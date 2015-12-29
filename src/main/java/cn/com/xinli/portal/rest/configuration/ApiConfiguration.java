@@ -1,12 +1,13 @@
 package cn.com.xinli.portal.rest.configuration;
 
-import cn.com.xinli.portal.ServerConfig;
+import cn.com.xinli.portal.Activity;
 import cn.com.xinli.portal.rest.api.EntryPoint;
 import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.api.Registration;
+import cn.com.xinli.portal.rest.token.TokenScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,15 +33,17 @@ public class ApiConfiguration {
     public static final String REST_API_VERSION = "v1.0";
     public static final String REST_API_SESSION = "session";
     public static final String REST_API_SESSIONS = "sessions";
-    public static final String REST_API_FIND = "find";
+    public static final String REST_API_FIND = "sessions/find";
     public static final String REST_API_AUTHORIZE = "authorize";
 
-    @Autowired
-    private ServerConfig serverConfig;
+    @Value("${pws.root}") private String serverApplication;
+
+//    @Autowired
+//    private PortalServerConfig portalServerConfig;
 
     private String url(String api) {
         StringJoiner joiner = new StringJoiner("/");
-        joiner.add("/" + serverConfig.getApplication())
+        joiner.add("/" + serverApplication/*portalServerConfig.getApplication()*/)
                 .add(REST_API_VERSION)
                 .add(api);
         return joiner.toString();
@@ -59,8 +62,8 @@ public class ApiConfiguration {
         Registration registration = new Registration(
                 API_TYPE,
                 REST_API_VERSION,
-                "/" + serverConfig.getApplication() + "/" + REST_API_VERSION + "/" + REST_API_AUTHORIZE);
-        logger.debug("> Creating: " + registration);
+                "/" + serverApplication/*portalServerConfig.getApplication()*/ + "/" + REST_API_VERSION + "/" + REST_API_AUTHORIZE);
+        logger.debug("> Creating: {}.", registration);
 
         registration.registerApi(authorize());
         registration.registerApi(connect());
@@ -75,65 +78,65 @@ public class ApiConfiguration {
     @Bean
     public EntryPoint authorize() {
         EntryPoint api = new EntryPoint(
-                "portal-authorize",
-                "authorize",
-                url("authorize"),
+                TokenScope.PORTAL_ACCESS_TOKEN_SCOPE.alias(),
+                Activity.Action.AUTHENTICATE.alias(),
+                url(REST_API_AUTHORIZE),
                 RequestMethod.GET.name(),
                 "JSON",
                 false);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 
     @Bean
     public EntryPoint connect() {
         EntryPoint api = new EntryPoint(
-                "portal-session",
-                "connect",
-                url("sessions"),
+                TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
+                Activity.Action.CREATE_SESSION.alias(),
+                url(REST_API_SESSIONS),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 
     @Bean
     public EntryPoint disconnect() {
         EntryPoint api = new EntryPoint(
-                "portal-session",
-                "disconnect",
-                url("session"),
+                TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
+                Activity.Action.DELETE_SESSION.alias(),
+                url(REST_API_SESSION),
                 RequestMethod.DELETE.name(),
                 "JSON",
                 true);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 
     @Bean
     public EntryPoint get() {
         EntryPoint api = new EntryPoint(
-                "portal-session",
-                "get-session",
-                url("session"),
+                TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
+                Activity.Action.GET_SESSION.alias(),
+                url(REST_API_SESSION),
                 RequestMethod.GET.name(),
                 "JSON",
                 true);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 
     @Bean
     public EntryPoint update() {
         EntryPoint api = new EntryPoint(
-                "portal-session",
-                "update-session",
-                url("session"),
+                TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
+                Activity.Action.UPDATE_SESSION.alias(),
+                url(REST_API_SESSION),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 
@@ -141,13 +144,13 @@ public class ApiConfiguration {
     @Bean
     public EntryPoint find() {
         EntryPoint api = new EntryPoint(
-                "portal-session",
-                "find-session",
-                url("sessions/find"),
+                TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
+                Activity.Action.FIND_SESSION.alias(),
+                url(REST_API_FIND),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
-        logger.debug("> Creating: " + api);
+        logger.debug("> Creating: {}.", api);
         return api;
     }
 }
