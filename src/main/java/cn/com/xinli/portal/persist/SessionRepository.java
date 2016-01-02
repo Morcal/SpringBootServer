@@ -14,8 +14,6 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/7.
  */
-@Repository
-@Transactional
 public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
     /**
      * Find session by ip and mac.

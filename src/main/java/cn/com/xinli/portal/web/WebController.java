@@ -14,7 +14,6 @@ import org.springframework.web.servlet.View;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 /**
  * Portal web server root controller.
  *
@@ -105,7 +104,7 @@ public class WebController {
 
             if (!AddressUtil.validateIp(realIp, sourceIp, request)) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("> invalid ip: {}.", sourceIp);
+                    logger.debug("invalid ip: {}.", sourceIp);
                 }
                 break;
             }
@@ -117,7 +116,7 @@ public class WebController {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("> mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
+                logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
             }
         } while (false);
 

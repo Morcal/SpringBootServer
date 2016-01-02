@@ -4,13 +4,11 @@ import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.support.CacheErrorHandlerSupport;
-import cn.com.xinli.portal.support.SessionCacheEventListener;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.PersistenceConfiguration;
 import net.sf.ehcache.config.SearchAttribute;
 import net.sf.ehcache.config.Searchable;
-import net.sf.ehcache.event.CacheEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,12 +62,7 @@ public class CachingConfiguration implements CachingConfigurer {
 
     @Value("${pws.rest.rate.limiting.ttl}") private int rateLimitingTtl;
 
-    @Bean(name = "session-cache-event-listener")
-    public CacheEventListener sessionCacheEventListener() {
-        return new SessionCacheEventListener();
-    }
-
-    @Bean(name = "ehcache-manager", destroyMethod = "shutdown")
+    @Bean(destroyMethod = "shutdown")
     public net.sf.ehcache.CacheManager ehcacheManager() {
         /* Use ehcache as memory only cache. */
         CacheConfiguration sessionCache = new CacheConfiguration(),
@@ -86,7 +79,7 @@ public class CachingConfiguration implements CachingConfigurer {
                 .searchAttribute(new SearchAttribute().name("nas_id").type(Long.class).expression("value.getNasId()"))
                 .searchAttribute(new SearchAttribute().name("username").type(String.class).expression("value.getUsername()"));
 
-        logger.info("> session ttl enabled: {}, ttl: {}", isSessionTtiEnabled, sessionTti);
+        logger.info("session ttl enabled: {}, ttl: {}", isSessionTtiEnabled, sessionTti);
 
         sessionCache.name(SESSION_CACHE_NAME)
                 .timeToIdleSeconds(isSessionTtiEnabled ? sessionTti : 0)
@@ -126,22 +119,22 @@ public class CachingConfiguration implements CachingConfigurer {
         return net.sf.ehcache.CacheManager.create(ehcacheConfig);
     }
 
-    @Bean(name = "certificateCache")
+    @Bean
     public Ehcache certificateCache() {
         return ehcacheManager().getEhcache(CERTIFICATE_CACHE_NAME);
     }
 
-    @Bean(name = "challengeCache")
+    @Bean
     public Ehcache challengeCache() {
         return ehcacheManager().getEhcache(CHALLENGE_CACHE_NAME);
     }
 
-    @Bean(name = "sessionCache")
+    @Bean
     public Ehcache sessionCache() {
         return ehcacheManager().getEhcache(SESSION_CACHE_NAME);
     }
 
-    @Bean(name = "rateLimitingCache")
+    @Bean
     public Ehcache rateLimitingCache() {
         return ehcacheManager().getEhcache(RATE_LIMITING_CACHE_NAME);
     }

@@ -1,7 +1,6 @@
-package cn.com.xinli.portal.web;
+package cn.com.xinli.portal.configuration;
 
 import cn.com.xinli.portal.rest.Scheme;
-import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +19,8 @@ import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * PWS web mvc configuration.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/15.
@@ -27,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableWebMvc
 @EnableSpringDataWebSupport
-public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
+public class MvcConfiguration extends WebMvcConfigurerAdapter {
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(WebMvcConfiguration.class);
+    private final Logger logger = LoggerFactory.getLogger(MvcConfiguration.class);
 
     @Bean
     public String schemeHeaderName() {
@@ -80,7 +81,8 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
         return new InternalResourceView("/html/main.html");
     }
 
-    @Bean View errorPageView() {
+    @Bean
+    public View errorPageView() {
         return new InternalResourceView("/json/error.json");
     }
 
@@ -89,11 +91,12 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
         InternalResourceViewResolver resolver = new InternalResourceViewResolver();
         resolver.setPrefix("/WEB-INF/jsp/");
         resolver.setSuffix(".jsp");
-        logger.debug("> configuring jsp view resolvers.");
+        logger.debug("configuring jsp view resolvers.");
         return resolver;
     }
 
-    @Bean CacheControl cacheControl() {
+    @Bean
+    public CacheControl cacheControl() {
         return CacheControl.maxAge(31556926, TimeUnit.SECONDS);
     }
 
@@ -113,7 +116,6 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
      * <p>REST modules should handle unhandled exceptions thrown from REST modules
      * differently and separately.</p>
      *
-     * @see cn.com.xinli.portal.rest.configuration.RestConfiguration
      * @return default error view.
      */
     @Bean

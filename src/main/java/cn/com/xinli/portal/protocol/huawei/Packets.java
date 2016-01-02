@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.AuthType;
-import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.Credentials;
 import cn.com.xinli.portal.protocol.Protocol;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

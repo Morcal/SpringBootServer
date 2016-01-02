@@ -7,7 +7,6 @@ import cn.com.xinli.portal.rest.RestRequest;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.token.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         Certificate certificate = certificateService.loadCertificate(clientId);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("> certificate loaded: {}", certificate);
+            logger.debug("certificate loaded: {}", certificate);
         }
 
         return certificate;
@@ -94,14 +93,6 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
      * @throws BadCredentialsException
      */
     private void verifySignature(AccessAuthentication authentication) throws CertificateNotFoundException {
-//        long now = System.currentTimeMillis() / 1000L;
-//        String ts = credentials.getParameter(HttpDigestCredentials.TIMESTAMP);
-//        long timestamp = StringUtils.isEmpty(ts) ? -1L : Long.parseLong(ts);
-//        long diff = Math.abs(now - timestamp);
-
-//        if (diff > SecurityConfiguration.MAX_TIME_DIFF) {
-//            throw new BadCredentialsException("Way too inaccurate timestamp.");
-//        }
         Certificate certificate = verifyCertificate(authentication.getCredentials());
 
         /* Sign request and compare with incoming one. */
@@ -116,7 +107,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("> Comparing signature, calculated: {{}} , original: {{}}.",
+            logger.debug("Comparing signature, calculated: {{}} , original: {{}}.",
                     signedSignature, signature);
         }
 
@@ -124,7 +115,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             throw new BadCredentialsException("Signature verify failed.");
         }
 
-        logger.debug("> Request signature verified.");
+        logger.debug("Request signature verified.");
     }
 
     /**
@@ -142,10 +133,10 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         Challenge challenge = challengeService.loadChallenge(nonce);
 
         if (!challengeService.verify(challenge, response)) {
-            logger.debug("> failed to verify challenge.");
+            logger.debug("failed to verify challenge.");
             throw new InvalidChallengeException("Incorrect challenge answer.");
         } else {
-            logger.debug("> challenge verified.");
+            logger.debug("challenge verified.");
             /* Remove challenge immediately. */
             challengeService.deleteChallenge(challenge);
 
@@ -175,7 +166,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         if (verified == null) {
             throw new InvalidAccessTokenException("invalid client token.");
         }
-        logger.debug("> Access token verified.");
+        logger.debug("Access token verified.");
         authentication.setAuthenticated(true);
         authentication.setAccessToken((RestToken) verified);
         authorities.add(new SimpleGrantedAuthority("ROLE_" + RestRole.USER.name()));
@@ -200,7 +191,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             throw new InvalidSessionTokenException(key);
         }
 
-        logger.debug("> Session token verified.");
+        logger.debug("Session token verified.");
         authentication.setSessionToken((RestToken) verified);
         long sessionId = Long.parseLong(verified.getExtendedInformation());
         authorities.add(new SessionAuthority(sessionId));

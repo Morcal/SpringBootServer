@@ -24,7 +24,7 @@ public class NasMappingSupport implements NasMapping {
     private NasRepository nasRepository;
 
     /** Configured NAS devices. in nas.xml */
-    private Set<NasConfiguration> configured;
+    private Set<Nas> configured;
 
     /** NAS/BRAS devices, key: nas id, value: nas configuration. */
     private final Map<Long, Nas> devices = Collections.synchronizedMap(new HashMap<>());
@@ -45,10 +45,10 @@ public class NasMappingSupport implements NasMapping {
     public void reload() {
         userNasMapping.clear();
         synchronized (devices) {
-            logger.info("> Loading configured nas, count: {}.", configured.size());
-            configured.forEach(configuration -> devices.put(configuration.getId(), NasSupport.build(configuration)));
-            logger.info("> Loading nas from database.");
-            nasRepository.all().forEach(nas -> devices.put(nas.getId(), nas));
+            logger.info("Loading configured nas, count: {}.", configured.size());
+            configured.forEach(nas -> devices.put(nas.getId(), nas));
+            logger.info("Loading nas from database.");
+            nasRepository.all().forEach(nas -> devices.put(nas.getId(), new NasAdapter(nas)));
         }
     }
 
@@ -57,7 +57,7 @@ public class NasMappingSupport implements NasMapping {
      *
      * @param configured nas pre-configured.
      */
-    public void setConfigured(Set<NasConfiguration> configured) {
+    public void setConfigured(Set<Nas> configured) {
         this.configured = configured;
     }
 
@@ -72,7 +72,7 @@ public class NasMappingSupport implements NasMapping {
 
             nas.ifPresent(n -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("> mapping nas: {}, pair: {}.", n, pair);
+                    logger.debug("mapping nas: {}, pair: {}.", n, pair);
                 }
                 userNasMapping.put(pair, n.getId());
             });
@@ -112,7 +112,7 @@ public class NasMappingSupport implements NasMapping {
     @Override
     public Nas findByIpv4Range(int ip) {
         for (Nas nas : devices.values()) {
-            if (nas.getIpv4start() <= ip && nas.getIpv4end() >= ip) {
+            if (nas.contains(ip)) {
                 return nas;
             }
         }

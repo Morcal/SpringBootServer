@@ -103,10 +103,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         try {
             scope = TokenScope.valueOf(tokens[0]);
             if (scope != getTokenScope()) {
-                logger.debug("> Invalid token scope.");
+                logger.debug("Invalid token scope.");
             }
         } catch (IllegalArgumentException e) {
-            logger.debug("> Invalid token scope.");
+            logger.debug("Invalid token scope.");
             return null;
         }
 
@@ -114,7 +114,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         try {
             creationTime = Long.decode(tokens[1]);
         } catch (NumberFormatException e) {
-            logger.debug("> Invalid token creation time.");
+            logger.debug("Invalid token creation time.");
             return null;
         }
 
@@ -123,24 +123,24 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         String sha512Hex = tokens[4];
 
         if (StringUtils.isEmpty(extendedInformation)) {
-            logger.debug("> Empty token extended information.");
+            logger.debug("Empty token extended information.");
             return null;
         }
 
         if ((now - creationTime) / 1000L > getTtl()) {
-            logger.debug("> Token expired.");
+            logger.debug("Token expired.");
             return null;
         }
 
         String expectedSha512Hex = sha(createContent(scope, creationTime, extendedInformation, random));
 
         if (!sha512Hex.equals(expectedSha512Hex)) {
-            logger.debug("> Key verification failed.");
+            logger.debug("Key verification failed.");
             return null;
         }
 
         if (!verifyExtendedInformation(extendedInformation)) {
-            logger.debug("> Token information verification failed.");
+            logger.debug("Token information verification failed.");
             return null;
         }
 

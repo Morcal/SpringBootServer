@@ -6,7 +6,7 @@ import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.configuration.CachingConfiguration;
 import cn.com.xinli.portal.rest.Constants;
 import cn.com.xinli.portal.rest.auth.SignatureUtil;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class EhCacheChallengeManager implements ChallengeService {
         Element element = challengeCache.get(cha.getNonce());
         assert element != null;
         if (logger.isDebugEnabled()) {
-            logger.debug("> cached element: {}.", element);
+            logger.debug("cached element: {}.", element);
         }
 
         return cha;
@@ -68,7 +68,7 @@ public class EhCacheChallengeManager implements ChallengeService {
     @Override
     public void deleteChallenge(Challenge challenge) {
         challengeCache.remove(challenge.getNonce());
-        logger.info("> challenge: {} deleted.", challenge);
+        logger.info("challenge: {} deleted.", challenge);
     }
 
     @Override

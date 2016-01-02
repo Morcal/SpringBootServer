@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.rest.token;
 
 import cn.com.xinli.portal.auth.CertificateService;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

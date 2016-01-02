@@ -1,12 +1,13 @@
 package cn.com.xinli.portal.persist;
 
-import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.NasType;
 
 import javax.persistence.*;
 
 /**
+ * NAS entity.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/17.
@@ -14,46 +15,53 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="nas")
-public class NasEntity implements Nas {
+public class NasEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "nas_id")
+    @Column(name = "nas_id", unique = true, nullable = false)
     private String nasId;
 
-    /** IPv4 Address. */
+    /** Nas name. */
     @Column
+    private String name;
+
+    /** IPv4 Address. */
+    @Column(name = "ipv4_address")
     private String ipv4Address;
 
     /** IPv6 Address. */
-    @Column
+    @Column(name = "ipv6_address")
     private String ipv6Address;
 
     /** Nas type. */
-    @Column
+    @Column(nullable = false)
     private NasType type;
 
     /** Portal listen port. */
-    @Column
+    @Column(name = "listen_port", nullable = false)
     private int listenPort;
 
     /** Authentication type (PAP/CHAP). */
-    @Column
+    @Column(name = "authentication_type", nullable = false)
     private AuthType authType;
 
-    @Column
+    @Column(name = "shared_secret", nullable = false)
     private String sharedSecret;
 
     /** IPv4 range start. */
-    @Column
+    @Column(name = "ipv4_start")
     private int ipv4start;
 
     /** IPv4 range end. */
-    @Column
+    @Column(name = "ipv4_end")
     private int ipv4end;
 
-    @Override
+    @ManyToOne
+    @JoinColumn(name = "trans_id", referencedColumnName = "id")
+    private CredentialsTranslationEntity translation;
+
     public long getId() {
         return id;
     }
@@ -62,7 +70,6 @@ public class NasEntity implements Nas {
         this.id = id;
     }
 
-    @Override
     public String getNasId() {
         return nasId;
     }
@@ -71,7 +78,14 @@ public class NasEntity implements Nas {
         this.nasId = nasId;
     }
 
-    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public AuthType getAuthType() {
         return authType;
     }
@@ -80,7 +94,6 @@ public class NasEntity implements Nas {
         this.authType = authType;
     }
 
-    @Override
     public String getIpv4Address() {
         return ipv4Address;
     }
@@ -89,7 +102,6 @@ public class NasEntity implements Nas {
         this.ipv4Address = ipv4Address;
     }
 
-    @Override
     public int getIpv4end() {
         return ipv4end;
     }
@@ -98,7 +110,6 @@ public class NasEntity implements Nas {
         this.ipv4end = ipv4end;
     }
 
-    @Override
     public int getIpv4start() {
         return ipv4start;
     }
@@ -107,7 +118,6 @@ public class NasEntity implements Nas {
         this.ipv4start = ipv4start;
     }
 
-    @Override
     public String getIpv6Address() {
         return ipv6Address;
     }
@@ -116,7 +126,6 @@ public class NasEntity implements Nas {
         this.ipv6Address = ipv6Address;
     }
 
-    @Override
     public int getListenPort() {
         return listenPort;
     }
@@ -125,7 +134,6 @@ public class NasEntity implements Nas {
         this.listenPort = listenPort;
     }
 
-    @Override
     public NasType getType() {
         return type;
     }
@@ -134,13 +142,20 @@ public class NasEntity implements Nas {
         this.type = type;
     }
 
-    @Override
     public String getSharedSecret() {
         return sharedSecret;
     }
 
     public void setSharedSecret(String sharedSecret) {
         this.sharedSecret = sharedSecret;
+    }
+
+    public CredentialsTranslationEntity getTranslation() {
+        return translation;
+    }
+
+    public void setTranslation(CredentialsTranslationEntity translation) {
+        this.translation = translation;
     }
 
     @Override

@@ -4,9 +4,9 @@ import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.Nas;
 import cn.com.xinli.portal.NasType;
 import cn.com.xinli.portal.TestBase;
-import cn.com.xinli.portal.protocol.Credentials;
-import cn.com.xinli.portal.support.NasConfiguration;
-import cn.com.xinli.portal.support.NasSupport;
+import cn.com.xinli.portal.Credentials;
+import cn.com.xinli.portal.persist.NasEntity;
+import cn.com.xinli.portal.support.NasAdapter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,16 +29,16 @@ public class HuaweiPacketTest extends TestBase {
     @Before
     public void setup() {
         credentials = new Credentials("zhoup", "123456", "192.168.3.26", "20cf-30bb-e9af");
-        NasConfiguration config = new NasConfiguration();
-        config.setAuthType(AuthType.CHAP.name());
-        config.setId(1);
-        config.setIpv4Address("129.168.3.95");
-        config.setIpv6Address("");
-        config.setListenPort(2000);
-        config.setName("h3c-vbras");
-        config.setSharedSecret("aaa");
-        config.setType(NasType.HuaweiV2.name());
-        nas = NasSupport.build(config);
+        NasEntity entity = new NasEntity();
+        entity.setAuthType(AuthType.CHAP);
+        entity.setId(1);
+        entity.setIpv4Address("129.168.3.95");
+        entity.setIpv6Address("");
+        entity.setListenPort(2000);
+        entity.setName("h3c-vbras");
+        entity.setSharedSecret("aaa");
+        entity.setType(NasType.HuaweiV2);
+        nas = new NasAdapter(entity);
         codecFactory = new HuaweiCodecFactory();
     }
 

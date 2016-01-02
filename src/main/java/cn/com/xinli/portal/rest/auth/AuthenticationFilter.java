@@ -4,11 +4,14 @@ import cn.com.xinli.portal.rest.AbstractRestFilter;
 import cn.com.xinli.portal.rest.CredentialsUtil;
 import cn.com.xinli.portal.rest.RestRequest;
 import cn.com.xinli.portal.rest.RestRequestSupport;
+import cn.com.xinli.portal.rest.api.EntryPoint;
+import cn.com.xinli.portal.rest.api.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
@@ -21,10 +24,16 @@ import org.springframework.util.Assert;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Rest Authentication Filter.
@@ -34,12 +43,17 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/10.
  */
 @Component
+@Order(20)
 public class AuthenticationFilter extends AbstractRestFilter implements ApplicationEventPublisherAware {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
 
     /** Should continue filter chain if filter failed. */
     private boolean continueFilterChainOnUnsuccessful = false;
+
+    @Autowired
+    private Provider restApiProvider;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -59,6 +73,23 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
         super.afterPropertiesSet();
         Assert.notNull(authenticationManager);
         Assert.notNull(authenticationEntryPoint);
+
+        List<List<String>> list = restApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .filter(EntryPoint::requiresAuth)
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        list.forEach(strings -> strings.forEach(urls::add));
+
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.debug("Adding auth filter path: {}.", url));
+        }
+        setFilterPathMatches(urls);
+        setContinueFilterChainOnUnsuccessful(false);
     }
 
     /**
@@ -142,7 +173,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                  */
                 try {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Checking secure context token: {}",
+                        logger.debug("Checking secure context authentication: {}",
                                 SecurityContextHolder.getContext().getAuthentication());
                     }
 
@@ -159,7 +190,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                     SecurityContextHolder.getContext().setAuthentication(result);
                     successfulAuthentication(result);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("> authorities: {}.", result.getAuthorities());
+                        logger.debug("authorities: {}.", result.getAuthorities());
                     }
                 } catch (AuthenticationException e) {
                     unsuccessfulAuthentication(request, response, AbstractAuthentication.empty(), e);

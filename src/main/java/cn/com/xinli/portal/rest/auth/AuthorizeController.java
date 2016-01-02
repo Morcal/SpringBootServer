@@ -5,8 +5,8 @@ import cn.com.xinli.portal.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.bean.RestBean;
-import cn.com.xinli.portal.rest.configuration.ApiConfiguration;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.ApiConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class AuthorizeController {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("> incoming authorize request, from: {}, mac: {}.", ip, mac);
+                logger.debug("incoming authorize request, from: {}, mac: {}.", ip, mac);
             }
 
             if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {

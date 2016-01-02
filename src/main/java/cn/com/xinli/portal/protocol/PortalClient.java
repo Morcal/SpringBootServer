@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.protocol;
 
+import cn.com.xinli.portal.Credentials;
 import cn.com.xinli.portal.Message;
 
 import java.io.IOException;

@@ -10,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
+ * Activity repository.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/17.
  */
-@Repository
-@Transactional
 public interface ActivityRepository extends PagingAndSortingRepository<ActivityEntity, Long> {
     /**
      * Find activities by source.

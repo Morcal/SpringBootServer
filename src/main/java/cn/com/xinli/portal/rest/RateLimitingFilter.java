@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.rest;
 
+import cn.com.xinli.portal.rest.api.EntryPoint;
+import cn.com.xinli.portal.rest.api.Provider;
 import cn.com.xinli.portal.rest.bean.RestBean;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +22,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /**
  * Rate limiting filter.
@@ -35,11 +41,14 @@ import java.io.IOException;
  * Server will deny that and subsequent requests, and limit
  * remote with a lesser rating (5 requests per 3 seconds).
  *
+ * This class does not implement functionality described ahead.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/30.
  */
 @Component
+@Order(Integer.MIN_VALUE)
 public class RateLimitingFilter extends AbstractRestFilter {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(RateLimitingFilter.class);
@@ -51,7 +60,30 @@ public class RateLimitingFilter extends AbstractRestFilter {
     private static final String RATE_LIMITING_REACHED_ERROR = "{\"error\": \"request_rate_limited\"}";
 
     @Autowired
+    private Provider restApiProvider;
+
+    @Autowired
     private Ehcache rateLimitingCache;
+
+    @Override
+    public void afterPropertiesSet() throws ServletException {
+        super.afterPropertiesSet();
+        List<List<String>> list = restApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        list.forEach(strings -> strings.forEach(urls::add));
+
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.debug("Adding rate-limiting filter path: {}.", url));
+        }
+
+        setFilterPathMatches(urls);
+    }
 
     /**
      * Deny remote with error HTTP 403.
@@ -72,7 +104,10 @@ public class RateLimitingFilter extends AbstractRestFilter {
 
         try {
             response.setHeader("Content-Type", "application/json");
-            response.sendError(HttpStatus.FORBIDDEN.value(), errorText);
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write(errorText);
+            response.getWriter().flush();
+            response.getWriter().close();
         } catch (IOException e) {
             // Connection may be closed/reset by remote, nothing we can do, just log it.
             logger.warn("- send rate limiting error failed, {}", e.getMessage());
@@ -91,30 +126,79 @@ public class RateLimitingFilter extends AbstractRestFilter {
             Element element = rateLimitingCache.get(remote);
             long now = System.currentTimeMillis();
             if (element != null) {
-                long hitCount = element.getHitCount();
-                if (hitCount >= SecurityConfiguration.RATE_LIMITING) {
+                AccessTimeTrack track = (AccessTimeTrack) element.getObjectValue();
+                if (!track.trackAndCheckRate(now)) {
                     /* Rate limiting exceeded. */
                     logger.warn("! client from {} exceeded rate limiting.", remote);
-                    /* We create a new element with longer tti so that
-                     * in next few seconds, only a few request form that remote
-                     * may be accepted. If remote reached limiting rate,
-                     * remote will be limited at a lesser rating (4~5 requests per 3 seconds).
-                     * The limiting rate will drop back to normal only if
-                     * there's no more requests in 3 seconds.
-                     */
-                    element = new Element(remote, remote, 3L, 3L, now, now, 1);
                     rateLimitingCache.put(element);
                     denyRemoteWithError(response);
-                    /* DO NOT pass to next filter in chain. */
-                    return;
+                    return; /* DO NOT pass to next filter in chain. */
                 }
             } else {
                 /* EhCache get/put operations are thread-safe. */
-                element = new Element(remote, remote, 1L, 1L, now, now, 1L);
+                AccessTimeTrack track = new AccessTimeTrack(SecurityConfiguration.RATE_LIMITING, 1L);
+                track.trackAndCheckRate(now);
+                element = new Element(remote, track, 1, 1);
                 rateLimitingCache.put(element);
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Records of REST API accesses.
+     *
+     * This implementation should be thread-safe.
+     * Project: xpws
+     *
+     * @author zhoupeng 2015/12/31.
+     */
+    class AccessTimeTrack {
+        /** Allowed access max counter. */
+        private int allowed;
+
+        /** Allowed access counter time range in milliseconds. */
+        private long maxTimeDiff;
+
+        /** Tracked records. */
+        private final Queue<Long> accessTimes;
+
+        public AccessTimeTrack(int allowed, long maxTimeDiff) {
+            this.allowed = allowed;
+            this.maxTimeDiff = maxTimeDiff * 1000L;
+            this.accessTimes = new ConcurrentLinkedQueue<>();
+        }
+
+        /**
+         * Track current access time and check if exceeds rate-limiting.
+         * @param timestamp current access time.
+         * @return true if access is allowed.
+         */
+        public boolean trackAndCheckRate(long timestamp) {
+            accessTimes.offer(timestamp);
+
+            if (accessTimes.size() > allowed) {
+                /* To prevent attackers send flood to cause server run
+                 * out of memory, keep track at maximum of 'allowed'.
+                 */
+                while (accessTimes.size() > allowed) {
+                    accessTimes.poll();
+                }
+                return false;
+            }
+
+            Iterator<Long> iterator = accessTimes.iterator();
+            while (iterator.hasNext()) {
+                Long head = iterator.next();
+                if ((timestamp - head) > maxTimeDiff) {
+                    iterator.remove();
+                } else {
+                    /* Stop iteration. */
+                    break;
+                }
+            }
+            return true;
+        }
     }
 }

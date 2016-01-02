@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import java.io.IOException;
  *
  * @author zhoupeng 2015/12/15.
  */
+@Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     /** Json factory. */
     private static final JsonFactory factory = new JsonFactory();

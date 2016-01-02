@@ -2,7 +2,7 @@ package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.Message;
 import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.Credentials;
 import cn.com.xinli.portal.protocol.Packet;
 import cn.com.xinli.portal.protocol.Protocol;
 import cn.com.xinli.portal.protocol.UnsupportedProtocolException;

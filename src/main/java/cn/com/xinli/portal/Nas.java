@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
  * @author zhoupeng 2015/12/2.
  */
 public interface Nas {
-
     /**
      * Get id.
      * <p>This id is unique and working in scope of PWS only.</p>
@@ -76,6 +75,21 @@ public interface Nas {
      * @return configured shared secret, may be empty but never null.
      */
     String getSharedSecret();
+
+    /**
+     * Get NAS credentials translation.
+     * @return NAS credentials translation.
+     */
+    CredentialsTranslation getCreCredentialsTranslation();
+
+    /**
+     * Check if NAS ip v4 range contains given ip.
+     * @param ip ip v4 address in integer form.
+     * @return true if NAS ip v4 range contains given ip.
+     */
+    default boolean contains(int ip) {
+        return ip >= Math.min(getIpv4start(), getIpv4end()) && ip <= Math.max(getIpv4start(), getIpv4end());
+    }
 
     /**
      * Get nas' ip address.

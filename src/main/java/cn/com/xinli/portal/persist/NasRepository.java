@@ -14,8 +14,6 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/17.
  */
-@Repository
-@Transactional
 public interface NasRepository extends PagingAndSortingRepository<NasEntity, Long> {
     /**
      * Get all nas configurations.

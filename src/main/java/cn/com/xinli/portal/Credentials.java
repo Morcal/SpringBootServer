@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.protocol;
+package cn.com.xinli.portal;
 
 /**
  * Portal user credentials.
@@ -41,6 +41,29 @@ public class Credentials {
 
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Credentials that = (Credentials) o;
+
+        return username.equals(that.username) &&
+                password.equals(that.password) &&
+                ip.equals(that.ip) &&
+                (mac != null ? mac.equals(that.mac) : that.mac == null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = username.hashCode();
+        result = 31 * result + password.hashCode();
+        result = 31 * result + ip.hashCode();
+        result = 31 * result + (mac != null ? mac.hashCode() : 0);
+        return result;
     }
 
     @Override

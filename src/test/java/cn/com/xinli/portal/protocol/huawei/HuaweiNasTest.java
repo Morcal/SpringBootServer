@@ -1,11 +1,12 @@
 package cn.com.xinli.portal.protocol.huawei;
 
 import cn.com.xinli.portal.*;
-import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.Credentials;
+import cn.com.xinli.portal.persist.NasEntity;
 import cn.com.xinli.portal.protocol.PortalClient;
 import cn.com.xinli.portal.protocol.support.PortalClients;
-import cn.com.xinli.portal.support.NasConfiguration;
-import cn.com.xinli.portal.support.NasSupport;
+import cn.com.xinli.portal.support.NasAdapter;
+import cn.com.xinli.portal.util.AddressUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,18 +31,18 @@ public class HuaweiNasTest extends TestBase {
     @Before
     public void createNas() {
         credentials = new Credentials("test0", "test0", "127.0.0.1", "mac");
-        NasConfiguration configuration = new NasConfiguration();
-        configuration.setType(NasType.HuaweiV2.name());
-        configuration.setSharedSecret("aaa");
-        configuration.setName("Test Nas");
-        configuration.setIpv4Address("127.0.0.1");
-        configuration.setListenPort(2000);
-        configuration.setAuthType(AuthType.CHAP.name());
-        configuration.setId(1);
-        configuration.setIpv4start("");
-        configuration.setIpv4end("");
-        configuration.setNasId("test-01");
-        nas = NasSupport.build(configuration);
+        NasEntity entity = new NasEntity();
+        entity.setType(NasType.HuaweiV2);
+        entity.setSharedSecret("aaa");
+        entity.setName("Test Nas");
+        entity.setIpv4Address("127.0.0.1");
+        entity.setListenPort(2000);
+        entity.setAuthType(AuthType.CHAP);
+        entity.setId(1);
+        entity.setIpv4start(AddressUtil.convertIpv4Address("192.168.3.1"));
+        entity.setIpv4end(AddressUtil.convertIpv4Address("192.168.3.254"));
+        entity.setNasId("test-01");
+        nas = new NasAdapter(entity);
 
         client = PortalClients.create(nas);
         executorService = Executors.newCachedThreadPool();

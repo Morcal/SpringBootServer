@@ -2,6 +2,7 @@ package cn.com.xinli.portal.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -16,6 +17,7 @@ import java.util.Set;
  *
  * @author zhoupeng 2015/12/12.
  */
+@Component
 public class SecureRandomStringGenerator implements RandomStringGenerator {
     /**
      * Log.
@@ -36,7 +38,7 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
 
     public SecureRandomStringGenerator() {
         try {
-            logger.debug("> Trying to get SHA1PRNG random generator.");
+            logger.debug("Trying to get SHA1PRNG random generator.");
             random = SecureRandom.getInstance("SHA1PRNG");
         } catch (Exception e) {
             logger.warn("Missing secure random of SHA1PRNG", e);
@@ -64,7 +66,7 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
         synchronized (generated) {
             /* Sanity check. */
             if (generated.size() > MAX_CACHED_STRING_SIZE) {
-                logger.info("> Discarding generated random strings.");
+                logger.info("Discarding generated random strings.");
                 generated.clear();
             }
 

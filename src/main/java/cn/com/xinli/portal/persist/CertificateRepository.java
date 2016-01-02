@@ -15,8 +15,6 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/17.
  */
-@Repository
-@Transactional
 public interface CertificateRepository extends CrudRepository<CertificateEntity, Long> {
     /**
      * Find app authentication entities.

@@ -124,7 +124,7 @@ public abstract class AbstractDatagramServer {
 
     public void shutdown() {
         shutdown = true;
-        logger.info("> Shutting down datagram server...");
+        logger.info("Shutting down datagram server...");
         selector.wakeup();
 
         try {
@@ -138,6 +138,6 @@ public abstract class AbstractDatagramServer {
             executorService.shutdownNow();
         }
 
-        logger.info("> Datagram server quit.");
+        logger.info("Datagram server quit.");
     }
 }

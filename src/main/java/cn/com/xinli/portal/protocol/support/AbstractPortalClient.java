@@ -2,7 +2,7 @@ package cn.com.xinli.portal.protocol.support;
 
 import cn.com.xinli.portal.AuthType;
 import cn.com.xinli.portal.Message;
-import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.Credentials;
 import cn.com.xinli.portal.protocol.Packet;
 import cn.com.xinli.portal.protocol.PortalClient;
 import cn.com.xinli.portal.protocol.UnsupportedAuthenticationTypeException;
@@ -164,10 +164,10 @@ public abstract class AbstractPortalClient implements PortalClient {
 
         /* Check authentication response. */
         if (response.isPresent()) {
-            logger.debug("> Handle authentication response.");
+            logger.debug("Handle authentication response.");
             return onAuthenticationResponse(response.get());
         } else {
-            logger.debug("> Handle authentication timeout.");
+            logger.debug("Handle authentication timeout.");
             return onAuthenticationNotRespond(request);
         }
     }
@@ -188,10 +188,10 @@ public abstract class AbstractPortalClient implements PortalClient {
         Optional<Packet> response = request(logout);
 
         if (!response.isPresent()) {
-            logger.debug("> Handle logout timeout.");
+            logger.debug("Handle logout timeout.");
             return onLogoutNotRespond(logout);
         } else {
-            logger.debug("> Handle logout response.");
+            logger.debug("Handle logout response.");
             return onLogoutResponse(response.get());
         }
     }

@@ -6,6 +6,7 @@ import cn.com.xinli.portal.persist.ActivityEntity;
 import cn.com.xinli.portal.persist.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Activity Service JPA support.
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
  * @author zhoupeng 2015/12/19.
  */
 @Service
+@Transactional
 public class ActivityServiceSupport implements ActivityService {
 
     @Autowired

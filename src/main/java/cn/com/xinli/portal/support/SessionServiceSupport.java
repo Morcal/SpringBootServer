@@ -3,10 +3,10 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
-import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.Credentials;
 import cn.com.xinli.portal.protocol.PortalClient;
 import cn.com.xinli.portal.protocol.support.PortalClients;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ import java.util.Optional;
  *     into cache.
  *     <li>Update session</li>
  *     System only update session when system configuration enabled keep alive.
- *     "LastModified" attribute of {@link Session} was designed to keep track
+ *     "LastModified" attribute of {@link Session} was designed to keep trackAndCheckRate
  *     of session updating. When keep alive enabled, session cache will evict
  *     session if not been updated in a range of time elapsed, and system will
  *     logout that evicted session. It does not make more sense if we try to
@@ -51,6 +51,7 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/6.
  */
 @Service
+@Transactional(rollbackFor = { PortalException.class})
 public class SessionServiceSupport implements SessionService, SessionManager, InitializingBean {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SessionServiceSupport.class);
@@ -122,7 +123,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                     PortalClient client = PortalClients.create(nas);
                     Message<?> message = client.logout(old);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("> Create session, logout already existed, portal result: {}", message.toString());
+                        logger.debug("Create session, logout already existed, portal result: {}", message.toString());
                     }
 
                     if (!message.isSuccess()) {
@@ -138,12 +139,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             PortalClient client = PortalClients.create(nas);
             Message<?> message = client.login(credentials);
             if (logger.isDebugEnabled()) {
-                logger.debug("> Portal login result: {}", message);
+                logger.debug("Portal login result: {}", message);
             }
 
             if (message.isSuccess()) {
                 sessionStore.put(session);
                 sessionRepository.save((SessionEntity) session);
+                throw new SessionNotFoundException(101);
             }
 
             return Message.of(session, message.isSuccess(), message.getText());
@@ -210,13 +212,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             PortalClient client = PortalClients.create(nas.get());
             Message<?> message = client.logout(credentials);
             if (logger.isDebugEnabled()) {
-                logger.debug("> Portal logout result: {}", message);
+                logger.debug("Portal logout result: {}", message);
             }
 
             if (message.isSuccess()) {
                 if (sessionStore.delete(id)) {
                     sessionRepository.delete(id);
-                    logger.debug("> Session {} removed.", id);
+                    logger.debug("Session {} removed.", id);
                 } else {
                     logger.error("* Removed session {} failed.", id);
                 }

@@ -4,9 +4,9 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -18,17 +18,20 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.io.File;
 
 /**
+ * PWS JPA configuration.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/7.
  */
 @Configuration
+@EnableTransactionManagement(proxyTargetClass = true, mode = AdviceMode.PROXY)
 @EnableJpaRepositories(basePackages = "cn.com.xinli.portal.persist")
 public class JpaConfiguration {
     /** Logger. */
@@ -38,11 +41,14 @@ public class JpaConfiguration {
 
     @Value("${pws.database.derby.mem.enable}") private boolean enableDerbyMemDb;
 
-    //@Bean
-    public boolean firstRun() {
+    /**
+     * Check if system runs for the first time.
+     * @return true if runs first time.
+     */
+    private boolean firstRun() {
         if (enableDerbyMemDb) {
             /* Within derby memory database, always return true. */
-            logger.info("> Running on derby memory database.");
+            logger.info("Running on derby memory database.");
             return true;
         } else {
             /* Check derby database directory to determine if we're on the first run. */
@@ -51,16 +57,31 @@ public class JpaConfiguration {
         }
     }
 
-    //@Bean(name = "datasource")
+    private JpaVendorAdapter jpaVendorAdapter() {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(firstRun());
+        vendorAdapter.setShowSql(true);
+        return vendorAdapter;
+    }
+
+    private JpaDialect jpaDialect() {
+        HibernateJpaDialect dialect = new HibernateJpaDialect();
+        dialect.setPrepareConnection(true);
+        return dialect;
+    }
+
+    @Bean
     public DataSource dataSource() {
         if (!enableDerbyMemDb) {
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(EmbeddedDriver.class.getName());
             //dataSource.setUrl("jdbc:derby:PWS;create=true");
             String url = "jdbc:derby:PWS" + (firstRun() ? ";create=true" : "");
+            logger.info("derby url: {}", url);
             dataSource.setUrl(url);
             return dataSource;
         } else {
+            logger.warn("+ Using memory derby!");
             EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
             return builder.setType(EmbeddedDatabaseType.DERBY)
                     .setName(derbyScheme)
@@ -68,35 +89,14 @@ public class JpaConfiguration {
         }
     }
 
-    //@Autowired
     @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory);
-//        return new JpaTransactionManager(entityManagerFactory().getObject());
+    public PlatformTransactionManager transactionManager() {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        return transactionManager;
     }
 
-    //@Bean(name = "jpa-vendor-adapter")
-    public JpaVendorAdapter jpaVendorAdapter() {
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(firstRun());
-        vendorAdapter.setShowSql(true);
-        return vendorAdapter;
-    }
-
-    //@Bean(name = "jpa-dialect")
-    public JpaDialect jpaDialect() {
-        HibernateJpaDialect dialect = new HibernateJpaDialect();
-        dialect.setPrepareConnection(true);
-        return dialect;
-    }
-
-    //@Bean(name = "jpa-exception-processor")
     @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionProcessor() {
-        return new PersistenceExceptionTranslationPostProcessor();
-    }
-
-    @Bean(name = "entityManagerFactory")
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource());

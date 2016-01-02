@@ -10,6 +10,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/21.
  */
 @Service
+@Transactional
 public class CertificateServiceSupport implements CertificateService, CertificateManager {
     @Autowired
     private CertificateRepository certificateRepository;

@@ -42,7 +42,7 @@ public class RestAuthorizationServer implements AuthorizationServer {
                 challenge = secureRandomGenerator.generateUniqueRandomString(32);
 
         Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
-        logger.info("> challenge created: {}.", cha);
+        logger.info("challenge created: {}.", cha);
         return cha;
     }
 

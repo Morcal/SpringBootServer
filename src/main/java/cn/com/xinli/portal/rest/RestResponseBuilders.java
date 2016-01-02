@@ -5,7 +5,7 @@ import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.bean.*;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestToken;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.token.Token;

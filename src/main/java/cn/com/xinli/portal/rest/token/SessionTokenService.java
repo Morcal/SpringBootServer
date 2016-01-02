@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.rest.token;
 
 import cn.com.xinli.portal.SessionService;
-import cn.com.xinli.portal.rest.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

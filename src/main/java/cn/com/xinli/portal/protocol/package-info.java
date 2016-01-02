@@ -22,3 +22,4 @@
  *
  * @author zhoupeng
  */
+package cn.com.xinli.portal.protocol;

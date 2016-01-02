@@ -54,7 +54,7 @@ public class DefaultPortalServer  {
 
     public void start() throws IOException {
         this.datagramPortalServer.start();
-        logger.info("> Portal Server started, listen on: {}.", this.portalServerPort);
+        logger.info("Portal Server started, listen on: {}.", this.portalServerPort);
     }
 
     public void shutdown() {
@@ -75,7 +75,7 @@ public class DefaultPortalServer  {
                     byte[] ip = in.getIp();
                     //byte[] mac = in.getAttribute(Enums.Attribute.USER_MAC);
                     String address = InetAddress.getByAddress(ip).getHostAddress();
-                    logger.info("> NTF_LOGOUT, ip: {} already offline", ip);
+                    logger.info("NTF_LOGOUT, ip: {} already offline", ip);
                     sessionService.removeSession(address);
                 }
             } catch (Exception e) {

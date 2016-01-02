@@ -53,7 +53,7 @@ public class EhCacheSessionDataStore implements SessionStore {
         boolean registered = sessionCache.getCacheEventNotificationService()
                 .registerListener(sessionCacheEventListener, NotificationScope.LOCAL);
 
-        logger.info("> register event listener on session cache: {}.", registered);
+        logger.info("register event listener on session cache: {}.", registered);
     }
 
     @Scheduled(fixedDelay = 10L)

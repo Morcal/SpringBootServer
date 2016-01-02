@@ -5,15 +5,18 @@ import cn.com.xinli.portal.ActivityService;
 import cn.com.xinli.portal.persist.ActivityEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
+ * Authentication success event handler.
+ *
  * Project: portal
  *
  * @author zhoupeng 2015/12/11.
  */
+@Component
 public class AuthenticationSuccessEventHandler implements ApplicationListener<AuthenticationSuccessEvent> {
     @Autowired
     private ActivityService activityService;
