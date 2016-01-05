@@ -2,11 +2,15 @@ package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
-import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.rest.bean.*;
+import cn.com.xinli.portal.support.SessionBean;
+import cn.com.xinli.portal.support.SessionResponse;
+import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.rest.auth.HttpDigestCredentials;
+import cn.com.xinli.rest.bean.*;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.token.RestToken;
+import cn.com.xinli.rest.bean.Error;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.token.Token;
 
@@ -67,7 +71,7 @@ public class RestResponseBuilders {
         return new AuthorizationBuilder(token);
     }
 
-    public static class SuccessBuilder implements Builder<Success> {
+    public static class SuccessBuilder implements Builder<SessionResponse> {
         private Session session = null;
         private Challenge challenge = null;
         private AccessAuthentication accessAuthentication = null;
@@ -106,8 +110,8 @@ public class RestResponseBuilders {
         }
 
         @Override
-        public Success build() {
-            Success success = new Success();
+        public SessionResponse build() {
+            SessionResponse success = new SessionResponse();
             /* Build session with/without session token. */
             if (session == null) {
                 success.setSession(null);
@@ -136,7 +140,7 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class ErrorBuilder implements Builder<Failure> {
+    public static class ErrorBuilder implements Builder<Error> {
         private String error;
         private String description;
         private String url;
@@ -163,8 +167,8 @@ public class RestResponseBuilders {
         }
 
         @Override
-        public Failure build() {
-            Failure failure = new Failure();
+        public Error build() {
+            Error failure = new Error();
             failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
             failure.setDescription(StringUtils.defaultString(description));
             failure.setUrl(StringUtils.defaultString(url));
@@ -173,7 +177,7 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class SessionBuilder implements Builder<cn.com.xinli.portal.rest.bean.Session> {
+    public static class SessionBuilder implements Builder<SessionBean> {
         private final Session session;
         private final Token token;
         private final boolean requiresKeepAlive;
@@ -187,15 +191,15 @@ public class RestResponseBuilders {
         }
 
         @Override
-        public cn.com.xinli.portal.rest.bean.Session build() {
+        public SessionBean build() {
             if (session == null) {
                 return null;
             } else {
-                cn.com.xinli.portal.rest.bean.Session session = new cn.com.xinli.portal.rest.bean.Session();
+                SessionBean session = new SessionBean();
                 session.setId(String.valueOf(this.session.getId()));
-                session.setStarttime(this.session.getStartTime().getTime() / 1000L);
-                session.setKeepaliveInterval(keepAliveInterval);
-                session.setKeepalive(requiresKeepAlive);
+                session.setStartTime(this.session.getStartTime().getTime() / 1000L);
+                session.setKeepAliveInterval(keepAliveInterval);
+                session.setKeepAlive(requiresKeepAlive);
                 if (token != null) {
                     session.setToken(token.getKey());
                     session.setTokenExpiresIn(SecurityConfiguration.SESSION_TOKEN_TTL);

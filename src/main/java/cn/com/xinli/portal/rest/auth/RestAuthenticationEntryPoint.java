@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.rest.auth;
 
-import cn.com.xinli.portal.rest.RestResponse;
+import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
-import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.rest.bean.RestBean;
 import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
 import com.fasterxml.jackson.core.JsonFactory;

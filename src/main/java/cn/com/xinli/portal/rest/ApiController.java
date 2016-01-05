@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.rest.api.Provider;
+import cn.com.xinli.rest.api.Provider;
 import cn.com.xinli.portal.configuration.ApiConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

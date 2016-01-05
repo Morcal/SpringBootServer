@@ -1,13 +1,14 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.Certificate;
-import cn.com.xinli.portal.auth.CertificateNotFoundException;
+import cn.com.xinli.portal.CertificateNotFoundException;
 import cn.com.xinli.portal.auth.CertificateService;
-import cn.com.xinli.portal.rest.RestRequest;
+import cn.com.xinli.rest.RestRequest;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeService;
 import cn.com.xinli.portal.rest.auth.challenge.InvalidChallengeException;
 import cn.com.xinli.portal.rest.token.*;
+import cn.com.xinli.rest.auth.HttpDigestCredentials;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

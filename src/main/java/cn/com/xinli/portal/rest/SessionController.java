@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.InvalidPortalRequestException;
-import cn.com.xinli.portal.NasNotFoundException;
 import cn.com.xinli.portal.SessionNotFoundException;
 import cn.com.xinli.portal.SessionOperationException;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.rest.auth.RestRole;
-import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.rest.bean.RestBean;
 import cn.com.xinli.portal.configuration.ApiConfiguration;
 import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;

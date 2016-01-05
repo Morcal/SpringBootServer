@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.rest.auth.HttpDigestCredentials;
+import cn.com.xinli.rest.auth.HttpDigestCredentials;
 import org.springframework.security.authentication.BadCredentialsException;
 
 import javax.servlet.http.HttpServletRequest;

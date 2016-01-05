@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.AuthType;
-import cn.com.xinli.portal.CredentialsTranslation;
-import cn.com.xinli.portal.Nas;
-import cn.com.xinli.portal.NasType;
 import cn.com.xinli.portal.persist.NasEntity;
+import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.protocol.CredentialsTranslation;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.NasType;
 
 /**
  * Device (NAS/BRAS) supports Portal protocol configuration.

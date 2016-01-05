@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.rest.api.EntryPoint;
-import cn.com.xinli.portal.rest.api.Provider;
-import cn.com.xinli.portal.rest.api.Registration;
+import cn.com.xinli.rest.api.EntryPoint;
+import cn.com.xinli.rest.api.Provider;
+import cn.com.xinli.rest.api.Registration;
 import cn.com.xinli.portal.rest.auth.AuthenticationFilter;
 import cn.com.xinli.portal.rest.auth.RestAuthenticationEntryPoint;
 import cn.com.xinli.portal.rest.auth.RestAuthenticationProvider;

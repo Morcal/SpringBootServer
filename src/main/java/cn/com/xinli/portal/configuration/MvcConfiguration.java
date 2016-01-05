@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.rest.Scheme;
+import cn.com.xinli.rest.Scheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,6 +1,4 @@
-package cn.com.xinli.portal.rest;
-
-import cn.com.xinli.portal.PortalException;
+package cn.com.xinli.portal;
 
 /**
  * Project: xpws

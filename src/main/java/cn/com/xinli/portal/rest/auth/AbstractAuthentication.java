@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.rest.auth;
 
+import cn.com.xinli.rest.auth.HttpDigestCredentials;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 

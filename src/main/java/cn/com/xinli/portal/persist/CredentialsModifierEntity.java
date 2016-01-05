@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.persist;
 
-import cn.com.xinli.portal.util.CredentialsModifier;
+import cn.com.xinli.portal.protocol.CredentialsModifier;
 
 import javax.persistence.*;
 

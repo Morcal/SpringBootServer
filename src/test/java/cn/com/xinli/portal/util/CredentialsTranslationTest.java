@@ -1,12 +1,11 @@
 package cn.com.xinli.portal.util;
 
-import cn.com.xinli.portal.AuthType;
-import cn.com.xinli.portal.Credentials;
-import cn.com.xinli.portal.CredentialsTranslation;
-import cn.com.xinli.portal.NasType;
 import cn.com.xinli.portal.persist.CredentialsModifierEntity;
 import cn.com.xinli.portal.persist.CredentialsTranslationEntity;
 import cn.com.xinli.portal.persist.NasEntity;
+import cn.com.xinli.portal.protocol.*;
+import cn.com.xinli.portal.protocol.support.CodecUtil;
+import cn.com.xinli.portal.protocol.support.CredentialsEncoders;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

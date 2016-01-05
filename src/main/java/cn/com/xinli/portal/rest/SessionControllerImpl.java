@@ -2,13 +2,17 @@ package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.SessionEntity;
+import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.RestRole;
-import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.portal.util.AddressUtil;
+import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.rest.bean.RestBean;
 import cn.com.xinli.portal.configuration.ApiConfiguration;
 import cn.com.xinli.portal.rest.token.RestToken;
 import cn.com.xinli.portal.rest.token.SessionTokenService;
-import cn.com.xinli.portal.util.AddressUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +27,8 @@ import java.util.Calendar;
 import java.util.Optional;
 
 /**
+ * Session controller implementation.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2016/1/2.

@@ -1,7 +1,10 @@
 package cn.com.xinli.portal;
 
-import cn.com.xinli.portal.protocol.huawei.DefaultPortalServer;
-import cn.com.xinli.portal.protocol.huawei.HuaweiNas;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
+import cn.com.xinli.portal.protocol.PortalServer;
+import cn.com.xinli.portal.protocol.PortalServerConfig;
+import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
@@ -27,6 +31,7 @@ import java.util.Optional;
 @SpringBootApplication
 @ImportResource("classpath:nas.xml")
 @PropertySource("pws.properties")
+@ComponentScan(value = { "cn.com.xinli.rest.framework", "cn.com.xinli.portal" })
 public class PortalApplication {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(PortalApplication.class);
@@ -45,6 +50,9 @@ public class PortalApplication {
     public Activity.Severity minimalSeverity() {
         return Activity.Severity.NORMAL;
     }
+
+    @Autowired
+    private InternalServerHandler internalServerHandler;
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(PortalApplication.class, args);
@@ -68,13 +76,13 @@ public class PortalApplication {
 
     @Autowired
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultPortalServer portalServer(NasMapping nasMapping, SessionService sessionService) throws NasNotFoundException {
+    public PortalServer portalServer(NasMapping nasMapping) throws NasNotFoundException {
         if (enableMockHuaweiNas) {
             /* Find nas configuration for mocking. */
             Optional<Nas> mockNas = nasMapping.getNasByNasId(mockHuaweiNasId);
             mockNas.orElseThrow(() -> new NasNotFoundException("nas with id: " + mockHuaweiNasId + " not found."));
 
-            HuaweiNas nas = new HuaweiNas(mockNas.get());
+            PortalServer nas = HuaweiPortal.createNas(mockNas.get());
             try {
                 nas.start();
             } catch (IOException e) {
@@ -86,6 +94,6 @@ public class PortalApplication {
         portalServerConfig.setPortalServerSharedSecret(portalServerSharedSecret);
         portalServerConfig.setPortalServerThreadSize(portalServerThreadSize);
 
-        return new DefaultPortalServer(portalServerConfig, sessionService);
+        return HuaweiPortal.createServer(portalServerConfig, internalServerHandler);
     }
 }

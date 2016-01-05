@@ -2,9 +2,12 @@ package cn.com.xinli.portal.util;
 
 import cn.com.xinli.portal.persist.CredentialsEncoderEntity;
 import cn.com.xinli.portal.persist.CredentialsTranslationEntity;
-import cn.com.xinli.portal.support.AbstractCredentialsTranslation;
-import cn.com.xinli.portal.support.PrefixPostfixCredentialsModifier;
-import cn.com.xinli.portal.CredentialsTranslation;
+import cn.com.xinli.portal.protocol.CredentialsEncoder;
+import cn.com.xinli.portal.protocol.CredentialsModifier;
+import cn.com.xinli.portal.protocol.CredentialsTranslation;
+import cn.com.xinli.portal.protocol.support.AbstractCredentialsTranslation;
+import cn.com.xinli.portal.protocol.support.CredentialsEncoders;
+import cn.com.xinli.portal.protocol.support.PrefixPostfixCredentialsModifier;
 import cn.com.xinli.portal.persist.CredentialsModifierEntity;
 import cn.com.xinli.portal.persist.NasEntity;
 

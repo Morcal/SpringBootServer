@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.auth;
 
+import cn.com.xinli.portal.CertificateNotFoundException;
+
 /**
  * Certificate service.
  *

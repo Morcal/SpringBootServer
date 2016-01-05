@@ -1,13 +1,13 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.AuthorizationServer;
-import cn.com.xinli.portal.rest.RestResponse;
+import cn.com.xinli.portal.util.AddressUtil;
+import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.rest.bean.RestBean;
 import cn.com.xinli.portal.configuration.ApiConfiguration;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
-import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

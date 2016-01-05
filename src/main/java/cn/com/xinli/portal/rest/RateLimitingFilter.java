@@ -1,8 +1,9 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.rest.api.EntryPoint;
-import cn.com.xinli.portal.rest.api.Provider;
-import cn.com.xinli.portal.rest.bean.RestBean;
+import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.rest.api.EntryPoint;
+import cn.com.xinli.rest.api.Provider;
+import cn.com.xinli.rest.bean.RestBean;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -2,7 +2,7 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.auth.Certificate;
 import cn.com.xinli.portal.auth.CertificateManager;
-import cn.com.xinli.portal.auth.CertificateNotFoundException;
+import cn.com.xinli.portal.CertificateNotFoundException;
 import cn.com.xinli.portal.auth.CertificateService;
 import cn.com.xinli.portal.persist.CertificateEntity;
 import cn.com.xinli.portal.persist.CertificateRepository;

@@ -2,6 +2,8 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.NasRepository;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

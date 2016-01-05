@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.persist;
 
-import cn.com.xinli.portal.AuthType;
-import cn.com.xinli.portal.NasType;
+import cn.com.xinli.portal.protocol.AuthType;
+import cn.com.xinli.portal.protocol.NasType;
 
 import javax.persistence.*;
 

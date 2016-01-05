@@ -1,6 +1,4 @@
-package cn.com.xinli.portal.auth;
-
-import cn.com.xinli.portal.PortalException;
+package cn.com.xinli.portal;
 
 /**
  * Certificate Not Found Exception.

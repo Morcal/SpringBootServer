@@ -1,5 +1,9 @@
 package cn.com.xinli.portal;
 
+import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
+
 /**
  * Session manager.
  *

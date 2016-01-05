@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.util;
 
-import cn.com.xinli.portal.Credentials;
-import cn.com.xinli.portal.support.PrefixPostfixCredentialsModifier;
+import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.protocol.CredentialsModifier;
+import cn.com.xinli.portal.protocol.support.PrefixPostfixCredentialsModifier;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.web;
 
 import cn.com.xinli.portal.NasMapping;
-import cn.com.xinli.portal.NasNotFoundException;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
+import cn.com.xinli.portal.protocol.support.CodecUtil;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

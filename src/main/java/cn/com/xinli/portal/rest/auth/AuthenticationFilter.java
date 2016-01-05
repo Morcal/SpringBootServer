@@ -2,10 +2,11 @@ package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.rest.AbstractRestFilter;
 import cn.com.xinli.portal.rest.CredentialsUtil;
-import cn.com.xinli.portal.rest.RestRequest;
-import cn.com.xinli.portal.rest.RestRequestSupport;
-import cn.com.xinli.portal.rest.api.EntryPoint;
-import cn.com.xinli.portal.rest.api.Provider;
+import cn.com.xinli.rest.RestRequest;
+import cn.com.xinli.rest.RestRequestSupport;
+import cn.com.xinli.rest.api.EntryPoint;
+import cn.com.xinli.rest.api.Provider;
+import cn.com.xinli.rest.auth.HttpDigestCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

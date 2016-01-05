@@ -1,17 +1,16 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.Activity;
-import cn.com.xinli.portal.ActivityService;
-import cn.com.xinli.portal.SessionNotFoundException;
-import cn.com.xinli.portal.protocol.ProtocolException;
-import cn.com.xinli.portal.rest.api.EntryPoint;
-import cn.com.xinli.portal.rest.api.Provider;
+import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.protocol.PortalProtocolException;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeNotFoundException;
-import cn.com.xinli.portal.rest.bean.Failure;
-import cn.com.xinli.portal.rest.bean.RestBean;
 import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
+import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.rest.api.EntryPoint;
+import cn.com.xinli.rest.api.Provider;
+import cn.com.xinli.rest.bean.Error;
+import cn.com.xinli.rest.bean.RestBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,11 +78,11 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
      * REST controller exception handler.
      * <p>
      * <p>Unhandled exception thrown from REST controllers will be
-     * handled here. By default, it will return a {@link Failure} contains additional
+     * handled here. By default, it will return a {@link Error} contains additional
      * information about what's going on of the PWS.</p>
      * <p>
      * This function will return a HTTP 500 status with
-     * a {@link Failure} JSON inside http response body.
+     * a {@link Error} JSON inside http response body.
      *
      * @param e {@link RuntimeException}
      * @return {@link RestBean}
@@ -152,7 +150,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     @ExceptionHandler(value = {
-            UpdateOutOfRangeException.class,
+            InvalidSessionUpdateException.class,
             DeviceChangedException.class,
             InvalidSessionTokenException.class})
     public RestBean handleSessionException(Exception e) {
@@ -183,8 +181,8 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
 
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    @ExceptionHandler(value = {ProtocolException.class})
-    public RestBean handlePortalProtocolException(ProtocolException e) {
+    @ExceptionHandler(value = { PortalProtocolException.class})
+    public RestBean handlePortalProtocolException(PortalProtocolException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }

@@ -1,5 +1,8 @@
 package cn.com.xinli.portal;
 
+import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.protocol.NasNotFoundException;
+
 import java.util.Optional;
 
 /**

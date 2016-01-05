@@ -1,12 +1,14 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
-import cn.com.xinli.portal.Credentials;
-import cn.com.xinli.portal.protocol.PortalClient;
-import cn.com.xinli.portal.protocol.support.PortalClients;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.protocol.Credentials;
+import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.protocol.Nas;
+import cn.com.xinli.portal.protocol.*;
+import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,7 +122,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                     logger.warn("+ session already exists with different username.");
                     Credentials old = new Credentials(
                             existed.getUsername(), existed.getPassword(), existed.getIp(), existed.getMac());
-                    PortalClient client = PortalClients.create(nas);
+                    PortalClient client = HuaweiPortal.createClient(nas);
                     Message<?> message = client.logout(old);
                     if (logger.isDebugEnabled()) {
                         logger.debug("Create session, logout already existed, portal result: {}", message.toString());
@@ -136,20 +138,22 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                 }
             }
 
-            PortalClient client = PortalClients.create(nas);
+            PortalClient client = HuaweiPortal.createClient(nas);
             Message<?> message = client.login(credentials);
             if (logger.isDebugEnabled()) {
                 logger.debug("Portal login result: {}", message);
             }
 
             if (message.isSuccess()) {
-                sessionStore.put(session);
                 sessionRepository.save((SessionEntity) session);
-                throw new SessionNotFoundException(101);
+                /*
+                 * Only put to cache if no exceptions or rollback occurred.
+                 */
+                sessionStore.put(session);
             }
 
             return Message.of(session, message.isSuccess(), message.getText());
-        } catch (IOException e) {
+        } catch (IOException | PortalProtocolException e) {
             throw new SessionOperationException("Create session error", e);
         }
     }
@@ -209,7 +213,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         nas.orElseThrow(() -> new NasNotFoundException("NAS not found by id: " + session.getNasId()));
 
         try {
-            PortalClient client = PortalClients.create(nas.get());
+            PortalClient client = HuaweiPortal.createClient(nas.get());
             Message<?> message = client.logout(credentials);
             if (logger.isDebugEnabled()) {
                 logger.debug("Portal logout result: {}", message);
@@ -224,7 +228,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                 }
             }
             return Message.of(session, message.isSuccess(), message.getText());
-        } catch (IOException e) {
+        } catch (IOException | PortalProtocolException e) {
             logger.error("Portal logout error", e);
             throw new SessionOperationException("Failed to logout", e);
         }
