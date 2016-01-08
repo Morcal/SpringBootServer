@@ -243,7 +243,11 @@ public class SessionControllerImpl implements SessionController {
                          @RequestParam(value = "user_mac", defaultValue = "") String mac,
                          @AuthenticationPrincipal Principal principal) throws SessionNotFoundException {
         Optional<Session> opt = sessionService.find(ip, mac);
-        opt.orElseThrow(() -> new SessionNotFoundException("Session not found."));
+        if (!opt.isPresent()) {
+            return RestResponseBuilders.successBuilder()
+                    .setAccessAuthentication((AccessAuthentication) principal)
+                    .build();
+        }
 
         Session session = opt.get();
 

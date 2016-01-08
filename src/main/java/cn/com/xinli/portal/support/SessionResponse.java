@@ -3,6 +3,7 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.rest.bean.Authentication;
 import cn.com.xinli.rest.bean.Authorization;
 import cn.com.xinli.rest.bean.RestBean;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author zhoupeng 2016/1/4.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionResponse implements RestBean {
     @JsonProperty("authorization")
     private Authorization authorization;

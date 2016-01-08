@@ -7,6 +7,7 @@ import cn.com.xinli.portal.protocol.*;
 import cn.com.xinli.portal.protocol.support.CodecUtil;
 import cn.com.xinli.portal.protocol.support.CredentialsEncoders;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ public class CredentialsTranslationTest {
     private final Logger logger = LoggerFactory.getLogger(CredentialsTranslationTest.class);
 
     final Credentials credentials = new Credentials("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
+
+    NasEntity entity;
 
     @Test
     public void testMd5Encoder() {
@@ -80,8 +83,9 @@ public class CredentialsTranslationTest {
         Assert.assertEquals(encoded.getPassword(), encodedPassword);
     }
 
-    private NasEntity createNasEntity() {
-        NasEntity entity = new NasEntity();
+    @Before
+    public void createNasEntity() {
+        entity = new NasEntity();
         entity.setType(NasType.HuaweiV2);
         entity.setSharedSecret("aaa");
         entity.setName("Test Nas");
@@ -96,23 +100,19 @@ public class CredentialsTranslationTest {
         CredentialsTranslationEntity translationEntity = new CredentialsTranslationEntity();
         entity.setTranslation(translationEntity);
 
-        return entity;
     }
 
-    @Test
-    public void testTranslationWithNoOp() {
-        NasEntity entity = createNasEntity();
-        CredentialsTranslation translation = CredentialsTranslations.getTranslation(entity);
-        Credentials translated = translation.translate(credentials);
-        Assert.assertNotNull(translated);
-        logger.debug("translated credentials: {}", translated);
-        Assert.assertEquals(credentials, translated);
-    }
+//    @Test
+//    public void testTranslationWithNoOp() {
+//        CredentialsTranslation translation = CredentialsTranslations.getTranslation(entity);
+//        Credentials translated = translation.translate(credentials);
+//        Assert.assertNotNull(translated);
+//        logger.debug("translated credentials: {}", translated);
+//        Assert.assertEquals(credentials, translated);
+//    }
 
     @Test
     public void testTranslationWithPrefixAndPostfix() {
-        NasEntity entity = createNasEntity();
-
         List<CredentialsModifierEntity> modifiers = new ArrayList<>();
 
         CredentialsModifierEntity prefix = new CredentialsModifierEntity();
@@ -134,8 +134,9 @@ public class CredentialsTranslationTest {
         CredentialsTranslation translation = CredentialsTranslations.getTranslation(entity);
         Credentials translated = translation.translate(credentials);
         Assert.assertNotNull(translated);
+        logger.debug("original credentials: {}", credentials);
         logger.debug("translated credentials: {}", translated);
 
-        Assert.assertNotEquals(credentials, translated);
+        Assert.assertNotEquals(credentials.getUsername(), translated.getUsername());
     }
 }

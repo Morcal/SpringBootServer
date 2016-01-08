@@ -29,7 +29,6 @@ public class LamdaTest {
                     throw new RuntimeException("guess is less than 3.");
             });
         } catch (RuntimeException e) {
-            e.printStackTrace();
             Assert.assertTrue(true);
         }
     }

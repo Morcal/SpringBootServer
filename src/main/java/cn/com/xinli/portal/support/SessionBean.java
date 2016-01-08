@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.rest.bean.RestBean;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,7 +17,6 @@ public class SessionBean implements RestBean {
     private String id;
 
     /** Session token. */
-    @JsonIgnore
     private String token;
 
     /** Token expires in seconds. */
@@ -36,15 +34,12 @@ public class SessionBean implements RestBean {
     @JsonProperty("keepalive_interval")
     private int keepAliveInterval;
 
-    @JsonIgnore
     @JsonProperty("authentication")
     private Object authentication;
 
-    @JsonIgnore
     @JsonProperty("authorization")
     private Object authorization;
 
-    @JsonIgnore
     @JsonProperty("accounting")
     private Object accounting;
 

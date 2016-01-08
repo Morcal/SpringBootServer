@@ -111,15 +111,15 @@ public class RestResponseBuilders {
 
         @Override
         public SessionResponse build() {
-            SessionResponse success = new SessionResponse();
+            SessionResponse response = new SessionResponse();
             /* Build session with/without session token. */
             if (session == null) {
-                success.setSession(null);
+                response.setSession(null);
             } else if (accessAuthentication == null || !grantToken) {
-                success.setSession(
+                response.setSession(
                         sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval).build());
             } else {
-                success.setSession(
+                response.setSession(
                         sessionBuilder(session, accessAuthentication.getSessionToken(), requiresKeepAlive, keepAliveInterval).build());
             }
 
@@ -128,15 +128,15 @@ public class RestResponseBuilders {
                 HttpDigestCredentials credentials = accessAuthentication.getCredentials();
                 if (HttpDigestCredentials.containsChallenge(credentials)) {
                     /* Set authorization only when response to challenge. */
-                    success.setAuthorization(authorizationBuilder(accessAuthentication.getAccessToken()).build());
+                    response.setAuthorization(authorizationBuilder(accessAuthentication.getAccessToken()).build());
                 }
             } else {
-                success.setAuthorization(null);
+                response.setAuthorization(null);
             }
 
             /* Build authentication if present. */
-            success.setAuthentication(challenge == null ? null : authenticationBuilder(challenge).build());
-            return success;
+            response.setAuthentication(challenge == null ? null : authenticationBuilder(challenge).build());
+            return response;
         }
     }
 

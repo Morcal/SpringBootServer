@@ -43,7 +43,7 @@
         <property name="id" value="2"/>
         <property name="nasId" value="xinli99"/>
         <property name="name" value="mock-huawei-nas"/>
-        <property name="ipv4Address" value="192.168.3.26"/>
+        <property name="ipv4Address" value="127.0.0.1"/>
         <property name="ipv6Address" value=""/>
         <property name="type" value="HuaweiV2"/>
         <property name="authType" value="CHAP"/>
