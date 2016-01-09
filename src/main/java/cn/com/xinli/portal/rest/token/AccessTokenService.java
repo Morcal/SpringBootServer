@@ -29,7 +29,7 @@ public class AccessTokenService extends AbstractTokenService {
     }
 
     @Override
-    protected int getTtl() {
+    protected int getTokenTtl() {
         return SecurityConfiguration.ACCESS_TOKEN_TTL;
     }
 }

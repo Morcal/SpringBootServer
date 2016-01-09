@@ -5,7 +5,7 @@ import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.rest.bean.RestBean;
+import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.configuration.ApiConfiguration;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,7 @@ public class AuthorizeController {
 
     @ResponseBody
     @RequestMapping("/" + ApiConfiguration.REST_API_AUTHORIZE)
-    public RestBean authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,
+    public RestResponse authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,
                               @RequestParam(name = "response_type") String responseType,
                               @RequestParam(name = "client_id") String clientId,
                               @RequestParam(name = "scope") String scope,

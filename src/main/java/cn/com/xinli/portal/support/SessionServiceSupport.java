@@ -134,7 +134,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
                     removeSession(existed.getId());
                 } else {
-                    return Message.of(opt.get(), true, "Session already exists.");
+                    return Message.of(existed, true, "Session already exists.");
                 }
             }
 
@@ -255,7 +255,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         if (!found.isEmpty()) {
             return Optional.of(found.get(0));
         } else {
-            found = sessionRepository.find(Session.pair(ip, mac));
+            found = sessionRepository.find(ip, mac);
             found.forEach(session -> sessionStore.put(session));
             return found.isEmpty() ? Optional.empty() : Optional.of(found.get(0));
         }
@@ -284,6 +284,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         lastUpdateTime = lastUpdateTime / 1000L;
 
+        logger.trace("session last update time: {}, current update time: {}",
+                lastUpdateTime, timestamp);
+
         if (Math.abs(lastUpdateTime - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
             /* Assume it's a replay attack. */
             throw new InvalidPortalRequestException("Update within an invalid range.");
@@ -300,12 +303,12 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     @Transactional
     public Message removeSession(String ip)
             throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
-        Session found = sessionRepository.find1(ip);
-        if (found == null) {
-            throw new SessionNotFoundException("session with ip: " + ip + " not found.");
-        }
+        Optional<Session> found = sessionRepository.find(ip)
+                .stream().findFirst();
 
-        sessionRepository.delete((SessionEntity) found);
+        found.orElseThrow(() -> new SessionNotFoundException("session with ip: " + ip + " not found."));
+
+        sessionRepository.delete((SessionEntity) found.get());
         return Message.of(null, true, "Session removed.");
     }
 }

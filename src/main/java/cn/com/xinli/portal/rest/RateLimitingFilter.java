@@ -1,10 +1,9 @@
 package cn.com.xinli.portal.rest;
 
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.rest.api.EntryPoint;
 import cn.com.xinli.rest.api.Provider;
-import cn.com.xinli.rest.bean.RestBean;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,7 +79,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
         list.forEach(strings -> strings.forEach(urls::add));
 
         if (logger.isDebugEnabled()) {
-            urls.forEach(url -> logger.debug("Adding rate-limiting filter path: {}.", url));
+            urls.forEach(url -> logger.info("Adding rate-limiting filter path: {}.", url));
         }
 
         setFilterPathMatches(urls);
@@ -91,7 +90,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
      * @param response response.
      */
     private void denyRemoteWithError(HttpServletResponse response) {
-        RestBean error = RestResponseBuilders.errorBuilder()
+        RestResponse error = RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_REQUEST_RATE_LIMITED)
                 .setDescription("Request rate limiting reached.")
                 .build();

@@ -68,7 +68,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public static final int CHALLENGE_TTL = 35;
 
     /** Rate limiting (requests per second). */
-    public static final int RATE_LIMITING = 3;
+    public static final int RATE_LIMITING = 5;
 
     @Value("${pws.root}") private String application;
 

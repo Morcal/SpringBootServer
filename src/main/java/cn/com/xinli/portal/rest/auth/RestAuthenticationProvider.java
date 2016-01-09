@@ -107,8 +107,8 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             throw new BadCredentialsException("Missing signature.");
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Comparing signature, calculated: {{}} , original: {{}}.",
+        if (logger.isTraceEnabled()) {
+            logger.trace("Comparing signature, calculated: {{}} , original: {{}}.",
                     signedSignature, signature);
         }
 

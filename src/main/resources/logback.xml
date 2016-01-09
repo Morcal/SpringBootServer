@@ -2,5 +2,5 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <logger name="cn.com.xinli.portal" level="debug"/>
+    <logger name="cn.com.xinli.portal" level="trace"/>
 </configuration>

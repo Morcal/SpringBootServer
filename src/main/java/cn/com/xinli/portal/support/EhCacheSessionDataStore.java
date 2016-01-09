@@ -116,6 +116,7 @@ public class EhCacheSessionDataStore implements SessionStore {
         if (element == null) {
             return false;
         } else {
+            logger.trace("session {} last update time: {}", id, element.getLastUpdateTime());
             element.updateUpdateStatistics();
             sessionCache.put(element);
             return true;
@@ -124,6 +125,7 @@ public class EhCacheSessionDataStore implements SessionStore {
 
     @Override
     public boolean delete(long id) {
+        logger.trace("ehcache session data store deleting session {}.", id);
         return sessionCache.remove(id);
     }
 
@@ -145,12 +147,12 @@ public class EhCacheSessionDataStore implements SessionStore {
                 Attribute<String> attr = sessionCache.getSearchAttribute(key);
                 String value = parameters.get(key);
                 if (StringUtils.isEmpty(value) && logger.isDebugEnabled()) {
-                    logger.debug("+ query parameter {} is empty, ignored.", key);
+                    logger.trace("+ query parameter {} is empty, ignored.", key);
                 } else {
                     criterias.add(attr.eq(parameters.get(key)));
                 }
             } catch (CacheException e) {
-                logger.debug("+ EhCache search attribute: {} not found, ignored.", key);
+                logger.trace("+ EhCache search attribute: {} not found, ignored.", key);
             }
         }
 

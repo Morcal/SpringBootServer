@@ -1,5 +1,6 @@
 package cn.com.xinli.portal;
 
+import cn.com.xinli.portal.protocol.Nas;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
@@ -67,10 +68,24 @@ public interface Session {
     String getPassword();
 
     /**
-     * Get session user device.
-     * @return session suer device.
+     * Get session user operation system name.
+     * @return session user operation system name.
      */
-    String getDevice();
+    String getOs();
+
+    /**
+     * Get session user client version.
+     * @return user client version.
+     */
+    String getVersion();
+
+    /**
+     * Get session additional information.
+     * @return session additional information.
+     */
+    default String getInfo()  {
+        return getPassword() + ":" + getMac() + ":" + getOs() + ":" + getVersion();
+    }
 
     /**
      * Create a paired information for ip and mac.

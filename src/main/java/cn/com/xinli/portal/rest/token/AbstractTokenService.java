@@ -32,14 +32,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     @Autowired
     private SecureRandomStringGenerator secureRandomStringGenerator;
 
-//    @Autowired
-//    private PortalServerConfig serverConfig;
-
     @Value("${pws.private_key") private String serverPrivateKey;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-//        Assert.notNull(serverConfig);
         Assert.notNull(secureRandomStringGenerator);
     }
 
@@ -56,7 +52,11 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      */
     protected abstract boolean verifyExtendedInformation(String extendedInformation);
 
-    protected abstract int getTtl();
+    /**
+     * Get token time to live (in seconds).
+     * @return token ttl.
+     */
+    protected abstract int getTokenTtl();
 
     /**
      * Create token key content.
@@ -127,7 +127,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
             return null;
         }
 
-        if ((now - creationTime) / 1000L > getTtl()) {
+        if ((now - creationTime) / 1000L > getTokenTtl()) {
             logger.debug("Token expired.");
             return null;
         }

@@ -28,7 +28,7 @@ public class AuthenticationFailureEventHandler implements ApplicationListener<Au
     public void onApplicationEvent(AuthenticationFailureEvent event) {
         if (event.getSeverity().ordinal() <= minimalSeverity.ordinal()) {
             ActivityEntity activity = new ActivityEntity();
-            activity.setAction(Activity.Action.AUTHENTICATE.name());
+            activity.setAction(Activity.SessionAction.AUTHENTICATE.name());
             activity.setFacility(Activity.Facility.PORTAL);
             activity.setRemote(event.getRequest().getRemoteUser());
             activity.setResult("Failed");

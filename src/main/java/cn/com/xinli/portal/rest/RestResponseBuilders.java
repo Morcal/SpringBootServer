@@ -1,15 +1,16 @@
 package cn.com.xinli.portal.rest;
 
 import cn.com.xinli.portal.Session;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.rest.token.RestToken;
 import cn.com.xinli.portal.support.SessionBean;
 import cn.com.xinli.portal.support.SessionResponse;
 import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.rest.auth.HttpDigestCredentials;
-import cn.com.xinli.rest.bean.*;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
-import cn.com.xinli.portal.rest.token.RestToken;
+import cn.com.xinli.rest.bean.Authentication;
+import cn.com.xinli.rest.bean.Authorization;
 import cn.com.xinli.rest.bean.Error;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.token.Token;
@@ -22,17 +23,51 @@ import org.springframework.security.core.token.Token;
  * @author zhoupeng 2015/12/8.
  */
 public class RestResponseBuilders {
-
-    interface Builder<T extends RestBean> {
+    /**
+     * Resposne builder.
+     * @param <T> rest response type.
+     */
+    interface Builder<T extends RestResponse> {
         T build();
+    }
+
+    /**
+     * Abstract server response builder.
+     * @param <T> rest response type.
+     */
+    static abstract class ServerResponseBuilder<T extends RestResponse> implements Builder<T> {
+        /** If server truncated response. */
+        private boolean truncated;
+
+        /** Server time (UNIX epoch time) when repsonse was created. */
+        private long createdAt;
+
+        /**
+         * Internal build target response.
+         * @return response.
+         */
+        protected abstract T buildInternal();
+
+        ServerResponseBuilder(boolean truncated) {
+            this.truncated = truncated;
+            this.createdAt = System.currentTimeMillis() / 1000L;
+        }
+
+        @Override
+        public final T build() {
+            T target = buildInternal();
+            target.setTruncated(truncated);
+            target.setCreatedAt(createdAt);
+            return target;
+        }
     }
 
     /**
      * Acquire a success builder.
      * @return builder.
      */
-    public static SuccessBuilder successBuilder() {
-        return new SuccessBuilder();
+    public static SessionResponseBuilder successBuilder() {
+        return new SessionResponseBuilder();
     }
 
     /**
@@ -71,7 +106,13 @@ public class RestResponseBuilders {
         return new AuthorizationBuilder(token);
     }
 
-    public static class SuccessBuilder implements Builder<SessionResponse> {
+    /**
+     * Session response builder.
+     *
+     * Session response may contains information of {@link Authentication},
+     * {@link Authorization} and {@link SessionBean}.
+     */
+    public static class SessionResponseBuilder extends ServerResponseBuilder<SessionResponse> {
         private Session session = null;
         private Challenge challenge = null;
         private AccessAuthentication accessAuthentication = null;
@@ -79,38 +120,42 @@ public class RestResponseBuilders {
         private boolean requiresKeepAlive;
         private int keepAliveInterval;
 
-        public SuccessBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
+        SessionResponseBuilder() {
+            super(false);
+        }
+
+        public SessionResponseBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
             this.accessAuthentication = accessAuthentication;
             return this;
         }
 
-        public SuccessBuilder setSession(Session session) {
+        public SessionResponseBuilder setSession(Session session) {
             this.session = session;
             return this;
         }
 
-        public SuccessBuilder setChallenge(Challenge challenge) {
+        public SessionResponseBuilder setChallenge(Challenge challenge) {
             this.challenge = challenge;
             return this;
         }
 
-        public SuccessBuilder setRequiresKeepAlive(boolean requiresKeepAlive) {
+        public SessionResponseBuilder setRequiresKeepAlive(boolean requiresKeepAlive) {
             this.requiresKeepAlive = requiresKeepAlive;
             return this;
         }
 
-        public SuccessBuilder setKeepAliveInterval(int keepAliveInterval) {
+        public SessionResponseBuilder setKeepAliveInterval(int keepAliveInterval) {
             this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
-        public SuccessBuilder setGrantToken(boolean grantToken) {
+        public SessionResponseBuilder setGrantToken(boolean grantToken) {
             this.grantToken = grantToken;
             return this;
         }
 
         @Override
-        public SessionResponse build() {
+        protected SessionResponse buildInternal() {
             SessionResponse response = new SessionResponse();
             /* Build session with/without session token. */
             if (session == null) {
@@ -140,11 +185,20 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class ErrorBuilder implements Builder<Error> {
+    /**
+     * Error response builder.
+     *
+     * Error response may contains a token key from {@link Token#getKey()}.
+     */
+    public static class ErrorBuilder extends ServerResponseBuilder<Error> {
         private String error;
         private String description;
         private String url;
         private String token;
+
+        ErrorBuilder() {
+            super(false);
+        }
 
         public ErrorBuilder setError(String error) {
             this.error = error;
@@ -167,7 +221,7 @@ public class RestResponseBuilders {
         }
 
         @Override
-        public Error build() {
+        protected Error buildInternal() {
             Error failure = new Error();
             failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
             failure.setDescription(StringUtils.defaultString(description));
@@ -177,13 +231,19 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class SessionBuilder implements Builder<SessionBean> {
+    /**
+     * Session bean builder.
+     *
+     * Session bean may contains a session token key from {@link Token#getKey()}.
+     */
+    public static class SessionBuilder extends ServerResponseBuilder<SessionBean> {
         private final Session session;
         private final Token token;
         private final boolean requiresKeepAlive;
         private final int keepAliveInterval;
 
         public SessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
+            super(false);
             this.session = session;
             this.token = token;
             this.requiresKeepAlive = requiresKeepAlive;
@@ -191,7 +251,7 @@ public class RestResponseBuilders {
         }
 
         @Override
-        public SessionBean build() {
+        protected SessionBean buildInternal() {
             if (session == null) {
                 return null;
             } else {
@@ -209,15 +269,19 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class AuthenticationBuilder implements Builder<Authentication> {
+    /**
+     * Authentication builder.
+     */
+    public static class AuthenticationBuilder extends ServerResponseBuilder<Authentication> {
         private final Challenge challenge;
 
         public AuthenticationBuilder(Challenge challenge) {
+            super(false);
             this.challenge = challenge;
         }
 
         @Override
-        public Authentication build() {
+        protected Authentication buildInternal() {
             if (challenge == null) {
                 throw new IllegalStateException("Server failed to locate challenge.");
             } else {
@@ -230,15 +294,19 @@ public class RestResponseBuilders {
         }
     }
 
-    public static class AuthorizationBuilder implements Builder<Authorization> {
+    /**
+     * Authorization builder.
+     */
+    public static class AuthorizationBuilder extends ServerResponseBuilder<Authorization> {
         private final RestToken token;
 
         public AuthorizationBuilder(RestToken token) {
+            super(false);
             this.token = token;
         }
 
         @Override
-        public Authorization build() {
+        protected Authorization buildInternal() {
             if (token == null) {
                 throw new IllegalStateException("Server failed to locate authorization.");
             } else {

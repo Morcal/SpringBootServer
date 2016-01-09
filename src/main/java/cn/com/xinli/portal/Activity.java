@@ -33,8 +33,13 @@ public interface Activity {
         VERBOSE
     }
 
-    /** Activity action. */
-    enum Action {
+    /** System action. */
+    enum SystemAction {
+        DELETE_OLD_ACTIVITIES
+    }
+
+    /** Activity sessionAction. */
+    enum SessionAction {
         AUTHENTICATE("authorize"),
         CREATE_SESSION("connect"),
         GET_SESSION("get-session"),
@@ -45,7 +50,7 @@ public interface Activity {
 
         private String alias;
 
-        Action(String alias) {
+        SessionAction(String alias) {
             this.alias = alias;
         }
 
@@ -53,14 +58,14 @@ public interface Activity {
             return this.alias;
         }
 
-        public static Action ofAlias(String alias) {
+        public static SessionAction ofAlias(String alias) {
             if (StringUtils.isEmpty(alias)) {
                 return UNKNOWN;
             }
 
-            for (Action action : values()) {
-                if (action.alias.equals(alias)) {
-                    return action;
+            for (SessionAction sessionAction : values()) {
+                if (sessionAction.alias.equals(alias)) {
+                    return sessionAction;
                 }
             }
             return UNKNOWN;
@@ -77,7 +82,7 @@ public interface Activity {
      * Get facility which activity occurred.
      * @return activity facility.
      */
-    Facility getCategory();
+    Facility getFacility();
 
     /**
      * Get activity severity.
@@ -98,8 +103,14 @@ public interface Activity {
     String getSource();
 
     /**
-     * Get activity action.
-     * @return activity action.
+     * Get source information.
+     * @return source information.
+     */
+    String getSourceInfo();
+
+    /**
+     * Get activity sessionAction.
+     * @return activity sessionAction.
      */
     String getAction();
 

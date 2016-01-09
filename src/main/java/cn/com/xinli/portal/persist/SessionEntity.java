@@ -16,16 +16,12 @@ import java.util.Date;
 @PersistenceUnit(unitName = "bra")
 @Table(schema = "PWS", name="session")
 public class SessionEntity implements Session {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     @Column(name = "nas_id")
     private long nasId;
-
-    @Column
-    private String device;
 
     @Column
     private String username;
@@ -51,8 +47,8 @@ public class SessionEntity implements Session {
     @Column
     private String version;
 
-    @Column(name = "last_modified")
-    private Date lastModified;
+//    @Column(name = "last_modified")
+//    private Date lastModified;
 
     @Override
     public long getId() {
@@ -106,14 +102,6 @@ public class SessionEntity implements Session {
         this.startTime = startTime;
     }
 
-    public String getOs() {
-        return os;
-    }
-
-    public void setOs(String os) {
-        this.os = os;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -130,22 +118,22 @@ public class SessionEntity implements Session {
         this.version = version;
     }
 
-    public Date getLastModified() {
-        return lastModified;
-    }
+//    public Date getLastModified() {
+//        return lastModified;
+//    }
 
     @Override
-    public String getDevice() {
-        return device;
+    public String getOs() {
+        return os;
     }
 
-    public void setDevice(String device) {
-        this.device = device;
+    public void setOs(String os) {
+        this.os = os;
     }
 
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
+//    public void setLastModified(Date lastModified) {
+//        this.lastModified = lastModified;
+//    }
 
     @Override
     public Date getEndTime() {
@@ -159,7 +147,6 @@ public class SessionEntity implements Session {
     @Override
     public String toString() {
         return "SessionEntity{" +
-                "device='" + device + '\'' +
                 ", id=" + id +
                 ", nasId=" + nasId +
                 ", username='" + username + '\'' +
@@ -170,7 +157,6 @@ public class SessionEntity implements Session {
                 ", password='" + password + '\'' +
                 ", os='" + os + '\'' +
                 ", version='" + version + '\'' +
-                ", lastModified=" + lastModified +
                 '}';
     }
 }

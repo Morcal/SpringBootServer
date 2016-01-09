@@ -1,11 +1,14 @@
 package cn.com.xinli.portal.persist;
 
 import cn.com.xinli.portal.Activity;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
 
 /**
+ * Activity entity.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/17.
@@ -30,6 +33,9 @@ public class ActivityEntity implements Activity {
     @Column(nullable = false)
     private String source;
 
+    @Column(name = "source_info")
+    private String sourceInfo;
+
     @Column(nullable = false)
     private String action;
 
@@ -39,12 +45,12 @@ public class ActivityEntity implements Activity {
     @Column(nullable = false)
     private Date timestamp;
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public Facility getFacility() {
-        return facility;
+    public void setAction(String action) {
+        this.action = action;
     }
 
     public void setFacility(Facility facility) {
@@ -56,7 +62,7 @@ public class ActivityEntity implements Activity {
     }
 
     public void setResult(String result) {
-        this.result = result;
+        this.result = StringUtils.left(result, 254);
     }
 
     public void setSeverity(Severity severity) {
@@ -71,13 +77,17 @@ public class ActivityEntity implements Activity {
         this.timestamp = timestamp;
     }
 
+    public void setSourceInfo(String sourceInfo) {
+        this.sourceInfo = StringUtils.left(sourceInfo, 254);
+    }
+
     @Override
     public long getId() {
         return id;
     }
 
     @Override
-    public Facility getCategory() {
+    public Facility getFacility() {
         return facility;
     }
 
@@ -97,6 +107,11 @@ public class ActivityEntity implements Activity {
     }
 
     @Override
+    public String getSourceInfo() {
+        return sourceInfo;
+    }
+
+    @Override
     public String getAction() {
         return action;
     }
@@ -111,7 +126,18 @@ public class ActivityEntity implements Activity {
         return timestamp;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    @Override
+    public String toString() {
+        return "ActivityEntity{" +
+                "action='" + action + '\'' +
+                ", id=" + id +
+                ", facility=" + facility +
+                ", severity=" + severity +
+                ", remote='" + remote + '\'' +
+                ", source='" + source + '\'' +
+                ", sourceInfo='" + sourceInfo + '\'' +
+                ", result='" + result + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
     }
 }

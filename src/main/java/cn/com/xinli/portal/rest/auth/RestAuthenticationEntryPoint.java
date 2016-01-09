@@ -2,7 +2,7 @@ package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
-import cn.com.xinli.rest.bean.RestBean;
+import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -40,7 +40,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException e) throws IOException, ServletException {
         assert e != null;
         if (e instanceof InvalidAccessTokenException) {
-            RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
+            RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidAccessTokenException) e).getToken())
                     .setError(RestResponse.ERROR_INVALID_CLIENT_GRANT)
                     .build();
@@ -48,7 +48,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             httpServletResponse.getWriter().print(
                     new ObjectMapper(factory).writeValueAsString(invalidCredentials));
         } else if (e instanceof InvalidSessionTokenException) {
-            RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
+            RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidSessionTokenException) e).getToken())
                     .setError(RestResponse.ERROR_INVALID_SESSION_GRANT)
                     .build();
@@ -56,7 +56,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             httpServletResponse.getWriter().print(
                     new ObjectMapper(factory).writeValueAsString(invalidCredentials));
         } else if (e instanceof BadCredentialsException) {
-            RestBean invalidCredentials = RestResponseBuilders.errorBuilder()
+            RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setError(RestResponse.ERROR_INVALID_REQUEST)
                     .setDescription(e.getMessage())
                     .build();
@@ -65,7 +65,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                     new ObjectMapper(factory).writeValueAsString(invalidCredentials));
         } else {
             /* Server internal error. */
-            RestBean internalError = RestResponseBuilders.errorBuilder()
+            RestResponse internalError = RestResponseBuilders.errorBuilder()
                     .setError(RestResponse.ERROR_SERVER_ERROR)
                     .setDescription(e.getMessage())
                     .build();

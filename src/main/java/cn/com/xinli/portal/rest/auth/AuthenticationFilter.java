@@ -25,8 +25,6 @@ import org.springframework.util.Assert;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -87,7 +85,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
         list.forEach(strings -> strings.forEach(urls::add));
 
         if (logger.isDebugEnabled()) {
-            urls.forEach(url -> logger.debug("Adding auth filter path: {}.", url));
+            urls.forEach(url -> logger.info("Adding auth filter path: {}.", url));
         }
         setFilterPathMatches(urls);
         setContinueFilterChainOnUnsuccessful(false);
@@ -106,8 +104,8 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
      * @param authentication authentication authenticated.
      */
     private void successfulAuthentication(Authentication authentication) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Authentication success: {}", authentication);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Authentication success: {}", authentication);
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -129,8 +127,8 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                                             Authentication authentication,
                                             AuthenticationException failed) {
         SecurityContextHolder.clearContext();
-        if (logger.isDebugEnabled()) {
-            logger.error("* Cleared security context due to exception, {}", failed.getMessage());
+        if (logger.isTraceEnabled()) {
+            logger.trace("* Cleared security context due to exception, {}", failed.getMessage());
         }
 
         request.setAttribute("SPRING_SECURITY_LAST_EXCEPTION", failed);
@@ -173,8 +171,8 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                  * and there's credentials inside the request.
                  */
                 try {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Checking secure context authentication: {}",
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("Checking secure context authentication: {}",
                                 SecurityContextHolder.getContext().getAuthentication());
                     }
 
@@ -190,8 +188,8 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                     Authentication result = authenticationManager.authenticate(authentication);
                     SecurityContextHolder.getContext().setAuthentication(result);
                     successfulAuthentication(result);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("authorities: {}.", result.getAuthorities());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("authorities: {}.", result.getAuthorities());
                     }
                 } catch (AuthenticationException e) {
                     unsuccessfulAuthentication(request, response, AbstractAuthentication.empty(), e);

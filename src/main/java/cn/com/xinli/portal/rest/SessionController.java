@@ -5,8 +5,7 @@ import cn.com.xinli.portal.SessionNotFoundException;
 import cn.com.xinli.portal.SessionOperationException;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.rest.auth.RestRole;
-import cn.com.xinli.rest.bean.RestBean;
-import cn.com.xinli.portal.configuration.ApiConfiguration;
+import cn.com.xinli.rest.RestResponse;
 import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +21,7 @@ import java.security.Principal;
  * @author zhoupeng 2015/12/2.
  */
 @RestController
-@RequestMapping("/${pws.root}/" + ApiConfiguration.REST_API_VERSION)
+@RequestMapping("/portal/v1.0")
 public interface SessionController {
 
     /**
@@ -33,22 +32,21 @@ public interface SessionController {
      *
      * @param ip  source ip address.
      * @param mac source mac address.
+     * @param principal spring security principal.
      * @return JSON.
      */
     @ResponseBody
-    @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_SESSIONS,
-            method = RequestMethod.POST)
-    //@PreAuthorize(SecurityConfiguration.SPRING_EL_PORTAL_USER_ROLE)
+    @RequestMapping(value = "/sessions", method = RequestMethod.POST)
     @PreAuthorize("hasRole('USER')")
-    RestBean connect(@RequestParam String username,
-                            @RequestParam String password,
-                            @RequestParam(name = "user_ip") String ip,
-                            @RequestParam(name = "user_mac") String mac,
-                            @RequestParam(defaultValue = "") String os,
-                            @RequestParam(defaultValue = "") String version,
-                            @AuthenticationPrincipal Principal principal)
+    RestResponse connect(@RequestParam String username,
+                     @RequestParam String password,
+                     @RequestParam(name = "user_ip") String ip,
+                     @RequestParam(name = "user_mac") String mac,
+                     @RequestParam(defaultValue = "") String os,
+                     @RequestParam(defaultValue = "") String version,
+                     @AuthenticationPrincipal Principal principal)
             throws NasNotFoundException, SessionNotFoundException, SessionOperationException;
+
     /**
      * Get portal session information.
      * <p>
@@ -59,15 +57,14 @@ public interface SessionController {
      * overrule anything and everything.
      *
      * @param id session id.
+     * @param principal spring security principal.
      * @return JSON.
      */
     @ResponseBody
-    @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
-            method = RequestMethod.GET)
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.GET)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
-    RestBean get(@P("session") @PathVariable long id,
-                        @AuthenticationPrincipal Principal principal) throws SessionNotFoundException;
+    RestResponse get(@P("session") @PathVariable long id,
+                 @AuthenticationPrincipal Principal principal) throws SessionNotFoundException;
 
     /**
      * Update portal session.
@@ -78,18 +75,17 @@ public interface SessionController {
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
-     * @param timestamp source timestamp.
      * @param id        session id.
+     * @param timestamp source timestamp.
+     * @param principal spring security principal.
      * @return JSON.
      */
     @ResponseBody
-    @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
-            method = RequestMethod.POST)
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.POST)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
-    RestBean update(@RequestParam long timestamp,
-                           @P("session") @PathVariable long id,
-                           @AuthenticationPrincipal Principal principal)
+    RestResponse update(@P("session") @PathVariable long id,
+                    @RequestParam long timestamp,
+                    @AuthenticationPrincipal Principal principal)
             throws InvalidPortalRequestException, SessionNotFoundException;
 
     /**
@@ -102,24 +98,32 @@ public interface SessionController {
      * overrule anything and everything.
      *
      * @param id session id.
+     * @param principal spring security principal.
      * @return JSON.
      */
     @ResponseBody
-    @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_SESSION + "/{id}",
-            method = RequestMethod.DELETE)
+    @RequestMapping(value = "/session/{id}", method = RequestMethod.DELETE)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
-    RestBean disconnect(@P("session") @PathVariable long id,
-                               @AuthenticationPrincipal Principal principal)
+    RestResponse disconnect(@P("session") @PathVariable long id,
+                        @AuthenticationPrincipal Principal principal)
             throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
 
+    /**
+     * Find portal session created by user ip and user mac.
+     * <p>Only request authenticated with role of {@link RestRole#USER}
+     * and has authority of this session can proceed.</p>
+     *
+     * @param ip        user ip address.
+     * @param mac       user mac address.
+     * @param principal spring security principal.
+     * @return JSON.
+     * @throws SessionNotFoundException
+     */
     @ResponseBody
-    @RequestMapping(
-            value = "/" + ApiConfiguration.REST_API_FIND,
-            method = RequestMethod.POST)
+    @RequestMapping(value = "/sessions/find", method = RequestMethod.POST)
     @PreAuthorize("hasRole('USER')")
-    RestBean find(@RequestParam(value = "user_ip") String ip,
-                         @RequestParam(value = "user_mac", defaultValue = "") String mac,
-                         @AuthenticationPrincipal Principal principal)
+    RestResponse find(@RequestParam(value = "user_ip") String ip,
+                  @RequestParam(value = "user_mac", defaultValue = "") String mac,
+                  @AuthenticationPrincipal Principal principal)
             throws SessionNotFoundException;
 }

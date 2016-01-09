@@ -39,7 +39,7 @@ public class SessionTokenService extends AbstractTokenService {
     }
 
     @Override
-    protected int getTtl() {
+    protected int getTokenTtl() {
         return SecurityConfiguration.SESSION_TOKEN_TTL;
     }
 

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -48,4 +49,11 @@ public interface ActivityRepository extends PagingAndSortingRepository<ActivityE
      */
     @Query("select a from ActivityEntity a where a.severity = :facility")
     List<ActivityEntity> filter(@Param("facility") Activity.Facility facility);
+
+    /**
+     * Delete activities older than given date.
+     * @param oldest oldest.
+     */
+    @Query("delete from ActivityEntity a where a.timestamp <= :oldest")
+    void deleteOlderThan(@Param("oldest") Date oldest);
 }

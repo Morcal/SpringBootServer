@@ -10,7 +10,7 @@ import cn.com.xinli.rest.RestResponse;
 import cn.com.xinli.rest.api.EntryPoint;
 import cn.com.xinli.rest.api.Provider;
 import cn.com.xinli.rest.bean.Error;
-import cn.com.xinli.rest.bean.RestBean;
+import cn.com.xinli.rest.RestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @Autowired
     private Provider restApiProvider;
 
-    private Activity.Action getActivityAction(HttpServletRequest request) {
+    private Activity.SessionAction getActivityAction(HttpServletRequest request) {
         String uri = request.getRequestURI();
         Set<Optional<EntryPoint>> entryPoints = restApiProvider.getRegistrations().stream()
                 .map(reg -> reg.getApis().stream().filter(api -> api.getUrl().equals(uri)).findFirst())
@@ -63,15 +63,15 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
                 .filter(Optional::isPresent)
                 .findFirst();
 
-        Activity.Action action = null;
+        Activity.SessionAction sessionAction = null;
         if (target.isPresent()) {
             Optional<EntryPoint> ep = target.get();
             if (ep.isPresent()) {
-                action = Activity.Action.ofAlias(ep.get().getAction());
+                sessionAction = Activity.SessionAction.ofAlias(ep.get().getAction());
             }
         }
 
-        return action == null ? Activity.Action.UNKNOWN : action;
+        return sessionAction == null ? Activity.SessionAction.UNKNOWN : sessionAction;
     }
 
     /**
@@ -85,12 +85,12 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
      * a {@link Error} JSON inside http response body.
      *
      * @param e {@link RuntimeException}
-     * @return {@link RestBean}
+     * @return {@link RestResponse}
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(value = {AuthenticationException.class})
-    public RestBean handleAuthenticationException(AuthenticationException e, HttpServletRequest request) {
+    public RestResponse handleAuthenticationException(AuthenticationException e, HttpServletRequest request) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -105,7 +105,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(value = {BadCredentialsException.class})
-    public RestBean handleAuthenticationException(BadCredentialsException e) {
+    public RestResponse handleAuthenticationException(BadCredentialsException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -120,7 +120,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ResponseBody
     @ExceptionHandler(value = {SessionNotFoundException.class})
-    public RestBean handleSessionNotFoundException(SessionNotFoundException e) {
+    public RestResponse handleSessionNotFoundException(SessionNotFoundException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -136,7 +136,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     @ExceptionHandler(value = {InvalidAccessTokenException.class, ChallengeNotFoundException.class})
-    public RestBean handleChallengeException(Exception e) {
+    public RestResponse handleChallengeException(Exception e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -153,7 +153,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             InvalidSessionUpdateException.class,
             DeviceChangedException.class,
             InvalidSessionTokenException.class})
-    public RestBean handleSessionException(Exception e) {
+    public RestResponse handleSessionException(Exception e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -167,8 +167,23 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     @ExceptionHandler(value = {
+            InvalidPortalRequestException.class})
+    public RestResponse handleInvalidPortalRequestException(InvalidPortalRequestException e) {
+        if (logger.isDebugEnabled()) {
+            logger.error("handle exception: {} ", e.getMessage());
+        }
+
+        return RestResponseBuilders.errorBuilder()
+                .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setDescription(e.getMessage())
+                .build();
+    }
+
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    @ExceptionHandler(value = {
             AccessDeniedException.class})
-    public RestBean handleAccessDeniedException(AccessDeniedException e) {
+    public RestResponse handleAccessDeniedException(AccessDeniedException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -182,7 +197,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     @ExceptionHandler(value = { PortalProtocolException.class})
-    public RestBean handlePortalProtocolException(PortalProtocolException e) {
+    public RestResponse handlePortalProtocolException(PortalProtocolException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
