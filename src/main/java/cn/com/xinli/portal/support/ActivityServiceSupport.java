@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ import java.util.Date;
  * @author zhoupeng 2015/12/19.
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = DataAccessException.class)
 @EnableScheduling
 public class ActivityServiceSupport implements ActivityService {
     /**
@@ -65,9 +66,9 @@ public class ActivityServiceSupport implements ActivityService {
     public void deleteOldActivities() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1 * mostRecent);
-        Date oldest = calendar.getTime();
-        logger.info("Deleting old activities before {}", oldest);
+        Date date = calendar.getTime();
+        logger.info("Deleting old activities before {}", date);
 
-        activityRepository.deleteOlderThan(oldest);
+        activityRepository.deleteOlderThan(date);
     }
 }

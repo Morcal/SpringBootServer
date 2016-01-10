@@ -33,7 +33,7 @@ public class AuthenticationSuccessEventHandler implements ApplicationListener<Au
             activity.setRemote(event.getRequest().getRemoteUser());
             activity.setResult("Authenticated");
             activity.setSeverity(event.getSeverity());
-            activity.setTimestamp(Calendar.getInstance().getTime());
+            activity.setCreated(Calendar.getInstance().getTime());
             activityService.log(activity);
         }
     }

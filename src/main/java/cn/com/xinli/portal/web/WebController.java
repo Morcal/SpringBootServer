@@ -2,7 +2,6 @@ package cn.com.xinli.portal.web;
 
 import cn.com.xinli.portal.NasMapping;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
-import cn.com.xinli.portal.protocol.support.CodecUtil;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -85,7 +84,7 @@ public class WebController {
      * @param basIp bas ip.
      * @return springframework mvc result.
      */
-    @RequestMapping(value = "/${pws.root}", method = RequestMethod.GET)
+    @RequestMapping(value = "/portal", method = RequestMethod.GET)
     public View main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
                        @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
                        @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
@@ -124,7 +123,7 @@ public class WebController {
         return mainPageView;
     }
 
-    @RequestMapping(value = "/${pws.root}", method = RequestMethod.POST)
+    @RequestMapping(value = "/portal", method = RequestMethod.POST)
     public View post() {
         return mainPageView;
     }

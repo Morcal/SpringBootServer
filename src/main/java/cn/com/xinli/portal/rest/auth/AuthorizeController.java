@@ -1,13 +1,11 @@
 package cn.com.xinli.portal.rest.auth;
 
 import cn.com.xinli.portal.auth.AuthorizationServer;
-import cn.com.xinli.portal.util.AddressUtil;
-import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.rest.RestResponseBuilders;
 import cn.com.xinli.portal.rest.auth.challenge.Challenge;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.rest.RestResponse;
-import cn.com.xinli.portal.configuration.ApiConfiguration;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author zhoupeng 2015/12/8.
  */
 @Controller
-@RequestMapping("/${pws.root}/" + ApiConfiguration.REST_API_VERSION)
+@RequestMapping("/portal/v1.0")
 public class AuthorizeController {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(AuthorizeController.class);
@@ -35,7 +33,7 @@ public class AuthorizeController {
     private AuthorizationServer authorizationServer;
 
     @ResponseBody
-    @RequestMapping("/" + ApiConfiguration.REST_API_AUTHORIZE)
+    @RequestMapping("/authorize")
     public RestResponse authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,
                               @RequestParam(name = "response_type") String responseType,
                               @RequestParam(name = "client_id") String clientId,
@@ -45,6 +43,8 @@ public class AuthorizeController {
                               @RequestParam(name = "user_ip", defaultValue = "") String ip,
                               @RequestParam(name = "user_mac", defaultValue = "") String mac,
                               HttpServletRequest request) {
+        logger.debug("{} ==> {}", request.getMethod(), request.getRequestURI());
+
         String error = RestResponse.ERROR_INVALID_REQUEST;
         String description;
 

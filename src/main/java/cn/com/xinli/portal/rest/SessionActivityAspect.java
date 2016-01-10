@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.Date;
+import java.util.Calendar;
 
 /**
  * Session activity aspect.
@@ -52,7 +52,7 @@ public class SessionActivityAspect {
                               Activity.SessionAction sessionAction,
                               Activity.Severity severity) {
         ActivityEntity activity = new ActivityEntity();
-        activity.setTimestamp(new Date());
+        activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(severity);
         activity.setResult(result);
         activity.setRemote(ip);

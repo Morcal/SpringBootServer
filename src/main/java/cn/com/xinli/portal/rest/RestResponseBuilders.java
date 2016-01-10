@@ -25,9 +25,9 @@ import org.springframework.security.core.token.Token;
 public class RestResponseBuilders {
     /**
      * Resposne builder.
-     * @param <T> rest response type.
+     * @param <T> rest response bean type.
      */
-    interface Builder<T extends RestResponse> {
+    interface Builder<T> {
         T build();
     }
 
@@ -35,7 +35,7 @@ public class RestResponseBuilders {
      * Abstract server response builder.
      * @param <T> rest response type.
      */
-    static abstract class ServerResponseBuilder<T extends RestResponse> implements Builder<T> {
+    static abstract class ServerResponseBuilder<T> implements Builder<T> {
         /** If server truncated response. */
         private boolean truncated;
 
@@ -56,8 +56,11 @@ public class RestResponseBuilders {
         @Override
         public final T build() {
             T target = buildInternal();
-            target.setTruncated(truncated);
-            target.setCreatedAt(createdAt);
+            if (target instanceof RestResponse) {
+                RestResponse response = (RestResponse) target;
+                response.setTruncated(truncated);
+                response.setCreatedAt(createdAt);
+            }
             return target;
         }
     }

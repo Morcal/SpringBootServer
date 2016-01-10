@@ -35,9 +35,6 @@ public class SessionEntity implements Session {
     @Column(name = "start_date")
     private Date startTime;
 
-    @Column(name = "end_date")
-    private Date endTime;
-
     @Column
     private String password;
 
@@ -47,13 +44,14 @@ public class SessionEntity implements Session {
     @Column
     private String version;
 
-//    @Column(name = "last_modified")
-//    private Date lastModified;
-
     @Override
     public long getId() {
         return id;
     }
+
+    /** Last modified time (UNIX epoch time), do not save in database. */
+    @Transient
+    private long lastModified = 0L;
 
     public void setId(long id) {
         this.id = id;
@@ -118,10 +116,6 @@ public class SessionEntity implements Session {
         this.version = version;
     }
 
-//    public Date getLastModified() {
-//        return lastModified;
-//    }
-
     @Override
     public String getOs() {
         return os;
@@ -131,17 +125,13 @@ public class SessionEntity implements Session {
         this.os = os;
     }
 
-//    public void setLastModified(Date lastModified) {
-//        this.lastModified = lastModified;
-//    }
-
     @Override
-    public Date getEndTime() {
-        return endTime;
+    public long getLastModified() {
+        return lastModified;
     }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
+    public void setLastModified(long modified) {
+        this.lastModified = modified;
     }
 
     @Override
@@ -153,7 +143,6 @@ public class SessionEntity implements Session {
                 ", ip='" + ip + '\'' +
                 ", mac='" + mac + '\'' +
                 ", startTime=" + startTime +
-                ", endTime=" + endTime +
                 ", password='" + password + '\'' +
                 ", os='" + os + '\'' +
                 ", version='" + version + '\'' +

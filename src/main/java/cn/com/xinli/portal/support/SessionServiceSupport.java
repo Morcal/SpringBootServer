@@ -170,7 +170,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @throws SessionNotFoundException if session not found.
      */
     @Override
-    @Transactional
     public Session getSession(long id) throws SessionNotFoundException {
         Session found = sessionStore.get(id);
 
@@ -186,26 +185,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * Try to remove session by communicating with target {@link Nas}.
-     * if succeeded, remove session from data store and database.
-     *
-     * @param id session id.
+     * Remove session internal.
+     * @param session session to remove.
      * @return message.
-     * @throws SessionNotFoundException
      * @throws NasNotFoundException
      * @throws SessionOperationException
      */
-    @Override
-    @Transactional
-    public Message<Session> removeSession(long id)
-            throws SessionNotFoundException, NasNotFoundException, SessionOperationException {
-        Session session = sessionRepository.findOne(id);
-        if (session == null) {
-            throw new SessionNotFoundException(id);
-        }
-
+    private Message<Session> removeSessionInternal(Session session) throws NasNotFoundException, SessionOperationException {
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
@@ -219,19 +205,42 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                 logger.debug("Portal logout result: {}", message);
             }
 
+            long id = session.getId();
             if (message.isSuccess()) {
-                if (sessionStore.delete(id)) {
-                    sessionRepository.delete(id);
-                    logger.debug("Session {} removed.", id);
-                } else {
-                    logger.error("* Removed session {} failed.", id);
+                if (!sessionStore.delete(id)) {
+                    logger.error("* Removed session {} from cache failed.", id);
                 }
+                sessionRepository.delete(id);
+                logger.debug("Session {} removed.", id);
             }
             return Message.of(session, message.isSuccess(), message.getText());
         } catch (IOException | PortalProtocolException e) {
             logger.error("Portal logout error", e);
             throw new SessionOperationException("Failed to logout", e);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Try to remove session by communicating with target {@link Nas}.
+     * if succeeded, remove session from data store and database.
+     *
+     * @param id session id.
+     * @return message.
+     * @throws SessionNotFoundException
+     * @throws NasNotFoundException
+     * @throws SessionOperationException
+     */
+    @Override
+    public Message<Session> removeSession(long id)
+            throws SessionNotFoundException, NasNotFoundException, SessionOperationException {
+        Session session = sessionRepository.findOne(id);
+        if (session == null) {
+            throw new SessionNotFoundException(id);
+        }
+
+        return removeSessionInternal(session);
     }
 
     /**
@@ -246,7 +255,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @return result.
      */
     @Override
-    @Transactional
     public Optional<Session> find(String ip, String mac) {
         Map<String, String> values = new HashMap<>();
         values.put("ip", ip);
@@ -275,14 +283,11 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @throws InvalidPortalRequestException
      */
     @Override
-    @Transactional
     public Session update(long id, long timestamp) throws SessionNotFoundException, InvalidPortalRequestException {
         long lastUpdateTime = sessionStore.getLastUpdateTime(id);
         if (lastUpdateTime == -1L) {
             throw new SessionNotFoundException(id);
         }
-
-        lastUpdateTime = lastUpdateTime / 1000L;
 
         logger.trace("session last update time: {}, current update time: {}",
                 lastUpdateTime, timestamp);
@@ -292,7 +297,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             throw new InvalidPortalRequestException("Update within an invalid range.");
         }
 
-        if (sessionStore.update(id)) {
+        if (sessionStore.update(id, timestamp)) {
             return sessionStore.get(id);
         } else {
             return null;
@@ -300,7 +305,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    @Transactional
     public Message removeSession(String ip)
             throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
         Optional<Session> found = sessionRepository.find(ip)
@@ -308,7 +312,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         found.orElseThrow(() -> new SessionNotFoundException("session with ip: " + ip + " not found."));
 
-        sessionRepository.delete((SessionEntity) found.get());
-        return Message.of(null, true, "Session removed.");
+        return removeSessionInternal(found.get());
     }
 }

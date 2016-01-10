@@ -24,10 +24,10 @@ public interface Session {
     Date getStartTime();
 
     /**
-     * Get session end date.
-     * @return session end date.
+     * Get session last modified time (UNIX epoch time).
+     * @return last modified time (UNIX epoch time).
      */
-    Date getEndTime();
+    long getLastModified();
 
     /**
      * Get session id.

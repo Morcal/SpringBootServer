@@ -35,7 +35,8 @@ public interface Activity {
 
     /** System action. */
     enum SystemAction {
-        DELETE_OLD_ACTIVITIES
+        DELETE_OLD_ACTIVITIES,
+        NTF_LOGOUT;
     }
 
     /** Activity sessionAction. */
@@ -124,5 +125,5 @@ public interface Activity {
      * Get activity timestamp when it occurred.
      * @return activity timestamp when it occurred.
      */
-    Date getTimestamp();
+    Date getCreated();
 }

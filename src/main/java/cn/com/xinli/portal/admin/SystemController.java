@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author zhoupeng 2015/12/19.
  */
 @RestController
-@RequestMapping("/${pws.root}/admin/system")
+@RequestMapping("/portal/admin/system")
 public class SystemController {
 
     @RequestMapping

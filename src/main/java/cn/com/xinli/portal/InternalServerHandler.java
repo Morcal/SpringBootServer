@@ -1,5 +1,6 @@
 package cn.com.xinli.portal;
 
+import cn.com.xinli.portal.protocol.Message;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.PortalServerHandler;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * @author zhoupeng 2016/1/4.
  */
 @Component
-final class InternalServerHandler implements PortalServerHandler {
+class InternalServerHandler implements PortalServerHandler {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(InternalServerHandler.class);
 
@@ -23,11 +24,19 @@ final class InternalServerHandler implements PortalServerHandler {
     private SessionService sessionService;
 
     @Override
-    public void handleNtfLogout(String ip) {
+    public int handleNtfLogout(String ip) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("NAS NtfLogout, ip: {}.", ip);
+        }
+
         try {
-            sessionService.removeSession(ip);
-        } catch (SessionNotFoundException | SessionOperationException | NasNotFoundException e) {
+            Message message = sessionService.removeSession(ip);
+            return message.isSuccess() ? 0 /* LogoutError.OK */ : 0x02 /* LogoutError.FAILED. */;
+        } catch (SessionNotFoundException e) {
+            return 0x03; /* LogoutError.GONE. */
+        } catch (SessionOperationException | NasNotFoundException e) {
             logger.error("Failed to remove session, ip: {}", ip, e);
+            return 0x02; /* LogoutError.FAILED. */
         }
     }
 }

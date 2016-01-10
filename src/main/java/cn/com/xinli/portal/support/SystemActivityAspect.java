@@ -10,7 +10,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.util.Calendar;
 
 /**
  * System activity aspect.
@@ -41,7 +41,7 @@ public class SystemActivityAspect {
         activity.setResult(result);
         activity.setSeverity(Activity.Severity.NORMAL);
         activity.setSourceInfo("system automation");
-        activity.setTimestamp(new Date());
+        activity.setCreated(Calendar.getInstance().getTime());
         activityService.log(activity);
     }
 

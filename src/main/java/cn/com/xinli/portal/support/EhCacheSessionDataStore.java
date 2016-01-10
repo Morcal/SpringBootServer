@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.Session;
 import cn.com.xinli.portal.SessionStore;
+import cn.com.xinli.portal.persist.SessionEntity;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
  *
  * @author zhoupeng 2015/12/29.
  */
-@Service
 @EnableScheduling
 public class EhCacheSessionDataStore implements SessionStore {
     /** Logger. */
@@ -56,9 +55,12 @@ public class EhCacheSessionDataStore implements SessionStore {
         logger.info("register event listener on session cache: {}.", registered);
     }
 
-    @Scheduled(fixedDelay = 10L)
+    @Scheduled(fixedDelay = 10_000L)
     public void evictExpiredSessions() {
         if (isSessionTtiEnabled) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Evicting expired sessions.");
+            }
             sessionCache.evictExpiredElements();
         }
     }
@@ -75,7 +77,7 @@ public class EhCacheSessionDataStore implements SessionStore {
      */
     @Override
     public Session get(long id) {
-        Element element = sessionCache.getQuiet(id);
+        Element element = sessionCache.get(id);
         return element == null ? null : (Session) element.getObjectValue();
     }
 
@@ -108,16 +110,21 @@ public class EhCacheSessionDataStore implements SessionStore {
      * Update session in the cache.
      *
      * @param id session id.
+     * @param lastModified last modified time (UNIX epoch time).
      * @return true if session found and updated, false not found.
      */
     @Override
-    public boolean update(long id) {
+    public boolean update(long id, long lastModified) {
         Element element = sessionCache.get(id);
         if (element == null) {
             return false;
         } else {
-            logger.trace("session {} last update time: {}", id, element.getLastUpdateTime());
-            element.updateUpdateStatistics();
+            SessionEntity entity = (SessionEntity) element.getObjectValue();
+            if (logger.isTraceEnabled()) {
+                logger.trace("session {} last modified at: {}, update to {}.",
+                        id, entity.getLastModified(), lastModified);
+            }
+            entity.setLastModified(lastModified);
             sessionCache.put(element);
             return true;
         }
@@ -132,7 +139,7 @@ public class EhCacheSessionDataStore implements SessionStore {
     @Override
     public long getLastUpdateTime(long id) {
         Element element = sessionCache.get(id);
-        return element == null ? -1L : element.getLastUpdateTime();
+        return element == null ? -1L : ((Session) element.getObjectValue()).getLastModified();
     }
 
     @Override

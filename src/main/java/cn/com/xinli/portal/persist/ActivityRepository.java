@@ -1,11 +1,10 @@
 package cn.com.xinli.portal.persist;
 
 import cn.com.xinli.portal.Activity;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -54,6 +53,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<ActivityE
      * Delete activities older than given date.
      * @param oldest oldest.
      */
-    @Query("delete from ActivityEntity a where a.timestamp <= :oldest")
+    @Modifying
+    @Query("delete from ActivityEntity a where a.created < :oldest")
     void deleteOlderThan(@Param("oldest") Date oldest);
 }

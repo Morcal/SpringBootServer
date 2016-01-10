@@ -43,7 +43,7 @@ public class ActivityEntity implements Activity {
     private String result;
 
     @Column(nullable = false)
-    private Date timestamp;
+    private Date created;
 
     public void setId(long id) {
         this.id = id;
@@ -73,8 +73,8 @@ public class ActivityEntity implements Activity {
         this.source = source;
     }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
     public void setSourceInfo(String sourceInfo) {
@@ -122,8 +122,8 @@ public class ActivityEntity implements Activity {
     }
 
     @Override
-    public Date getTimestamp() {
-        return timestamp;
+    public Date getCreated() {
+        return created;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class ActivityEntity implements Activity {
                 ", source='" + source + '\'' +
                 ", sourceInfo='" + sourceInfo + '\'' +
                 ", result='" + result + '\'' +
-                ", timestamp=" + timestamp +
+                ", created=" + created +
                 '}';
     }
 }

@@ -5,6 +5,7 @@ import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.PortalServer;
 import cn.com.xinli.portal.protocol.PortalServerConfig;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
+import cn.com.xinli.portal.support.EhCacheSessionDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,19 @@ public class PortalApplication {
         return Activity.Severity.NORMAL;
     }
 
+    /**
+     * Session data store.
+     *
+     * This {@link Bean} was declared here so that spring context
+     * can call {@link EhCacheSessionDataStore#init()}.
+     *
+     * @return session data store.
+     */
+    @Bean(initMethod = "init")
+    public EhCacheSessionDataStore sessionDataStore() {
+        return new EhCacheSessionDataStore();
+    }
+
     @Autowired
     private InternalServerHandler internalServerHandler;
 
@@ -74,6 +88,15 @@ public class PortalApplication {
         };
     }
 
+    /**
+     * Define portal server (receiving request from NAS).
+     *
+     * If Huawei NAS is enabled for developing purpose,
+     * This bean will also create a {@link PortalServer} for Huawei NAS.
+     * @param nasMapping NAS mapping.
+     * @return internal portal server.
+     * @throws NasNotFoundException
+     */
     @Autowired
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public PortalServer portalServer(NasMapping nasMapping) throws NasNotFoundException {
@@ -90,9 +113,9 @@ public class PortalApplication {
             }
         }
         PortalServerConfig portalServerConfig = new PortalServerConfig();
-        portalServerConfig.setPortalServerListenPort(portalServerListenPort);
-        portalServerConfig.setPortalServerSharedSecret(portalServerSharedSecret);
-        portalServerConfig.setPortalServerThreadSize(portalServerThreadSize);
+        portalServerConfig.setListenPort(portalServerListenPort);
+        portalServerConfig.setSharedSecret(portalServerSharedSecret);
+        portalServerConfig.setThreadSize(portalServerThreadSize);
 
         return HuaweiPortal.createServer(portalServerConfig, internalServerHandler);
     }

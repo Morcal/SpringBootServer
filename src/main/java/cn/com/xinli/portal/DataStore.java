@@ -33,9 +33,10 @@ public interface DataStore<T> {
     /**
      * Update data's last modified timestamp.
      * @param id data id.
+     * @param lastModified last modified time (UNIX epoch time).
      * @return true if data updated.
      */
-    boolean update(long id);
+    boolean update(long id, long lastModified);
 
     /**
      * Remove.

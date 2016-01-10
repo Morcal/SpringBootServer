@@ -33,7 +33,7 @@ public class AuthenticationFailureEventHandler implements ApplicationListener<Au
             activity.setRemote(event.getRequest().getRemoteUser());
             activity.setResult("Failed");
             activity.setSeverity(event.getSeverity());
-            activity.setTimestamp(Calendar.getInstance().getTime());
+            activity.setCreated(Calendar.getInstance().getTime());
             activityService.log(activity);
         }
     }

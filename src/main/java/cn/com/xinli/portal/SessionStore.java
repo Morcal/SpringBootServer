@@ -19,7 +19,7 @@ public interface SessionStore extends DataStore<Session> {
     /**
      * Get session last update time.
      * @param id session id.
-     * @return last update time in milliseconds.
+     * @return last update time (UNIX epoch time).
      */
     long getLastUpdateTime(long id);
 
