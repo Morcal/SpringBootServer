@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.util.Objects;
+
 /**
  * Session Cache Event Listener.
  *
@@ -34,33 +36,30 @@ public class SessionCacheEventListener implements CacheEventListener, Initializi
 
     @Override
     public void notifyElementRemoved(Ehcache ehcache, Element element) throws CacheException {
-        logger.debug(">>>>>>>>>> Session removed from cache.");
+        logger.debug(">> Session removed from cache.");
     }
 
     @Override
     public void notifyElementPut(Ehcache ehcache, Element element) throws CacheException {
-        logger.debug(">>>>>>>>>> Session put into cache.");
+        logger.debug(">> Session put into cache.");
     }
 
     @Override
     public void notifyElementUpdated(Ehcache ehcache, Element element) throws CacheException {
-        logger.debug(">>>>>>>>>> Session in cache updated.");
+        logger.debug(">> Session in cache updated.");
     }
 
     @Override
     public void notifyElementExpired(Ehcache ehcache, Element element) {
-        logger.debug(">>>>>>>>>>>>>>>>>>> Session in cache expired.");
+        logger.debug(">> Session in cache expired.");
     }
 
     @Override
     public void notifyElementEvicted(Ehcache ehcache, Element element) {
-        logger.debug(">>>>>>>>>>>>>>> Session in cache evicted.");
-//        Session session = (Session) element.getObjectValue();
-//        try {
-//            sessionManager.removeSession(session.getId());
-//        } catch (Exception e) {
-//            logger.debug("* Failed to remove session", e);
-//        }
+        logger.debug(">> Session in cache evicted.");
+        Session session = (Session) element.getObjectValue();
+        Objects.requireNonNull(session);
+        sessionManager.removeSessionInQueue(session.getId());
     }
 
     @Override

@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author zhoupeng 2015/12/29.
  */
+@Component
 @EnableScheduling
 public class EhCacheSessionDataStore implements SessionStore {
     /** Logger. */
@@ -47,6 +50,7 @@ public class EhCacheSessionDataStore implements SessionStore {
 
     @Value("${pws.session.tti.value}") private int sessionTti;
 
+    @PostConstruct
     @Override
     public void init() {
         boolean registered = sessionCache.getCacheEventNotificationService()

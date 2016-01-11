@@ -30,6 +30,7 @@ class InternalServerHandler implements PortalServerHandler {
         }
 
         try {
+            //FIXME remove session directly may drag down server performance.
             Message message = sessionService.removeSession(ip);
             return message.isSuccess() ? 0 /* LogoutError.OK */ : 0x02 /* LogoutError.FAILED. */;
         } catch (SessionNotFoundException e) {

@@ -3,10 +3,8 @@ package cn.com.xinli.portal.rest;
 import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.persist.ActivityEntity;
 import cn.com.xinli.rest.RestResponse;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -196,36 +194,58 @@ public class SessionActivityAspect {
     }
 
     /**
-     * Save activity log after {@link SessionController#get(long, Principal)} or
-     * {@link SessionController#disconnect(long, Principal)} returns normally.
+     * Save activity log after {@link SessionController#get(long, Principal)}
+     * returns normally.
      *
      * @param id session id.
      * @param principal spring security principal.
      * @param returning server response.
      */
     @AfterReturning(
-            value = "inSessionController() && (acquire() || disconnect()) && args(id,principal))",
+            value = "inSessionController() && acquire() && args(id,principal))",
             argNames = "id,principal,returning",
             returning = "returning")
-    public void recordOthers(long id, Principal principal, RestResponse returning) {
+    public void recordGet(long id, Principal principal, RestResponse returning) {
         saveActivity(id, returning.toString());
     }
 
-
     /**
-     * Save activity log after  {@link SessionController#get(long, Principal)} or
-     * {@link SessionController#disconnect(long, Principal)} throws an exception.
+     * Save activity log after  {@link SessionController#get(long, Principal)}
+     * throws an exception.
      *
      * @param id session id.
      * @param principal spring security principal.
      * @param cause exception.
      */
     @AfterThrowing(
-            value = "inSessionController() && (acquire() || disconnect()) && args(id,principal))",
+            value = "inSessionController() && acquire() && args(id,principal))",
             argNames = "id,principal,cause",
             throwing = "cause")
-    public void recordOthers(long id, Principal principal, Throwable cause) {
+    public void recordGet(long id, Principal principal, Throwable cause) {
         saveActivity(id, cause.getMessage());
+    }
+
+    /**
+     * Save activity log around {@link SessionController#disconnect(long, Principal)}.
+     * @param point join point.
+     * @param id session id.
+     * @param principal principal.
+     * @return method return.
+     * @throws Throwable
+     */
+    @Around(value = "inSessionController() && disconnect() && args(id,principal)",
+            argNames = "point,id,principal")
+    public Object recordLogout(ProceedingJoinPoint point, long id, Principal principal) throws Throwable {
+        try {
+            sessionService.getSession(id);
+            RestResponse response = (RestResponse) point.proceed(new Object[]{id, principal});
+            saveActivity(id, response.toString());
+            return response;
+        } catch (Throwable cause) {
+            saveActivity("unknown", "unknown", "remove session: " + id, cause.getMessage(),
+                    Activity.SessionAction.DELETE_SESSION, Activity.Severity.WARN);
+            throw cause;
+        }
     }
 
     /**

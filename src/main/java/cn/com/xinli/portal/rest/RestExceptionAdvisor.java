@@ -1,34 +1,29 @@
 package cn.com.xinli.portal.rest;
 
-import cn.com.xinli.portal.*;
+import cn.com.xinli.portal.DeviceChangedException;
+import cn.com.xinli.portal.InvalidPortalRequestException;
+import cn.com.xinli.portal.InvalidSessionUpdateException;
+import cn.com.xinli.portal.SessionNotFoundException;
 import cn.com.xinli.portal.protocol.PortalProtocolException;
 import cn.com.xinli.portal.rest.auth.AccessAuthentication;
 import cn.com.xinli.portal.rest.auth.challenge.ChallengeNotFoundException;
 import cn.com.xinli.portal.rest.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.rest.token.InvalidSessionTokenException;
 import cn.com.xinli.rest.RestResponse;
-import cn.com.xinli.rest.api.EntryPoint;
-import cn.com.xinli.rest.api.Provider;
 import cn.com.xinli.rest.bean.Error;
-import cn.com.xinli.rest.RestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Spring web MVC controller advice.
@@ -40,39 +35,13 @@ import java.util.stream.Collectors;
  *
  * @author zhoupeng 2015/12/19.
  */
+@Service
 @ControllerAdvice(basePackages = "cn.com.xinli.portal.rest")
 public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     /**
      * Logger.
      */
     private final Logger logger = LoggerFactory.getLogger(RestExceptionAdvisor.class);
-
-    @Autowired
-    private ActivityService activityService;
-
-    @Autowired
-    private Provider restApiProvider;
-
-    private Activity.SessionAction getActivityAction(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        Set<Optional<EntryPoint>> entryPoints = restApiProvider.getRegistrations().stream()
-                .map(reg -> reg.getApis().stream().filter(api -> api.getUrl().equals(uri)).findFirst())
-                .collect(Collectors.toSet());
-
-        Optional<Optional<EntryPoint>> target = entryPoints.stream()
-                .filter(Optional::isPresent)
-                .findFirst();
-
-        Activity.SessionAction sessionAction = null;
-        if (target.isPresent()) {
-            Optional<EntryPoint> ep = target.get();
-            if (ep.isPresent()) {
-                sessionAction = Activity.SessionAction.ofAlias(ep.get().getAction());
-            }
-        }
-
-        return sessionAction == null ? Activity.SessionAction.UNKNOWN : sessionAction;
-    }
 
     /**
      * REST controller exception handler.
@@ -90,7 +59,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(value = {AuthenticationException.class})
-    public RestResponse handleAuthenticationException(AuthenticationException e, HttpServletRequest request) {
+    public RestResponse handleAuthenticationException(AuthenticationException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -158,8 +127,12 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             logger.error("handle exception: {} ", e.getMessage());
         }
 
+        AccessAuthentication authentication =
+                (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
         return RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_INVALID_SESSION_GRANT)
+                .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
     }
@@ -173,8 +146,11 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
             logger.error("handle exception: {} ", e.getMessage());
         }
 
+        AccessAuthentication authentication =
+                (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
         return RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
     }
@@ -201,8 +177,12 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
+
+        AccessAuthentication authentication =
+                (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
         return RestResponseBuilders.errorBuilder()
                 .setError(RestResponse.ERROR_SERVER_ERROR)
+                .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
     }

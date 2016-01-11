@@ -5,7 +5,6 @@ import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.PortalServer;
 import cn.com.xinli.portal.protocol.PortalServerConfig;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
-import cn.com.xinli.portal.support.EhCacheSessionDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,19 +51,6 @@ public class PortalApplication {
         return Activity.Severity.NORMAL;
     }
 
-    /**
-     * Session data store.
-     *
-     * This {@link Bean} was declared here so that spring context
-     * can call {@link EhCacheSessionDataStore#init()}.
-     *
-     * @return session data store.
-     */
-    @Bean(initMethod = "init")
-    public EhCacheSessionDataStore sessionDataStore() {
-        return new EhCacheSessionDataStore();
-    }
-
     @Autowired
     private InternalServerHandler internalServerHandler;
 
@@ -103,7 +89,8 @@ public class PortalApplication {
         if (enableMockHuaweiNas) {
             /* Find nas configuration for mocking. */
             Optional<Nas> mockNas = nasMapping.getNasByNasId(mockHuaweiNasId);
-            mockNas.orElseThrow(() -> new NasNotFoundException("nas with id: " + mockHuaweiNasId + " not found."));
+            mockNas.orElseThrow(() ->
+                    new NasNotFoundException("nas with id: " + mockHuaweiNasId + " not found."));
 
             PortalServer nas = HuaweiPortal.createNas(mockNas.get());
             try {

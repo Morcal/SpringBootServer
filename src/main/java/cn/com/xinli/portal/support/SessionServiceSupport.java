@@ -4,9 +4,6 @@ import cn.com.xinli.portal.*;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.persist.SessionEntity;
 import cn.com.xinli.portal.persist.SessionRepository;
-import cn.com.xinli.portal.protocol.Credentials;
-import cn.com.xinli.portal.protocol.Message;
-import cn.com.xinli.portal.protocol.Nas;
 import cn.com.xinli.portal.protocol.*;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Session Service Support.
@@ -67,6 +67,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     @Autowired
     private NasMapping nasMapping;
 
+    /** Remover executor. */
+    private ExecutorService executor = Executors.newFixedThreadPool(
+            2, r -> new Thread(r, "session-service-remover"));
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(sessionRepository);
@@ -85,6 +89,24 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         }
 
         return false;
+    }
+
+    @Override
+    public Future<?> removeSessionInQueue(long id) {
+        return executor.submit(() -> removeQueued(id));
+    }
+
+    /**
+     * Session service queued session remover.
+     */
+    private void removeQueued(long id) {
+        try {
+            removeSession(id);
+        } catch (PortalException | NasNotFoundException e) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Session service remover error: {}", e.getMessage());
+            }
+        }
     }
 
     /**
@@ -118,6 +140,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                  */
                 Session existed = opt.get();
 
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Session already existed, {}", existed);
+                }
+
                 if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
                     logger.warn("+ session already exists with different username.");
                     Credentials old = new Credentials(
@@ -125,11 +151,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                     PortalClient client = HuaweiPortal.createClient(nas);
                     Message<?> message = client.logout(old);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Create session, logout already existed, portal result: {}", message.toString());
+                        logger.debug("Create session, logout already existed, portal result: {}",
+                                message.getText());
                     }
 
                     if (!message.isSuccess()) {
-                        logger.warn("+ logout existed different user failed, cause: {}.", message.getText());
+                        logger.warn("+ logout existed different user failed, cause: {}.",
+                                message.getText());
                     }
 
                     removeSession(existed.getId());

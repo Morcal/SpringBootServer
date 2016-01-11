@@ -17,7 +17,7 @@ import org.springframework.security.core.token.Token;
 
 /**
  * Rest response builders.
- *
+ * <p>
  * Project: portal
  *
  * @author zhoupeng 2015/12/8.
@@ -25,6 +25,7 @@ import org.springframework.security.core.token.Token;
 public class RestResponseBuilders {
     /**
      * Resposne builder.
+     *
      * @param <T> rest response bean type.
      */
     interface Builder<T> {
@@ -33,17 +34,25 @@ public class RestResponseBuilders {
 
     /**
      * Abstract server response builder.
-     * @param <T> rest response type.
      */
     static abstract class ServerResponseBuilder<T> implements Builder<T> {
-        /** If server truncated response. */
+        /**
+         * If server truncated response.
+         */
         private boolean truncated;
 
-        /** Server time (UNIX epoch time) when repsonse was created. */
+        /**
+         * Server time (UNIX epoch time) when response was created.
+         */
         private long createdAt;
+
+        private Challenge challenge = null;
+
+        protected AccessAuthentication accessAuthentication = null;
 
         /**
          * Internal build target response.
+         *
          * @return response.
          */
         protected abstract T buildInternal();
@@ -53,20 +62,51 @@ public class RestResponseBuilders {
             this.createdAt = System.currentTimeMillis() / 1000L;
         }
 
+        public ServerResponseBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
+            this.accessAuthentication = accessAuthentication;
+            return this;
+        }
+
+        public ServerResponseBuilder setChallenge(Challenge challenge) {
+            this.challenge = challenge;
+            return this;
+        }
+
         @Override
         public final T build() {
             T target = buildInternal();
-            if (target instanceof RestResponse) {
-                RestResponse response = (RestResponse) target;
-                response.setTruncated(truncated);
-                response.setCreatedAt(createdAt);
+
+            assert target != null;
+
+            if (!(target instanceof RestResponse)) {
+                return target;
             }
+
+            RestResponse response = RestResponse.class.cast(target);
+            response.setTruncated(truncated);
+            response.setCreatedAt(createdAt);
+
+            /* Build authorization if challenge response in credentials. */
+            if (accessAuthentication != null) {
+                HttpDigestCredentials credentials = accessAuthentication.getCredentials();
+                if (HttpDigestCredentials.containsChallenge(credentials)) {
+                    /* Set authorization only when response to challenge. */
+                    response.setAuthorization(authorizationBuilder(accessAuthentication.getAccessToken()).build());
+                }
+            } else {
+                response.setAuthorization(null);
+            }
+
+            /* Build authentication if present. */
+            response.setAuthentication(challenge == null ? null : authenticationBuilder(challenge).build());
+
             return target;
         }
     }
 
     /**
      * Acquire a success builder.
+     *
      * @return builder.
      */
     public static SessionResponseBuilder successBuilder() {
@@ -75,6 +115,7 @@ public class RestResponseBuilders {
 
     /**
      * Acquire a error builder.
+     *
      * @return builder.
      */
     public static ErrorBuilder errorBuilder() {
@@ -83,6 +124,7 @@ public class RestResponseBuilders {
 
     /**
      * Acquire an authentication builder.
+     *
      * @param challenge challenge.
      * @return builder.
      */
@@ -92,16 +134,18 @@ public class RestResponseBuilders {
 
     /**
      * Acquire a session builder.
+     *
      * @param session session.
-     * @param token session token.
+     * @param token   session token.
      * @return builder
      */
-    public static SessionBuilder sessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
+    private static SessionBuilder sessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
         return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval);
     }
 
     /**
      * Acquire an authorization builder.
+     *
      * @param token access token.
      * @return builder.
      */
@@ -111,14 +155,12 @@ public class RestResponseBuilders {
 
     /**
      * Session response builder.
-     *
+     * <p>
      * Session response may contains information of {@link Authentication},
      * {@link Authorization} and {@link SessionBean}.
      */
     public static class SessionResponseBuilder extends ServerResponseBuilder<SessionResponse> {
         private Session session = null;
-        private Challenge challenge = null;
-        private AccessAuthentication accessAuthentication = null;
         private boolean grantToken = false;
         private boolean requiresKeepAlive;
         private int keepAliveInterval;
@@ -127,18 +169,9 @@ public class RestResponseBuilders {
             super(false);
         }
 
-        public SessionResponseBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
-            this.accessAuthentication = accessAuthentication;
-            return this;
-        }
 
         public SessionResponseBuilder setSession(Session session) {
             this.session = session;
-            return this;
-        }
-
-        public SessionResponseBuilder setChallenge(Challenge challenge) {
-            this.challenge = challenge;
             return this;
         }
 
@@ -158,39 +191,45 @@ public class RestResponseBuilders {
         }
 
         @Override
+        public SessionResponseBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
+            super.setAccessAuthentication(accessAuthentication);
+            return this;
+        }
+
+        @Override
+        public SessionResponseBuilder setChallenge(Challenge challenge) {
+            super.setChallenge(challenge);
+            return this;
+        }
+
+        @Override
         protected SessionResponse buildInternal() {
             SessionResponse response = new SessionResponse();
             /* Build session with/without session token. */
             if (session == null) {
                 response.setSession(null);
-            } else if (accessAuthentication == null || !grantToken) {
+            } else {
+                response.setSession(
+                        sessionBuilder(
+                                session,
+                                accessAuthentication.getSessionToken(),
+                                requiresKeepAlive,
+                                keepAliveInterval)
+                                .build());
+            }
+
+            if (accessAuthentication == null || !grantToken) {
                 response.setSession(
                         sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval).build());
-            } else {
-                response.setSession(
-                        sessionBuilder(session, accessAuthentication.getSessionToken(), requiresKeepAlive, keepAliveInterval).build());
             }
 
-            /* Build authorization if challenge response in credentials. */
-            if (accessAuthentication != null) {
-                HttpDigestCredentials credentials = accessAuthentication.getCredentials();
-                if (HttpDigestCredentials.containsChallenge(credentials)) {
-                    /* Set authorization only when response to challenge. */
-                    response.setAuthorization(authorizationBuilder(accessAuthentication.getAccessToken()).build());
-                }
-            } else {
-                response.setAuthorization(null);
-            }
-
-            /* Build authentication if present. */
-            response.setAuthentication(challenge == null ? null : authenticationBuilder(challenge).build());
             return response;
         }
     }
 
     /**
      * Error response builder.
-     *
+     * <p>
      * Error response may contains a token key from {@link Token#getKey()}.
      */
     public static class ErrorBuilder extends ServerResponseBuilder<Error> {
@@ -224,6 +263,18 @@ public class RestResponseBuilders {
         }
 
         @Override
+        public ErrorBuilder setAccessAuthentication(AccessAuthentication accessAuthentication) {
+            super.setAccessAuthentication(accessAuthentication);
+            return this;
+        }
+
+        @Override
+        public ErrorBuilder setChallenge(Challenge challenge) {
+            super.setChallenge(challenge);
+            return this;
+        }
+
+        @Override
         protected Error buildInternal() {
             Error failure = new Error();
             failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
@@ -236,7 +287,7 @@ public class RestResponseBuilders {
 
     /**
      * Session bean builder.
-     *
+     * <p>
      * Session bean may contains a session token key from {@link Token#getKey()}.
      */
     public static class SessionBuilder extends ServerResponseBuilder<SessionBean> {

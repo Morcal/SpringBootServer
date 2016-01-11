@@ -100,9 +100,12 @@ public class SessionControllerImpl implements SessionController {
             logger.trace("Connect result: {}", message);
         }
 
+        AccessAuthentication authentication = (AccessAuthentication) principal;
+
         if (!message.isSuccess()) {
             return RestResponseBuilders.errorBuilder()
                     .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setAccessAuthentication(authentication)
                     .setDescription(message.getText())
                     .build();
         }
@@ -113,7 +116,6 @@ public class SessionControllerImpl implements SessionController {
             logger.trace("{} created.", token);
         }
 
-        AccessAuthentication authentication = (AccessAuthentication) principal;
         authentication.setSessionToken(token);
 
         logger.info("session created id: {}", session.getId());
@@ -192,6 +194,7 @@ public class SessionControllerImpl implements SessionController {
         if (!message.isSuccess()) {
             return RestResponseBuilders.errorBuilder()
                     .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setAccessAuthentication((AccessAuthentication) principal)
                     .setDescription(message.getText())
                     .build();
         }

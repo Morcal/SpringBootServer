@@ -4,6 +4,8 @@ import cn.com.xinli.portal.protocol.Message;
 import cn.com.xinli.portal.protocol.Nas;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
 
+import java.util.concurrent.Future;
+
 /**
  * Session manager.
  *
@@ -21,7 +23,8 @@ public interface SessionManager {
      * @throws SessionOperationException
      * @throws NasNotFoundException
      */
-    Message<Session> createSession(Nas nas, Session session) throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
+    Message<Session> createSession(Nas nas, Session session)
+            throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
 
     /**
      * Remove session by id.
@@ -31,5 +34,8 @@ public interface SessionManager {
      * @throws NasNotFoundException
      * @throws SessionOperationException
      */
-    Message<Session> removeSession(long id) throws SessionNotFoundException, NasNotFoundException, SessionOperationException;
+    Message<Session> removeSession(long id)
+            throws SessionNotFoundException, NasNotFoundException, SessionOperationException;
+
+    Future<?> removeSessionInQueue(long id);
 }
