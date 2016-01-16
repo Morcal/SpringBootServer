@@ -1,7 +1,5 @@
 package cn.com.xinli.portal.auth;
 
-import cn.com.xinli.portal.Session;
-
 /**
  * System authority scope.
  *
@@ -21,7 +19,7 @@ public enum AuthorityScope {
     PORTAL_ACCESS_SCOPE,
     /**
      * Session scope, users posses token with this scope
-     * can access associated {@link Session} if presents.
+     * can access associated session if presents.
      */
     PORTAL_SESSION_SCOPE;
 }

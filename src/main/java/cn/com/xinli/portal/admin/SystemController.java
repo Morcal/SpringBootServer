@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.admin;
 
-import cn.com.xinli.rest.RestResponse;
+import cn.com.xinli.portal.support.rest.RestResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.scratch;
 
-import cn.com.xinli.portal.TestBase;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,7 +18,9 @@ import java.util.Arrays;
  *
  * @author zhoupeng 2015/12/24.
  */
-public class AESTest extends TestBase {
+public class AESTest {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(AESTest.class);
 
     @Test
     public void testAES() throws NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {

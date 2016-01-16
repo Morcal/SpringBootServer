@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.Activity;
-import cn.com.xinli.rest.api.EntryPoint;
-import cn.com.xinli.rest.api.Provider;
-import cn.com.xinli.rest.api.Registration;
-import cn.com.xinli.portal.rest.token.TokenScope;
+import cn.com.xinli.portal.admin.Activity;
+import cn.com.xinli.portal.auth.token.TokenScope;
+import cn.com.xinli.portal.support.rest.EntryPoint;
+import cn.com.xinli.portal.support.rest.Provider;
+import cn.com.xinli.portal.support.rest.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

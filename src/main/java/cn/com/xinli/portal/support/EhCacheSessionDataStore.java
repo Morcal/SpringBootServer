@@ -1,8 +1,9 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.Session;
-import cn.com.xinli.portal.SessionStore;
-import cn.com.xinli.portal.persist.SessionEntity;
+import cn.com.xinli.portal.core.Session;
+import cn.com.xinli.portal.core.SessionStore;
+import cn.com.xinli.portal.support.cache.SessionCacheEventListener;
+import cn.com.xinli.portal.repository.SessionEntity;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;

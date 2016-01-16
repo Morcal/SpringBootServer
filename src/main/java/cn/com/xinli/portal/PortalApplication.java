@@ -1,10 +1,10 @@
 package cn.com.xinli.portal;
 
-import cn.com.xinli.portal.protocol.Nas;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
-import cn.com.xinli.portal.protocol.PortalServer;
-import cn.com.xinli.portal.protocol.PortalServerConfig;
+import cn.com.xinli.portal.admin.Activity;
+import cn.com.xinli.portal.core.NasMapping;
+import cn.com.xinli.portal.protocol.*;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
+import cn.com.xinli.portal.support.InternalServerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import java.util.Optional;
 @SpringBootApplication
 @ImportResource("classpath:nas.xml")
 @PropertySource("pws.properties")
-@ComponentScan(value = { "cn.com.xinli.rest.framework", "cn.com.xinli.portal" })
+@ComponentScan
 public class PortalApplication {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(PortalApplication.class);

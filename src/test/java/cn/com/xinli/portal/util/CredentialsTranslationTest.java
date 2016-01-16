@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.util;
 
-import cn.com.xinli.portal.persist.CredentialsModifierEntity;
-import cn.com.xinli.portal.persist.CredentialsTranslationEntity;
-import cn.com.xinli.portal.persist.NasEntity;
+import cn.com.xinli.portal.repository.CredentialsModifierEntity;
+import cn.com.xinli.portal.repository.CredentialsTranslationEntity;
+import cn.com.xinli.portal.repository.NasEntity;
 import cn.com.xinli.portal.protocol.*;
-import cn.com.xinli.portal.protocol.support.CodecUtil;
 import cn.com.xinli.portal.protocol.support.CredentialsEncoders;
+import cn.com.xinli.portal.support.CredentialsTranslations;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(Hex.encode(CodecUtil.md5sum(credentials.getPassword().getBytes())));
+        final String encodedPassword = new String(Hex.encode(Utils.md5sum(credentials.getPassword().getBytes())));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -58,7 +58,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(Hex.encode(CodecUtil.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
+        final String encodedPassword = new String(Hex.encode(Utils.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -76,7 +76,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(Base64.encode(CodecUtil.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
+        final String encodedPassword = new String(Base64.encode(Utils.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -93,8 +93,8 @@ public class CredentialsTranslationTest {
         entity.setListenPort(2000);
         entity.setAuthType(AuthType.CHAP);
         entity.setId(1);
-        entity.setIpv4start(AddressUtil.convertIpv4Address("192.168.3.1"));
-        entity.setIpv4end(AddressUtil.convertIpv4Address("192.168.3.254"));
+        entity.setIpv4start("192.168.3.1");
+        entity.setIpv4end("192.168.3.254");
         entity.setNasId("test-01");
 
         CredentialsTranslationEntity translationEntity = new CredentialsTranslationEntity();

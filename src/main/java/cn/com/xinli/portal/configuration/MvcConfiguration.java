@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.rest.Scheme;
+import cn.com.xinli.portal.support.rest.Scheme;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +44,8 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     @Value("${pws.rest.port}") private int portalServerListenPort;
     @Value("${pws.rest.host}") private String restSchemeHost;
     @Value("${pws.rest.scheme}") private String restSchemeScheme;
+
+    @Value("${pws.redirect.url") private String redirectUrl;
 
     @Bean
     public Scheme scheme() {
@@ -78,7 +82,11 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
 
     @Bean
     public View mainPageView() {
-        return new InternalResourceView("/html/main.html");
+        if (!StringUtils.isEmpty(redirectUrl)) {
+            return new RedirectView(redirectUrl);
+        } else {
+            return new InternalResourceView("/html/main.html");
+        }
     }
 
     @Bean
@@ -133,7 +141,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
 //     * <p>REST modules should handle unhandled exceptions thrown from REST modules
 //     * differently and separately.</p>
 //     *
-//     * @see cn.com.xinli.portal.rest.RestExceptionAdvisor
+//     * @see cn.com.xinli.portal.controller.RestExceptionAdvisor
 //     * @return {@link HandlerExceptionResolver}
 //     */
 //    @Bean

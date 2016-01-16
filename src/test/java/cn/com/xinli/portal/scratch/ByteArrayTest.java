@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.scratch;
 
-import cn.com.xinli.portal.TestBase;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.codec.Hex;
 
 import java.net.InetAddress;
@@ -13,7 +14,9 @@ import java.util.Arrays;
  *
  * @author zhoupeng 2015/12/26.
  */
-public class ByteArrayTest extends TestBase {
+public class ByteArrayTest {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(ByteArrayTest.class);
 
     @Test
     public void testByteArray() throws UnknownHostException {

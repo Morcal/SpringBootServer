@@ -32,7 +32,7 @@ import java.io.File;
  */
 @Configuration
 @EnableTransactionManagement(proxyTargetClass = true, mode = AdviceMode.PROXY)
-@EnableJpaRepositories(basePackages = "cn.com.xinli.portal.persist")
+@EnableJpaRepositories(basePackages = "cn.com.xinli.portal.repository")
 public class JpaConfiguration {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(JpaConfiguration.class);
@@ -104,7 +104,7 @@ public class JpaConfiguration {
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
         //factory.setBeanFactory(beanFactory);
-        factory.setPackagesToScan("cn.com.xinli.portal.persist");
+        factory.setPackagesToScan("cn.com.xinli.portal.repository");
 
         return factory;
     }

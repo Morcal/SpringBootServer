@@ -1,9 +1,11 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.*;
-import cn.com.xinli.portal.persist.NasRepository;
+import cn.com.xinli.portal.core.NasMapping;
+import cn.com.xinli.portal.core.Session;
+import cn.com.xinli.portal.repository.NasRepository;
 import cn.com.xinli.portal.protocol.Nas;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,27 +99,84 @@ public class NasMappingSupport implements NasMapping {
                 .findFirst();
     }
 
-    @Override
-    public Nas findNas(String userIp, String userMac) {
+    /**
+     * Find NAS for given user ip and user mac.
+     *
+     * @param userIp  user ip address.
+     * @param userMac user mac address.
+     * @return NAS matches ip and mac, or null if not found.
+     */
+    private Optional<Nas> find(String userIp, String userMac) {
         String pair = Session.pair(userIp, userMac);
         Long nasId = userNasMapping.get(pair);
 
         if (nasId != null) {
             synchronized (devices) {
-                return devices.get(nasId);
+                return Optional.ofNullable(devices.get(nasId));
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
+    /**
+     * Find nas by ipv4 address range.
+     *
+     * @param ip ip v4 address.
+     * @return nas found if matches or null.
+     */
+    private Optional<Nas> findByIpv4Range(String ip) {
+        synchronized (devices) {
+            return devices.values().stream()
+                    .filter(n -> n.contains(ip))
+                    .findAny();
+        }
+    }
+
+    /**
+     * Find NAS for given domain.
+     * @param domain domain.
+     * @return NAS supports domain if found.
+     */
+    private Optional<Nas> find(String domain) {
+        synchronized (devices) {
+            return devices.values().stream()
+                    .filter(d -> d.containsDomain(domain))
+                    .findAny();
+        }
+    }
+
+    /**
+     * Find user incoming NAS.
+     * @param username user name.
+     * @param ip ip address.
+     * @param mac mac address.
+     * @return NAS if found.
+     * @throws NasNotFoundException
+     */
     @Override
-    public Nas findByIpv4Range(int ip) {
-        for (Nas nas : devices.values()) {
-            if (nas.contains(ip)) {
-                return nas;
+    public Nas find(String username, String ip, String mac) throws NasNotFoundException {
+        Optional<Nas> nas = Optional.empty();
+        if (!StringUtils.isEmpty(username) && username.contains("@")) {
+            String domain = username.substring(username.indexOf("@"));
+            nas = find(domain);
+        }
+
+        if (!nas.isPresent()) {
+            nas = find(ip, mac);
+            if (!nas.isPresent()) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("incoming request not mapped (through web redirect), trying ip range.");
+                }
+                /* Last resort, try to find nas by ipv4 range. */
+                nas = findByIpv4Range(ip);
+                if (!nas.isPresent()) {
+                    throw new NasNotFoundException(ip, mac);
+                }
             }
         }
-        return null;
+
+        return nas.get();
     }
+
 }

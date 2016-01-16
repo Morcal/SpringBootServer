@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!-- 为用户凭证添加前缀. -->
-    <bean id="xl-username-prefix-modifier" class="cn.com.xinli.portal.persist.CredentialsModifierEntity">
+    <bean id="xl-username-prefix-modifier" class="cn.com.xinli.portal.repository.CredentialsModifierEntity">
         <property name="id" value="1"/>
         <property name="target" value="USERNAME"/>
         <property name="position" value="HEAD" />
@@ -12,7 +12,7 @@
     </bean>
 
     <!-- 为用户凭证添加后缀. -->
-    <bean id="xl-username-post-modifier" class="cn.com.xinli.portal.persist.CredentialsModifierEntity">
+    <bean id="xl-username-post-modifier" class="cn.com.xinli.portal.repository.CredentialsModifierEntity">
         <property name="id" value="1"/>
         <property name="target" value="USERNAME"/>
         <property name="position" value="TAIL" />
@@ -20,14 +20,14 @@
     </bean>
 
     <!-- 将用户凭证密码进行MD5摘要计算. -->
-    <bean id="md5-password-encoder" class="cn.com.xinli.portal.persist.CredentialsEncoderEntity">
+    <bean id="md5-password-encoder" class="cn.com.xinli.portal.repository.CredentialsEncoderEntity">
         <property name="id" value="1"/>
         <property name="algorithm" value="md5"/>
         <property name="value" value=""/>
     </bean>
 
     <!-- 引用前面定义的前缀/后缀以及摘要计算等. -->
-    <bean id="xinli-prepost-md5" class="cn.com.xinli.portal.persist.CredentialsTranslationEntity">
+    <bean id="xinli-prepost-md5" class="cn.com.xinli.portal.repository.CredentialsTranslationEntity">
         <property name="id" value="1"/>
         <property name="encoder" ref="md5-password-encoder"/>
         <property name="modifiers">
@@ -39,7 +39,7 @@
     </bean>
 
     <!-- 定义NAS配置. -->
-    <bean id="mock-huawei-nas-entity" class="cn.com.xinli.portal.persist.NasEntity">
+    <bean id="mock-huawei-nas-entity" class="cn.com.xinli.portal.repository.NasEntity">
         <property name="id" value="2"/>
         <property name="nasId" value="xinli99"/>
         <property name="name" value="mock-huawei-nas"/>

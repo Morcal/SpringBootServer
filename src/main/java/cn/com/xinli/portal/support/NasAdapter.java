@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.persist.NasEntity;
+import cn.com.xinli.portal.repository.NasEntity;
 import cn.com.xinli.portal.protocol.AuthType;
 import cn.com.xinli.portal.protocol.CredentialsTranslation;
 import cn.com.xinli.portal.protocol.Nas;
@@ -74,12 +74,17 @@ public class NasAdapter implements Nas {
     }
 
     @Override
-    public int getIpv4end() {
+    public String getSupportedDomains() {
+        return entity.getSupportedDomains();
+    }
+
+    @Override
+    public String getIpv4end() {
         return entity.getIpv4end();
     }
 
     @Override
-    public int getIpv4start() {
+    public String getIpv4start() {
         return entity.getIpv4start();
     }
 

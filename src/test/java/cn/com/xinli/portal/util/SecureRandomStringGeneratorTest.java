@@ -1,8 +1,9 @@
 package cn.com.xinli.portal.util;
 
-import cn.com.xinli.portal.TestBase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +13,10 @@ import java.util.Set;
  *
  * @author zhoupeng 2015/12/26.
  */
-public class SecureRandomStringGeneratorTest extends TestBase {
+public class SecureRandomStringGeneratorTest {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SecureRandomStringGeneratorTest.class);
+
     final int TEST_STRINGS_COUNT = 10000;
     final int TEST_STRINGS_SIZE = 256;
 

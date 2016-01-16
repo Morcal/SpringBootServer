@@ -1,16 +1,11 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.Session;
-import cn.com.xinli.portal.auth.Certificate;
-import cn.com.xinli.portal.rest.auth.challenge.Challenge;
-import cn.com.xinli.portal.support.CacheErrorHandlerSupport;
+import cn.com.xinli.portal.auth.challenge.Challenge;
+import cn.com.xinli.portal.support.cache.CacheErrorHandlerSupport;
+import cn.com.xinli.portal.support.cache.EhcacheManagerAdapter;
+import cn.com.xinli.portal.core.Certificate;
+import cn.com.xinli.portal.core.Session;
 import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.SearchAttribute;
-import net.sf.ehcache.config.Searchable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurer;
@@ -18,6 +13,9 @@ import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.interceptor.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PWS Caching configurations.
@@ -28,8 +26,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class CachingConfiguration implements CachingConfigurer {
-    /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(CachingConfiguration.class);
+    /** PWS cache name. */
+    private static final String PWS_CACHE_NAME = "pws-cache";
 
     /** {@linkplain Session} cache name. */
     public static final String SESSION_CACHE_NAME = "session-cache";
@@ -62,61 +60,35 @@ public class CachingConfiguration implements CachingConfigurer {
 
     @Value("${pws.rest.rate.limiting.ttl}") private int rateLimitingTtl;
 
+    @Bean
+    public EhcacheManagerAdapter ehcacheManagerAdapter() {
+        EhcacheManagerAdapter adapter = new EhcacheManagerAdapter(PWS_CACHE_NAME);
+
+        List<EhcacheManagerAdapter.CacheSearchAttribute> attributes = new ArrayList<>();
+        attributes.add(EhcacheManagerAdapter.search("ip", String.class, "value.getIp()"));
+        attributes.add(EhcacheManagerAdapter.search("mac", String.class, "value.getMac()"));
+        attributes.add(EhcacheManagerAdapter.search("nas_id", Long.class, "value.getNasId()"));
+        attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
+
+        /* Create session cache. */
+        adapter.createCache(SESSION_CACHE_NAME,
+                MAX_SESSION_CACHE_ENTRIES, attributes, isSessionTtiEnabled, sessionTti);
+
+        /* Create certificate cache. */
+        adapter.createCache(CERTIFICATE_CACHE_NAME, 100);
+
+        /* Create challenge cache. */
+        adapter.createCache(CHALLENGE_CACHE_NAME, MAX_CHALLENGE_CACHE_ENTRIES, true, challengeTtl);
+
+        /* Create rate limiting cache. */
+        adapter.createCache(RATE_LIMITING_CACHE_NAME, MAX_RATE_LIMITING_CACHE_ENTRIES, true, rateLimitingTtl);
+
+        return adapter;
+    }
+
     @Bean(destroyMethod = "shutdown")
     public net.sf.ehcache.CacheManager ehcacheManager() {
-        /* Use ehcache as memory only cache. */
-        CacheConfiguration sessionCache = new CacheConfiguration(),
-                challengeCache = new CacheConfiguration(),
-                certificateCache = new CacheConfiguration(),
-                rateLimitingCache = new CacheConfiguration();
-
-        net.sf.ehcache.config.Configuration ehcacheConfig = new net.sf.ehcache.config.Configuration();
-
-        /* Add session token cache. */
-        Searchable searchable = new Searchable();
-        searchable.searchAttribute(new SearchAttribute().name("ip").type(String.class).expression("value.getIp()"))
-                .searchAttribute(new SearchAttribute().name("mac").type(String.class).expression("value.getMac()"))
-                .searchAttribute(new SearchAttribute().name("nas_id").type(Long.class).expression("value.getNasId()"))
-                .searchAttribute(new SearchAttribute().name("username").type(String.class).expression("value.getUsername()"));
-
-        logger.info("session ttl enabled: {}, ttl: {}", isSessionTtiEnabled, sessionTti);
-
-        sessionCache.name(SESSION_CACHE_NAME)
-                .timeToIdleSeconds(isSessionTtiEnabled ? sessionTti : 0)
-                .maxEntriesLocalHeap(MAX_SESSION_CACHE_ENTRIES)
-                .searchable(searchable)
-                .diskExpiryThreadIntervalSeconds(10)
-                .persistence(new PersistenceConfiguration()
-                        .strategy(PersistenceConfiguration.Strategy.NONE));
-        ehcacheConfig.addCache(sessionCache);
-
-        /* Add certificate cache. */
-        certificateCache.name(CERTIFICATE_CACHE_NAME)
-                .eternal(true)
-                .maxEntriesLocalHeap(100)
-                .persistence(new PersistenceConfiguration()
-                        .strategy(PersistenceConfiguration.Strategy.NONE));
-        ehcacheConfig.addCache(certificateCache);
-
-        /* Add challenge token cache. */
-        challengeCache.name(CHALLENGE_CACHE_NAME)
-                .timeToLiveSeconds(challengeTtl)
-                .maxEntriesLocalHeap(MAX_CHALLENGE_CACHE_ENTRIES)
-                .persistence(new PersistenceConfiguration()
-                        .strategy(PersistenceConfiguration.Strategy.NONE));
-        ehcacheConfig.addCache(challengeCache);
-
-        /* Add rate-limiting cache. */
-        rateLimitingCache.name(RATE_LIMITING_CACHE_NAME)
-                .timeToIdleSeconds(rateLimitingTtl)
-                .maxEntriesLocalHeap(MAX_RATE_LIMITING_CACHE_ENTRIES)
-                .persistence(new PersistenceConfiguration()
-                        .strategy(PersistenceConfiguration.Strategy.NONE));
-        ehcacheConfig.addCache(rateLimitingCache);
-
-        ehcacheConfig.setName("service-cache");
-
-        return net.sf.ehcache.CacheManager.create(ehcacheConfig);
+        return ehcacheManagerAdapter().createManager();
     }
 
     @Bean
