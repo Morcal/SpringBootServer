@@ -10,19 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author zhoupeng 2015/12/9.
  */
 public abstract class RestResponse {
-    public static final String ERROR_INVALID_CLIENT = "invalid_client";
-    public static final String ERROR_INVALID_REQUEST = "invalid_request";
-    public static final String ERROR_INVALID_SCOPE = "invalid_scope";
-    public static final String ERROR_SERVER_ERROR = "server_error";
-    public static final String ERROR_INVALID_CLIENT_GRANT = "invalid_client_grant";
-    public static final String ERROR_INVALID_SESSION_GRANT = "invalid_session_grant";
-    public static final String ERROR_INVALID_SYSTEM_GRANT = "invalid_system_grant";
-    public static final String ERROR_TEMPORARILY_UNAVAILABLE = "temporarily_unavailable";
-    public static final String ERROR_INVALID_CREDENTIAL = "invalid_credential";
-    public static final String ERROR_REQUEST_RATE_LIMITED = "request_rate_limited";
-    public static final String ERROR_NOT_ALLOWED = "not_allowed";
-    public static final String ERROR_UNAUTHORIZED_REQUEST = "unauthorized_request";
-    public static final String ERROR_UNKNOWN_ERROR = "unknown_error";
 
     /** If response been truncated. */
     @JsonProperty
@@ -97,7 +84,7 @@ public abstract class RestResponse {
 
     /**
      * Set authorization.
-     * @return authorization.
+     * @param authorization authorization.
      */
     public void setAuthorization(Authorization authorization) {
         this.authorization = authorization;

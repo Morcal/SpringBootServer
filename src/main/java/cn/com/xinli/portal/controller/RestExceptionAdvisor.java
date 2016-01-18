@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.controller;
 
+import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.core.SessionOperationException;
 import cn.com.xinli.portal.protocol.PortalProtocolException;
 import cn.com.xinli.portal.auth.AccessAuthentication;
 import cn.com.xinli.portal.auth.challenge.ChallengeNotFoundException;
@@ -63,7 +64,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         }
 
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setError(PortalError.of("invalid_request"))
                 .setDescription(e.getMessage())
                 .setUrl("/error")
                 .build();
@@ -78,7 +79,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         }
 
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setError(PortalError.of("invalid_request"))
                 .setDescription(e.getMessage())
                 .setUrl("/error")
                 .build();
@@ -109,7 +110,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         }
 
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_INVALID_CLIENT_GRANT)
+                .setError(PortalError.of("invalid_client_grant"))
                 .setDescription(e.getMessage())
                 .build();
     }
@@ -127,7 +128,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
                 (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_INVALID_SESSION_GRANT)
+                .setError(PortalError.of("invalid_session_grant"))
                 .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
@@ -136,8 +137,8 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     @ExceptionHandler(value = {
-            SessionOperationException.class})
-    public RestResponse handleInvalidPortalRequestException(SessionOperationException e) {
+            RemoteException.class})
+    public RestResponse handleInvalidPortalRequestException(RemoteException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }
@@ -145,7 +146,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         AccessAuthentication authentication =
                 (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_INVALID_REQUEST)
+                .setError(PortalError.of("invalid_request"))
                 .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
@@ -161,7 +162,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         }
 
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_UNAUTHORIZED_REQUEST)
+                .setError(PortalError.of("unauthorized_request"))
                 .setDescription(e.getMessage())
                 .build();
     }
@@ -177,7 +178,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
         AccessAuthentication authentication =
                 (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
         return RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_SERVER_ERROR)
+                .setError(PortalError.of("server_error"))
                 .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();

@@ -9,6 +9,6 @@ package cn.com.xinli.portal.core;
  */
 public class CertificateNotFoundException extends PortalException {
     public CertificateNotFoundException(String message) {
-        super(message);
+        super(PortalError.of("invalid_client"), message);
     }
 }

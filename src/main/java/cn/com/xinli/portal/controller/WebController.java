@@ -2,17 +2,20 @@ package cn.com.xinli.portal.controller;
 
 import cn.com.xinli.portal.core.NasMapping;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
+import cn.com.xinli.portal.support.rest.Scheme;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.StringJoiner;
 
 /**
  * Portal web server root controller.
@@ -67,13 +70,31 @@ public class WebController {
     private NasMapping nasMapping;
 
     @Autowired
-    private String schemeHeaderName;
-
-    @Autowired
-    private String schemeHeaderValue;
+    private Scheme scheme;
 
     @Autowired
     private View mainPageView;
+
+    /**
+     * The PWS scheme header value.
+     *
+     * <p>Header string only supports ISO-8859-1 character set.
+     * DO NOT try to set non-ASCII character inside header value string.
+     * </p>
+     * @param scheme application scheme.
+     * @return scheme content string.
+     */
+    @Bean
+    public String schemeHeaderValue(Scheme scheme) {
+        StringJoiner joiner = new StringJoiner(";");
+        joiner.add("version=" + scheme.getVersion())
+                .add("apiuri=" + scheme.getUri())
+                .add("server=" + scheme.getServer())
+                .add("host=" + scheme.getHost())
+                .add("scheme=" + scheme.getScheme())
+                .add("port=" + String.valueOf(scheme.getPort()));
+        return joiner.toString();
+    }
 
     /**
      * Handle redirect.
@@ -135,6 +156,6 @@ public class WebController {
 
     @ModelAttribute
     public void setPwsRestApiLocationHeader(HttpServletResponse response) {
-        response.setHeader(schemeHeaderName, schemeHeaderValue);
+        response.setHeader(scheme.getHeader(), schemeHeaderValue(scheme));
     }
 }

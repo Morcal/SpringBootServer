@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support.rest;
 
 import cn.com.xinli.portal.auth.token.InvalidAccessTokenException;
 import cn.com.xinli.portal.auth.token.InvalidSessionTokenException;
+import cn.com.xinli.portal.core.PortalError;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         if (e instanceof InvalidAccessTokenException) {
             RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidAccessTokenException) e).getToken())
-                    .setError(RestResponse.ERROR_INVALID_CLIENT_GRANT)
+                    .setError(PortalError.of(103))
                     .build();
             httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
             httpServletResponse.getWriter().print(
@@ -47,14 +48,14 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         } else if (e instanceof InvalidSessionTokenException) {
             RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
                     .setToken(((InvalidSessionTokenException) e).getToken())
-                    .setError(RestResponse.ERROR_INVALID_SESSION_GRANT)
+                    .setError(PortalError.of("invalid_client_grant"))
                     .build();
             httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
             httpServletResponse.getWriter().print(
                     new ObjectMapper(factory).writeValueAsString(invalidCredentials));
         } else if (e instanceof BadCredentialsException) {
             RestResponse invalidCredentials = RestResponseBuilders.errorBuilder()
-                    .setError(RestResponse.ERROR_INVALID_REQUEST)
+                    .setError(PortalError.of("invalid_request"))
                     .setDescription(e.getMessage())
                     .build();
             httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
@@ -63,7 +64,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         } else {
             /* Server internal error. */
             RestResponse internalError = RestResponseBuilders.errorBuilder()
-                    .setError(RestResponse.ERROR_SERVER_ERROR)
+                    .setError(PortalError.of("server_error"))
                     .setDescription(e.getMessage())
                     .build();
             httpServletResponse.setStatus(HttpStatus.OK.value());

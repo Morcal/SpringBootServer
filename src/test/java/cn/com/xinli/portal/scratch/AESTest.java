@@ -11,7 +11,9 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * Project: xpws
@@ -24,22 +26,28 @@ public class AESTest {
 
     @Test
     public void testAES() throws NoSuchAlgorithmException, NoSuchPaddingException, UnsupportedEncodingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        String content = "The quick brown fox jumps over a lazy dog.";
-        KeyGenerator kgen = KeyGenerator.getInstance("AES");
-        kgen.init(128, new SecureRandom("0123456789012345".getBytes()));
-        SecretKey secretKey = kgen.generateKey();
-        byte[] enCodeFormat = secretKey.getEncoded();
-        SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+        //final String content = "The quick brown fox jumps over a lazy dog.";
+        final String content = "lip$123456";
+//        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+//        AlgorithmParameterSpec spec =
+//        keyGenerator.init(128, new SecureRandom("0123456789012345".getBytes()));
+//        SecretKey secretKey = keyGenerator.generateKey();
+//        byte[] enCodeFormat = secretKey.getEncoded();
+//        SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");
+        SecretKeySpec key = new SecretKeySpec("1234567890123456".getBytes(), "AES");
         Cipher cipher = Cipher.getInstance("AES");// 创建密码器
         byte[] byteContent = content.getBytes("utf-8");
         cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化
         byte[] result = cipher.doFinal(byteContent);
-        logger.debug(Arrays.toString(result));
+        logger.debug(Base64.getEncoder().encodeToString(result));
+
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         md5.reset();
         md5.update(content.getBytes());
         result = md5.digest();
-        logger.debug(Arrays.toString(result));
+
+        String out = Base64.getEncoder().encodeToString(result);
+        logger.debug(out);
     }
 }

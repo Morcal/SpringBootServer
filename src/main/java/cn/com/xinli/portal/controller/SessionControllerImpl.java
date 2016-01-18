@@ -3,14 +3,14 @@ package cn.com.xinli.portal.controller;
 import cn.com.xinli.portal.auth.AccessAuthentication;
 import cn.com.xinli.portal.auth.token.RestToken;
 import cn.com.xinli.portal.core.*;
-import cn.com.xinli.portal.repository.SessionEntity;
-import cn.com.xinli.portal.protocol.Message;
 import cn.com.xinli.portal.protocol.Nas;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
-import cn.com.xinli.portal.support.rest.RestResponse;
-import cn.com.xinli.portal.support.rest.RestResponseBuilders;
+import cn.com.xinli.portal.protocol.Result;
+import cn.com.xinli.portal.repository.SessionEntity;
 import cn.com.xinli.portal.service.SessionService;
 import cn.com.xinli.portal.service.SessionTokenService;
+import cn.com.xinli.portal.support.rest.RestResponse;
+import cn.com.xinli.portal.support.rest.RestResponseBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,26 +83,18 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String os,
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
-            throws NasNotFoundException, SessionNotFoundException, SessionOperationException {
+            throws NasNotFoundException, PortalException {
         // Get NAS if mapped.
         Nas nas = nasMapping.find(username, ip, mac);
 
         // Create portal session.
         Session session = buildSession(nas.getId(), username, password, ip, mac, os, version);
-        Message message = sessionManager.createSession(nas, session);
+        Result message = sessionManager.createSession(nas, session);
         if (logger.isTraceEnabled()) {
             logger.trace("Connect result: {}", message);
         }
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
-
-        if (!message.isSuccess()) {
-            return RestResponseBuilders.errorBuilder()
-                    .setError(RestResponse.ERROR_SERVER_ERROR)
-                    .setAccessAuthentication(authentication)
-                    .setDescription(message.getText())
-                    .build();
-        }
 
         // create session authorization. FIXME session may be removed by other threads.
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
@@ -152,7 +144,7 @@ public class SessionControllerImpl implements SessionController {
     public RestResponse update(@P("session") @PathVariable long id,
                     @RequestParam long timestamp,
                     @AuthenticationPrincipal Principal principal)
-            throws SessionOperationException, SessionNotFoundException {
+            throws PortalException {
         Session updated = sessionService.update(id, timestamp);
 
         if (logger.isTraceEnabled()) {
@@ -176,22 +168,13 @@ public class SessionControllerImpl implements SessionController {
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestResponse disconnect(@P("session") @PathVariable long id,
                         @AuthenticationPrincipal Principal principal)
-            throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
-        Message<Session> message = sessionManager.removeSession(id);
+            throws PortalException, NasNotFoundException {
+       Result message = sessionManager.removeSession(id);
         if (logger.isTraceEnabled()) {
             logger.trace("disconnect result: {}", message);
         }
 
-        Session rm = message.getContent().get();
-        logger.info("session removed {}.", rm);
-
-        if (!message.isSuccess()) {
-            return RestResponseBuilders.errorBuilder()
-                    .setError(RestResponse.ERROR_SERVER_ERROR)
-                    .setAccessAuthentication((AccessAuthentication) principal)
-                    .setDescription(message.getText())
-                    .build();
-        }
+        logger.info("session removed {}.", id);
 
         return RestResponseBuilders.successBuilder()
                 .setAccessAuthentication((AccessAuthentication) principal)

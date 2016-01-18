@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.core.SessionOperationException;
+import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.Session;
-import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.core.SessionNotFoundException;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
+import cn.com.xinli.portal.protocol.Result;
 
 import java.util.Optional;
 
@@ -45,12 +45,16 @@ public interface SessionService {
      * @param id session id.
      * @param timestamp last modified timestamp.
      * @return true if session updated.
+     * @throws PortalException
      */
-    Session update(long id, long timestamp) throws SessionNotFoundException, SessionOperationException;
+    Session update(long id, long timestamp) throws PortalException;
 
     /**
      * Remove session by ip address.
      * @param ip ip address.
+     * @return result.
+     * @throws NasNotFoundException
+     * @throws PortalException
      */
-    Message<?> removeSession(String ip) throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
+    Result removeSession(String ip) throws PortalException, NasNotFoundException;
 }

@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.controller;
 
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.support.rest.RestResponse;
 import cn.com.xinli.portal.support.rest.RestResponseBuilders;
 import cn.com.xinli.portal.auth.challenge.Challenge;
@@ -45,7 +46,7 @@ public class AuthorizeController {
                                   HttpServletRequest request) {
         logger.debug("{} ==> {}", request.getMethod(), request.getRequestURI());
 
-        String error = RestResponse.ERROR_INVALID_REQUEST;
+        PortalError error = PortalError.of("invalid_request");
         String description;
 
         while (true) {
@@ -70,7 +71,7 @@ public class AuthorizeController {
 
             if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {
                 if (!authorizationServer.certificated(clientId)) {
-                    error = RestResponse.ERROR_INVALID_CLIENT;
+                    error = PortalError.of("invalid_client");
                     description = "Client id: " + clientId + " not certificated.";
                     break;
                 } else {

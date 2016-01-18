@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.filter;
 
+import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.support.rest.EntryPoint;
 import cn.com.xinli.portal.support.rest.Provider;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
@@ -92,7 +93,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
      */
     private void denyRemoteWithError(HttpServletResponse response) {
         RestResponse error = RestResponseBuilders.errorBuilder()
-                .setError(RestResponse.ERROR_REQUEST_RATE_LIMITED)
+                .setError(PortalError.of("request_rate_limited"))
                 .setDescription("Request rate limiting reached.")
                 .build();
 

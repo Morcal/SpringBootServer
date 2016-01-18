@@ -33,9 +33,6 @@ public class NasAdapter implements Nas {
 
     public NasAdapter(NasEntity entity) {
         this.entity = entity;
-//        this.type = StringUtils.isEmpty(type) ? DEFAULT_NAS_TYPE : NasType.valueOf(type);
-//        this.listenPort = listenPort <= 0 ? DEFAULT_NAS_LISTEN_PORT : listenPort;
-//        this.authType = StringUtils.isEmpty(authType) ? DEFAULT_NAS_AUTHENTICATION_TYPE : AuthType.of(authType);
     }
 
     @Override

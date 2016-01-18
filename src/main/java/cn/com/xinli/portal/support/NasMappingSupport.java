@@ -171,7 +171,7 @@ public class NasMappingSupport implements NasMapping {
                 /* Last resort, try to find nas by ipv4 range. */
                 nas = findByIpv4Range(ip);
                 if (!nas.isPresent()) {
-                    throw new NasNotFoundException(ip, mac);
+                    throw new NasNotFoundException("NAS not found for: " + Session.pair(ip, mac));
                 }
             }
         }

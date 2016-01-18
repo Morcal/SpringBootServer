@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.support.rest;
 
 import cn.com.xinli.portal.auth.HttpDigestCredentials;
+import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.Session;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.auth.AccessAuthentication;
@@ -18,7 +19,7 @@ import org.springframework.security.core.token.Token;
  */
 public class RestResponseBuilders {
     /**
-     * Resposne builder.
+     * Response builder.
      *
      * @param <T> rest response bean type.
      */
@@ -227,7 +228,7 @@ public class RestResponseBuilders {
      * RestError response may contains a token key from {@link Token#getKey()}.
      */
     public static class ErrorBuilder extends ServerResponseBuilder<RestError> {
-        private String error;
+        private PortalError error;
         private String description;
         private String url;
         private String token;
@@ -236,7 +237,7 @@ public class RestResponseBuilders {
             super(false);
         }
 
-        public ErrorBuilder setError(String error) {
+        public ErrorBuilder setError(PortalError error) {
             this.error = error;
             return this;
         }
@@ -270,12 +271,12 @@ public class RestResponseBuilders {
 
         @Override
         protected RestError buildInternal() {
-            RestError failure = new RestError();
-            failure.setError(StringUtils.defaultString(error, RestResponse.ERROR_UNKNOWN_ERROR));
-            failure.setDescription(StringUtils.defaultString(description));
-            failure.setUrl(StringUtils.defaultString(url));
-            failure.setToken(StringUtils.defaultString(token));
-            return failure;
+            RestError error = new RestError();
+            error.setError(this.error.getCode());
+            error.setDescription(StringUtils.defaultString(description));
+            error.setUrl(StringUtils.defaultString(url));
+            error.setToken(StringUtils.defaultString(token));
+            return error;
         }
     }
 

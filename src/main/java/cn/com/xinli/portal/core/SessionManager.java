@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.core;
 
-import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.protocol.Result;
 import cn.com.xinli.portal.protocol.Nas;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
 
@@ -19,12 +19,11 @@ public interface SessionManager {
      *
      * @param session session to create.
      * @return session message.
-     * @throws SessionNotFoundException
-     * @throws SessionOperationException
+     * @throws PortalException
      * @throws NasNotFoundException
      */
-    Message<Session> createSession(Nas nas, Session session)
-            throws SessionNotFoundException, SessionOperationException, NasNotFoundException;
+    Result createSession(Nas nas, Session session)
+            throws PortalException, NasNotFoundException;
 
     /**
      * Remove session by id.
@@ -32,10 +31,15 @@ public interface SessionManager {
      * @return session message.
      * @throws SessionNotFoundException
      * @throws NasNotFoundException
-     * @throws SessionOperationException
+     * @throws PortalException
      */
-    Message<Session> removeSession(long id)
-            throws SessionNotFoundException, NasNotFoundException, SessionOperationException;
+    Result removeSession(long id)
+            throws PortalException, NasNotFoundException;
 
+    /**
+     * Remove session in queue.
+     * @param id session id.
+     * @return future.
+     */
     Future<?> removeSessionInQueue(long id);
 }

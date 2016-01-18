@@ -93,13 +93,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Override
     public Future<?> removeSessionInQueue(long id) {
-        return executor.submit(() -> removeQueued(id));
+        return executor.submit(() -> doRemoveSession(id));
     }
 
     /**
      * Session service queued session remover.
      */
-    private void removeQueued(long id) {
+    private void doRemoveSession(long id) {
         try {
             removeSession(id);
         } catch (PortalException | NasNotFoundException e) {
@@ -118,12 +118,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @param nas target {@link Nas}.
      * @param session session to create.
      * @return message.
-     * @throws SessionNotFoundException
-     * @throws SessionOperationException
      * @throws NasNotFoundException
      */
     @Override
-    public Message<Session> createSession(Nas nas, Session session) throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
+    public Result createSession(Nas nas, Session session) throws PortalException {
         Optional<Session> opt =
                 sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
                         .stream()
@@ -148,26 +146,26 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                     logger.warn("+ session already exists with different username.");
                     removeSessionInternal(existed);
                 } else {
-                    return Message.of(existed, true, null, "Session already exists.");
+                    return () -> "Session already exists.";
                 }
             }
 
             PortalClient client = HuaweiPortal.createClient(nas);
-            Message<?> message = client.login(credentials);
+            Result result = client.login(credentials);
             if (logger.isDebugEnabled()) {
-                logger.debug("Portal login result: {}", message);
+                logger.debug("Portal login result: {}", result);
             }
 
-            if (message.isSuccess()) {
-                sessionRepository.save((SessionEntity) session);
-                /* Only put to cache if no exceptions or rollback occurred. */
-                sessionStore.put(session);
-            }
+            sessionRepository.save((SessionEntity) session);
+            /* Only put to cache if no exceptions or rollback occurred. */
+            sessionStore.put(session);
 
-            //FIXME
-            return Message.of(session, message.isSuccess(), message.getText(), message.getText());
-        } catch (IOException | PortalProtocolException e) {
-            throw new SessionOperationException("Create session error", e);
+            return result;
+        } catch (IOException e) {
+            logger.error("Portal login error", e);
+            throw new ServerException(PortalError.of("system_error"), "Failed to login", e);
+        } catch (PortalProtocolException e) {
+            throw new PlatformException(e);
         }
     }
 
@@ -202,9 +200,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @param session session to remove.
      * @return message.
      * @throws NasNotFoundException
-     * @throws SessionOperationException
+     * @throws PortalException
      */
-    private Message<Session> removeSessionInternal(Session session) throws NasNotFoundException, SessionOperationException {
+    private Result removeSessionInternal(Session session) throws NasNotFoundException, PortalException {
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
@@ -213,24 +211,25 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         try {
             PortalClient client = HuaweiPortal.createClient(nas.get());
-            Message<?> message = client.logout(credentials);
+            Result result = client.logout(credentials);
             if (logger.isDebugEnabled()) {
-                logger.debug("Portal logout result: {}", message);
+                logger.debug("Portal logout result: {}", result);
             }
 
             long id = session.getId();
-            if (message.isSuccess()) {
+
                 if (!sessionStore.delete(id)) {
                     logger.error("* Removed session {} from cache failed.", id);
                 }
                 sessionRepository.delete(id);
                 logger.debug("Session {} removed.", id);
-            }
-            //FIXME
-            return Message.of(session, message.isSuccess(), message.getText(), message.getText());
-        } catch (IOException | PortalProtocolException e) {
+
+            return result;
+        } catch (IOException e) {
             logger.error("Portal logout error", e);
-            throw new SessionOperationException("Failed to logout", e);
+            throw new ServerException(PortalError.of("system_error"), "Failed to logout", e);
+        } catch (PortalProtocolException e) {
+            throw new PlatformException(e);
         }
     }
 
@@ -242,13 +241,12 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      *
      * @param id session id.
      * @return message.
-     * @throws SessionNotFoundException
+     * @throws PortalException
      * @throws NasNotFoundException
-     * @throws SessionOperationException
      */
     @Override
-    public Message<Session> removeSession(long id)
-            throws SessionNotFoundException, NasNotFoundException, SessionOperationException {
+    public Result removeSession(long id)
+            throws PortalException, NasNotFoundException {
         Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
@@ -293,11 +291,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @param id session id.
      * @param timestamp last modified timestamp.
      * @return updated session if success.
-     * @throws SessionNotFoundException
-     * @throws SessionOperationException
+     * @throws PortalException
      */
     @Override
-    public Session update(long id, long timestamp) throws SessionNotFoundException, SessionOperationException {
+    public Session update(long id, long timestamp) throws PortalException {
         long lastUpdateTime = sessionStore.getLastUpdateTime(id);
         if (lastUpdateTime == -1L) {
             throw new SessionNotFoundException(id);
@@ -308,7 +305,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         if (Math.abs(lastUpdateTime - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
             /* Assume it's a replay attack. */
-            throw new SessionOperationException("Update within an invalid range.");
+            throw new RemoteException(PortalError.of("invalid_upadte_timestamp"), "Update within an invalid range.");
         }
 
         if (sessionStore.update(id, timestamp)) {
@@ -319,8 +316,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    public Message removeSession(String ip)
-            throws SessionNotFoundException, SessionOperationException, NasNotFoundException {
+    public Result removeSession(String ip)
+            throws PortalException, NasNotFoundException {
         Optional<Session> found = sessionRepository.find(ip)
                 .stream().findFirst();
 

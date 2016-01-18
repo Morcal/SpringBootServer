@@ -7,7 +7,6 @@ import cn.com.xinli.portal.support.rest.Provider;
 import cn.com.xinli.portal.support.rest.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,11 +35,9 @@ public class ApiConfiguration {
     public static final String REST_API_FIND = "sessions/find";
     public static final String REST_API_AUTHORIZE = "authorize";
 
-    @Value("${pws.root}") private String serverApplication;
-
     private String url(String api) {
         StringJoiner joiner = new StringJoiner("/");
-        joiner.add("/" + serverApplication)
+        joiner.add("/portal")
                 .add(REST_API_VERSION)
                 .add(api);
         return joiner.toString();

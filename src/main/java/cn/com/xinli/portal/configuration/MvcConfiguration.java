@@ -17,7 +17,6 @@ import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,16 +33,13 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(MvcConfiguration.class);
 
-    @Bean
-    public String schemeHeaderName() {
-        return "X-PWS-Scheme";
-    }
-
     @Value("${pws.rest.version}") private String restSchemeVersion;
     @Value("${pws.rest.server}") private String restSchemeServer;
     @Value("${pws.rest.port}") private int portalServerListenPort;
     @Value("${pws.rest.host}") private String restSchemeHost;
     @Value("${pws.rest.scheme}") private String restSchemeScheme;
+    @Value("${pws.rest.header}") private String restSchemeHeader;
+    @Value("${pws.rest.meta}") private String restSchemeMeta;
 
     @Value("${pws.redirect.url") private String redirectUrl;
 
@@ -56,29 +52,11 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
         scheme.setPort(portalServerListenPort);
         scheme.setHost(restSchemeHost);
         scheme.setScheme(restSchemeScheme);
+        scheme.setHeader(restSchemeHeader);
+        scheme.setMeta(restSchemeMeta);
         return scheme;
     }
 
-    /**
-     * The PWS scheme header value.
-     *
-     * <p>Header string only supports ISO-8859-1 character set.
-     * DO NOT try to set non-ASCII character inside header value string.
-     * </p>
-     * @param scheme application scheme.
-     * @return scheme content string.
-     */
-    @Bean
-    public String schemeHeaderValue(Scheme scheme) {
-        StringJoiner joiner = new StringJoiner(";");
-        joiner.add("version=" + scheme.getVersion())
-                .add("apiuri=" + scheme.getUri())
-                .add("server=" + scheme.getServer())
-                .add("host=" + scheme.getHost())
-                .add("scheme=" + scheme.getScheme())
-                .add("port=" + String.valueOf(scheme.getPort()));
-        return joiner.toString();
-    }
 
     @Bean
     public View mainPageView() {

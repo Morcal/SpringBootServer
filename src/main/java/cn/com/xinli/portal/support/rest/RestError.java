@@ -13,9 +13,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RestError extends RestResponse {
     /** RestError code. */
-    private String error;
+    @JsonProperty
+    private int error;
 
     /** Invalid token. */
+    @JsonProperty
     private String token;
 
     /** RestError description. */
@@ -26,11 +28,11 @@ public class RestError extends RestResponse {
     @JsonProperty("error_url")
     private String url;
 
-    public String getError() {
+    public int getError() {
         return error;
     }
 
-    public void setError(String error) {
+    public void setError(int error) {
         this.error = error;
     }
 
@@ -61,7 +63,7 @@ public class RestError extends RestResponse {
     @Override
     public String toString() {
         return "RestError{" +
-                "error='" + error + '\'' +
+                "error=" + error +
                 ", token='" + token + '\'' +
                 ", description='" + description + '\'' +
                 ", url='" + url + '\'' +

@@ -1,11 +1,10 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.core.SessionOperationException;
-import cn.com.xinli.portal.service.SessionService;
-import cn.com.xinli.portal.protocol.Message;
+import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.PortalServerHandler;
+import cn.com.xinli.portal.protocol.Result;
+import cn.com.xinli.portal.service.SessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +33,14 @@ public class InternalServerHandler implements PortalServerHandler {
 
         try {
             //FIXME remove session directly may drag down server performance.
-            Message message = sessionService.removeSession(ip);
-            return message.isSuccess() ? 0 /* LogoutError.OK */ : 0x02 /* LogoutError.FAILED. */;
-        } catch (SessionNotFoundException e) {
+            Result message = sessionService.removeSession(ip);
+            if(logger.isDebugEnabled()) {
+                logger.debug("NTF_LOGOUT {}", message);
+            }
+            return 0; /* LogoutError.OK */
+        } catch (PortalException e) {
             return 0x03; /* LogoutError.GONE. */
-        } catch (SessionOperationException | NasNotFoundException e) {
+        } catch (NasNotFoundException e) {
             logger.error("Failed to remove session, ip: {}", ip, e);
             return 0x02; /* LogoutError.FAILED. */
         }

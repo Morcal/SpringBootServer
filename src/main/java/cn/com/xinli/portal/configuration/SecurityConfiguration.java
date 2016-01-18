@@ -1,15 +1,14 @@
 package cn.com.xinli.portal.configuration;
 
 import cn.com.xinli.portal.filter.AuthenticationFilter;
-import cn.com.xinli.portal.support.rest.RestAuthenticationEntryPoint;
 import cn.com.xinli.portal.support.RestAuthenticationProvider;
 import cn.com.xinli.portal.support.rest.EntryPoint;
 import cn.com.xinli.portal.support.rest.Provider;
 import cn.com.xinli.portal.support.rest.Registration;
+import cn.com.xinli.portal.support.rest.RestAuthenticationEntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,8 +69,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     /** Rate limiting (requests per second). */
     public static final int RATE_LIMITING = 5;
 
-    @Value("${pws.root}") private String application;
-
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
@@ -118,8 +115,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         /* Permit all allowed urls (without authentication). */
         List<String> allowedUrls = new ArrayList<>();
         allowedUrls.add("/");
-        allowedUrls.add( "/" + application);
-        allowedUrls.add("/" + application + "/api");
+        allowedUrls.add( "/portal");
+        allowedUrls.add("/portal/api");
 
         for (Registration registration : provider.getRegistrations()) {
             allowedUrls.addAll(registration.getApis().stream()
