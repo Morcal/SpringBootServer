@@ -58,7 +58,7 @@ public class PortalErrorTranslator {
      * @return portal error.
      */
     public static PortalError translate(PortalProtocolException ex) {
-        ProtocolError error = ex.getError();
+        ProtocolError error = ex.getProtocolError();
         switch (error.getText()) {
             case "authentication_failure":
                 return translateAuthenticationError(ex.getMessage());

@@ -15,7 +15,7 @@ public interface DataStore<T> {
      * @param id session id.
      * @return session
      */
-    T get(long id);
+    T get(long id) throws Exception;
 
     /**
      * Put data into data store.
@@ -34,14 +34,13 @@ public interface DataStore<T> {
      * Update data's last modified timestamp.
      * @param id data id.
      * @param lastModified last modified time (UNIX epoch time).
-     * @return true if data updated.
      */
-    boolean update(long id, long lastModified);
+    void update(long id, long lastModified) throws Exception;
 
     /**
      * Remove.
      * @param id data id.
      * @return true if data with id deleted.
      */
-    boolean delete(long id);
+    boolean delete(long id) throws Exception;
 }

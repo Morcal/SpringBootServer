@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.support.rest;
 
-import cn.com.xinli.portal.auth.BadRestCredentialsException;
+import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.ServerException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,11 +76,13 @@ public class Registration {
     /**
      * Register a new EntryPoint.
      * @param api EntryPoint.
-     * @throws BadRestCredentialsException
+     * @throws ServerException
      */
-    public synchronized EntryPoint registerApi(EntryPoint api) throws BadRestCredentialsException {
+    public synchronized EntryPoint registerApi(EntryPoint api) throws ServerException {
         if (apis.contains(api)) {
-            throw new BadRestCredentialsException("api: " + api.toString() + " already registered");
+            throw new ServerException(
+                    PortalError.of("redundant_api_entry"),
+                    "api: " + api.toString() + " already registered");
         }
         apis.add(api);
         return api;

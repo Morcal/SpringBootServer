@@ -4,7 +4,6 @@ import cn.com.xinli.portal.auth.AccessAuthentication;
 import cn.com.xinli.portal.auth.token.RestToken;
 import cn.com.xinli.portal.core.*;
 import cn.com.xinli.portal.protocol.Nas;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.Result;
 import cn.com.xinli.portal.repository.SessionEntity;
 import cn.com.xinli.portal.service.SessionService;
@@ -83,7 +82,7 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String os,
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
-            throws NasNotFoundException, PortalException {
+            throws PortalException {
         // Get NAS if mapped.
         Nas nas = nasMapping.find(username, ip, mac);
 
@@ -167,8 +166,8 @@ public class SessionControllerImpl implements SessionController {
     @RequestMapping(value = "/session/{id}", method = RequestMethod.DELETE)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestResponse disconnect(@P("session") @PathVariable long id,
-                        @AuthenticationPrincipal Principal principal)
-            throws PortalException, NasNotFoundException {
+                                   @AuthenticationPrincipal Principal principal)
+            throws PortalException {
        Result message = sessionManager.removeSession(id);
         if (logger.isTraceEnabled()) {
             logger.trace("disconnect result: {}", message);
@@ -186,8 +185,8 @@ public class SessionControllerImpl implements SessionController {
     @RequestMapping(value = "/sessions/find", method = RequestMethod.POST)
     @PreAuthorize("hasRole('USER')")
     public RestResponse find(@RequestParam(value = "user_ip") String ip,
-                  @RequestParam(value = "user_mac", defaultValue = "") String mac,
-                  @AuthenticationPrincipal Principal principal)
+                             @RequestParam(value = "user_mac", defaultValue = "") String mac,
+                             @AuthenticationPrincipal Principal principal)
             throws SessionNotFoundException {
         Optional<Session> opt = sessionService.find(ip, mac);
         if (!opt.isPresent()) {

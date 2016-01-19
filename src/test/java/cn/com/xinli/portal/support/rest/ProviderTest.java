@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support.rest;
 
+import cn.com.xinli.portal.core.ServerException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -34,7 +35,7 @@ public class ProviderTest {
 
     Provider provider;
     @Before
-    public void setup() {
+    public void setup() throws ServerException {
         provider = restApiProvider();
     }
 
@@ -114,7 +115,7 @@ public class ProviderTest {
 //        return joiner.toString();
     }
 
-    public Provider restApiProvider() {
+    public Provider restApiProvider() throws ServerException {
         Provider provider = new Provider();
         provider.setVendor("Xinli Software Technology ltd., co.");
         provider.addRegistration(restApiRegistration());
@@ -122,7 +123,7 @@ public class ProviderTest {
     }
 
 
-    public Registration restApiRegistration() {
+    public Registration restApiRegistration() throws ServerException {
         Registration registration = new Registration(API_TYPE, REST_API_VERSION);
         logger.debug("> Creating: {}", registration);
 

@@ -60,7 +60,7 @@ public class SessionCacheEventListener implements CacheEventListener, Initializi
         logger.debug(">> Session in cache evicted.");
         Session session = (Session) element.getObjectValue();
         Objects.requireNonNull(session);
-        sessionManager.removeSessionInQueue(session.getId());
+        sessionManager.removeSessionInFuture(session.getId());
     }
 
     @Override

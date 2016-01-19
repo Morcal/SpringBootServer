@@ -2,7 +2,7 @@ package cn.com.xinli.portal.service;
 
 import cn.com.xinli.portal.auth.challenge.Challenge;
 import cn.com.xinli.portal.auth.challenge.ChallengeManager;
-import cn.com.xinli.portal.util.RandomStringGenerator;
+import cn.com.xinli.portal.util.SecureRandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class RestAuthorizationServer implements AuthorizationServer {
     private final Logger logger = LoggerFactory.getLogger(RestAuthorizationServer.class);
 
     @Autowired
-    private RandomStringGenerator secureRandomGenerator;
+    private SecureRandomStringGenerator secureRandomGenerator;
 
     @Autowired
     private ChallengeManager challengeManager;

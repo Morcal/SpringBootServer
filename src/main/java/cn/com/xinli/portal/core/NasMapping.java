@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.core;
 
 import cn.com.xinli.portal.protocol.Nas;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
 
 import java.util.Optional;
 

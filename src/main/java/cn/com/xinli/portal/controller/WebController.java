@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.controller;
 
 import cn.com.xinli.portal.core.NasMapping;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
+import cn.com.xinli.portal.core.NasNotFoundException;
 import cn.com.xinli.portal.support.rest.Scheme;
 import cn.com.xinli.portal.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;

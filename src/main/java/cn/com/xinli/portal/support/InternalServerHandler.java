@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.core.NasNotFoundException;
 import cn.com.xinli.portal.core.PortalException;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.PortalServerHandler;
 import cn.com.xinli.portal.protocol.Result;
 import cn.com.xinli.portal.service.SessionService;
@@ -38,11 +38,11 @@ public class InternalServerHandler implements PortalServerHandler {
                 logger.debug("NTF_LOGOUT {}", message);
             }
             return 0; /* LogoutError.OK */
-        } catch (PortalException e) {
-            return 0x03; /* LogoutError.GONE. */
         } catch (NasNotFoundException e) {
             logger.error("Failed to remove session, ip: {}", ip, e);
             return 0x02; /* LogoutError.FAILED. */
+        } catch (PortalException e) {
+            return 0x03; /* LogoutError.GONE. */
         }
     }
 }

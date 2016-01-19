@@ -12,16 +12,32 @@ import java.util.Map;
  */
 public interface SessionStore extends DataStore<Session> {
     /**
-     * Initialized session store.
+     * Get session by id.
+     *
+     * @param id session id.
+     * @return session
      */
-    void init();
+    @Override
+    Session get(long id) throws SessionNotFoundException;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    void update(long id, long lastModified) throws SessionNotFoundException;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean delete(long id) throws SessionNotFoundException;
 
     /**
      * Get session last update time.
      * @param id session id.
      * @return last update time (UNIX epoch time).
      */
-    long getLastUpdateTime(long id);
+    long getLastUpdateTime(long id) throws SessionNotFoundException;
 
     /**
      * Find data with query parameters.

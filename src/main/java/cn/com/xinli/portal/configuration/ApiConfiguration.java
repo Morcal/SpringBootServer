@@ -2,6 +2,7 @@ package cn.com.xinli.portal.configuration;
 
 import cn.com.xinli.portal.admin.Activity;
 import cn.com.xinli.portal.auth.token.TokenScope;
+import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.support.rest.EntryPoint;
 import cn.com.xinli.portal.support.rest.Provider;
 import cn.com.xinli.portal.support.rest.Registration;
@@ -44,14 +45,14 @@ public class ApiConfiguration {
     }
 
     @Bean
-    public Provider restApiProvider() {
+    public Provider restApiProvider() throws ServerException {
         Provider provider = new Provider();
         provider.setVendor("Xinli Software Technology ltd., co.");
         provider.addRegistration(restApiRegistration());
         return provider;
     }
 
-    private Registration restApiRegistration() {
+    private Registration restApiRegistration() throws ServerException {
         Registration registration = new Registration(API_TYPE, REST_API_VERSION);
         logger.info("Creating: {}.", registration);
 

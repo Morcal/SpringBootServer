@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.support.rest;
 
-import cn.com.xinli.portal.auth.BadRestCredentialsException;
+import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.ServerException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -40,12 +41,13 @@ public class Provider extends RestResponse {
      * Add a registration to provider.
      *
      * @param registration EntryPoint registration.
-     * @throws BadRestCredentialsException
+     * @throws ServerException
      */
     public synchronized void addRegistration(Registration registration)
-            throws BadRestCredentialsException {
+            throws ServerException {
         if (registrations.contains(registration)) {
-            throw new BadRestCredentialsException("Registration already exists.");
+            throw new ServerException(
+                    PortalError.of("redundant_api_registration"), "Registration already exists.");
         }
 
         registrations.add(registration);

@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.auth.challenge;
 
-import org.springframework.security.core.AuthenticationException;
+import cn.com.xinli.portal.auth.RestAuthException;
+import cn.com.xinli.portal.core.PortalError;
 
 /**
  * Challenge Not Found Exception.
@@ -9,8 +10,8 @@ import org.springframework.security.core.AuthenticationException;
  *
  * @author zhoupeng 2015/12/11.
  */
-public class ChallengeNotFoundException extends AuthenticationException {
+public class ChallengeNotFoundException extends RestAuthException {
     public ChallengeNotFoundException(String msg) {
-        super(msg);
+        super(PortalError.of("challenge_not_found"), msg);
     }
 }

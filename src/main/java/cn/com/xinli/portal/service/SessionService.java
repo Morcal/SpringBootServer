@@ -3,7 +3,6 @@ package cn.com.xinli.portal.service;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.Session;
 import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.protocol.Result;
 
 import java.util.Optional;
@@ -53,8 +52,7 @@ public interface SessionService {
      * Remove session by ip address.
      * @param ip ip address.
      * @return result.
-     * @throws NasNotFoundException
      * @throws PortalException
      */
-    Result removeSession(String ip) throws PortalException, NasNotFoundException;
+    Result removeSession(String ip) throws PortalException;
 }

@@ -18,7 +18,7 @@ import java.util.Set;
  * @author zhoupeng 2015/12/12.
  */
 @Component
-public class SecureRandomStringGenerator implements RandomStringGenerator {
+public class SecureRandomStringGenerator {
     /**
      * Log.
      */
@@ -48,7 +48,7 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
     }
 
     /**
-     * {@inheritDoc}
+     * Generate an unique secure random string.
      * <p>
      * Each ASCII character takes '5' bits.
      * <code>2^5 = 32</code>.
@@ -56,7 +56,6 @@ public class SecureRandomStringGenerator implements RandomStringGenerator {
      * @param size string size.
      * @return an unique secure characters random string with given size.
      */
-    @Override
     public String generateUniqueRandomString(int size) {
         if (size < 1) {
             throw new IllegalArgumentException("String length must be positive.");

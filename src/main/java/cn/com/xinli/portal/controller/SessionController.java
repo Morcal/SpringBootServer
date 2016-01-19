@@ -2,7 +2,6 @@ package cn.com.xinli.portal.controller;
 
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.protocol.NasNotFoundException;
 import cn.com.xinli.portal.auth.RestRole;
 import cn.com.xinli.portal.support.rest.RestResponse;
 
@@ -43,7 +42,7 @@ public interface SessionController {
                          String os,
                          String version,
                          Principal principal)
-            throws NasNotFoundException, PortalException;
+            throws PortalException;
 
     /**
      * Get portal session information.
@@ -90,8 +89,7 @@ public interface SessionController {
      * @param principal spring security principal.
      * @return JSON.
      */
-    RestResponse disconnect(long id, Principal principal)
-            throws PortalException, NasNotFoundException;
+    RestResponse disconnect(long id, Principal principal) throws PortalException;
 
     /**
      * Find portal session created by user ip and user mac.

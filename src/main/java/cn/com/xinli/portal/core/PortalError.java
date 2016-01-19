@@ -41,10 +41,6 @@ public class PortalError {
         this.text = text;
     }
 
-    public static PortalError of(int code, String text) {
-        return new PortalError(code, text);
-    }
-
     public int getCode() {
         return code;
     }
@@ -53,45 +49,105 @@ public class PortalError {
         return text;
     }
 
+    @Override
+    public String toString() {
+        return "PortalError{" +
+                "code=" + code +
+                ", text='" + text + '\'' +
+                '}';
+    }
+
+    /**
+     * Create a portal error.
+     * @param code error code.
+     * @param text error text.
+     * @return portal error.
+     */
+    public static PortalError of(int code, String text) {
+        return new PortalError(code, text);
+    }
+
     /**
      * All defined portal java client errors.
      */
     private static final PortalError[] errors = {
             /* System internal errors. */
-            of(1, "server_error"),
-            of(1, "temporarily_unavailable"),
-            of(1, "request_rate_limited"),
-            of(1, "not_allowed"),
-            of(1, "unauthorized_request"),
-            of(1, "unknown_system_error"),
+            of(1, "server_failed_to_start"),
+            of(2, "server_failed_to_listen"),
+            of(3, "server_failed_to_bind"),
+            of(4, "server_failed_to_load_db"),
+            of(5, "invalid_db_schema"),
+            of(13, "server_internal_error"),
+            of(14, "service_unavailable"),
+            of(21, "invalid_pws_configuration"),
+            of(31, "invalid_nas_configuration"),
+            of(41, "need_ssl"),
+            of(61, "redundant_api_registration"),
+            of(62, "redundant_api_entry"),
+
+            /* NAS errors. */
+            of(70, "nas_unreachable"),
+            of(71, "nas_not_respond"),
+            of(72, "unsupported_protocol"),
+            of(73, "unsupported_nas"),
+            of(74, "unsupported_authentication"),
+            of(75, "invalid_credentials"),
+            of(76, "unrecognized_response"),
+            of(77, "nas_not_found"),
+            of(81, "authentication_rejected"),
+            of(82, "authentication_already_online"),
+            of(83, "authentication_unavailable"),
+            of(84, "authentication_failure"),
+            of(85, "challenge_rejected"),
+            of(86, "challenge_already_online"),
+            of(87, "challenge_unavailable"),
+            of(88, "challenge_failure"),
+            of(89, "logout_rejected"),
+            of(90, "logout_failure"),
+            of(91, "logout_already_gone"),
 
             /* REST API errors. */
-            of(1, "invalid_client"),
-            of(1, "invalid_request"),
-            of(1, "invalid_scope"),
-            of(1, "invalid_client_grant"),
-            of(1, "invalid_session_grant"),
-            of(1, "invalid_system_grant"),
-            of(1, "invalid_credential"),
-            of(1, "invalid_session_operation"),
-            of(1, "invalid_update_timestamp"),
+            of(101, "invalid_client"),
+            of(102, "invalid_scope"),
+            of(103, "invalid_client_grant"),
+            of(104, "invalid_update_timestamp"),
+            of(105, "challenge_not_found"),
+            of(106, "invalid_challenge_response"),
+            of(107, "bad_client_credentials"),
+            of(108, "invalid_certificate"),
+            of(109, "unsupported_response_type"),
+            of(110, "rest_authentication_error"),
+            of(121, "invalid_session_grant"),
+            of(131, "invalid_system_grant"),
+            of(141, "invalid_request"),
+            of(151, "rest_request_rate_limited"),
 
             /* Portal service errors. */
-            of(231, "1|90|"),
-            of(232, "2|91|"),
-            of(233, "4|82|"),
-            of(234, "8|134|"),
-            of(235, "44|-1|"),
-            of(236, "-1|-1|"),
-            of(237, "8|180|"),
-            of(238, "10|53|"),
-            of(239, "Login interval is too short"),
-            of(240, "You are already logged in - access denied"),
-            of(241, "User not found"),
-            of(242, "Password Error"),
-            of(243, "User state error!Pls.recharge or connect the admin"),
-            of(244, "Please the merge account to login"),
-            of(245, "user already in"),
+            of(201, "invalid_authenticate_credentials"),
+            of(202, "invalid_account_type"),
+            of(203, "invalid_account_state"),
+            of(204, "inactive_account"),
+            of(205, "invalid_author_credentials"),
+            of(206, "max_session_count"),
+            of(207, "not_allowed"),
+            of(209, "nat_not_allowed"),
+
+            of(231, "x_invalid_credentials"),
+            of(232, "x_inactive_account"),
+            of(233, "x_account_already_online"),
+            of(234, "x_port_term_not_allowed"),
+            of(235, "x_dial_forbidden"),
+            of(236, "x_dial_rejected_bad_encode"),
+            of(237, "x_term_port_not_allowed"),
+            of(238, "x_no_package_available"),
+
+            of(239, "login_too_often"),
+            of(240, "already_login_in"),
+            of(241, "user_not_found"),
+            of(242, "incorrect_password"),
+            of(243, "invalid_account_state"),
+            of(244, "need_merge_account"),
+            of(245, "already_in"),
             of(249, "xinli_unknown_error"),
 
             of(291, "unknown_login_error"),

@@ -2,6 +2,7 @@ package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.admin.Activity;
 import cn.com.xinli.portal.core.NasMapping;
+import cn.com.xinli.portal.core.NasNotFoundException;
 import cn.com.xinli.portal.protocol.*;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
 import cn.com.xinli.portal.support.InternalServerHandler;

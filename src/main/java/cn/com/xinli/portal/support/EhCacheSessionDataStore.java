@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.Session;
+import cn.com.xinli.portal.core.SessionNotFoundException;
 import cn.com.xinli.portal.core.SessionStore;
 import cn.com.xinli.portal.support.cache.SessionCacheEventListener;
 import cn.com.xinli.portal.repository.SessionEntity;
@@ -52,7 +53,6 @@ public class EhCacheSessionDataStore implements SessionStore {
     @Value("${pws.session.tti.value}") private int sessionTti;
 
     @PostConstruct
-    @Override
     public void init() {
         boolean registered = sessionCache.getCacheEventNotificationService()
                 .registerListener(sessionCacheEventListener, NotificationScope.LOCAL);
@@ -60,7 +60,7 @@ public class EhCacheSessionDataStore implements SessionStore {
         logger.info("register event listener on session cache: {}.", registered);
     }
 
-    @Scheduled(fixedDelay = 10_000L)
+    @Scheduled(fixedDelay = 300_000L)
     public void evictExpiredSessions() {
         if (isSessionTtiEnabled) {
             if (logger.isTraceEnabled()) {
@@ -81,9 +81,12 @@ public class EhCacheSessionDataStore implements SessionStore {
      * @return session found or null if not found.
      */
     @Override
-    public Session get(long id) {
+    public Session get(long id) throws SessionNotFoundException {
         Element element = sessionCache.get(id);
-        return element == null ? null : (Session) element.getObjectValue();
+        if (element == null) {
+            throw new SessionNotFoundException(id);
+        }
+        return (Session) element.getObjectValue();
     }
 
     @Override
@@ -116,13 +119,12 @@ public class EhCacheSessionDataStore implements SessionStore {
      *
      * @param id session id.
      * @param lastModified last modified time (UNIX epoch time).
-     * @return true if session found and updated, false not found.
      */
     @Override
-    public boolean update(long id, long lastModified) {
+    public void update(long id, long lastModified) throws SessionNotFoundException {
         Element element = sessionCache.get(id);
         if (element == null) {
-            return false;
+            throw new SessionNotFoundException(id);
         } else {
             SessionEntity entity = (SessionEntity) element.getObjectValue();
             if (logger.isTraceEnabled()) {
@@ -131,7 +133,6 @@ public class EhCacheSessionDataStore implements SessionStore {
             }
             entity.setLastModified(lastModified);
             sessionCache.put(element);
-            return true;
         }
     }
 

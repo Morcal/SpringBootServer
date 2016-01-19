@@ -92,7 +92,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    public Future<?> removeSessionInQueue(long id) {
+    public Future<?> removeSessionInFuture(long id) {
         return executor.submit(() -> doRemoveSession(id));
     }
 
@@ -102,7 +102,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     private void doRemoveSession(long id) {
         try {
             removeSession(id);
-        } catch (PortalException | NasNotFoundException e) {
+        } catch (PortalException e) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Session service remover error: {}", e.getMessage());
             }
@@ -199,10 +199,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * Remove session internal.
      * @param session session to remove.
      * @return message.
-     * @throws NasNotFoundException
      * @throws PortalException
      */
-    private Result removeSessionInternal(Session session) throws NasNotFoundException, PortalException {
+    private Result removeSessionInternal(Session session) throws PortalException {
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
@@ -245,8 +244,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @throws NasNotFoundException
      */
     @Override
-    public Result removeSession(long id)
-            throws PortalException, NasNotFoundException {
+    public Result removeSession(long id) throws PortalException {
         Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
@@ -305,23 +303,21 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         if (Math.abs(lastUpdateTime - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
             /* Assume it's a replay attack. */
-            throw new RemoteException(PortalError.of("invalid_upadte_timestamp"), "Update within an invalid range.");
+            throw new RemoteException(
+                    PortalError.of("invalid_update_timestamp"), "Update within an invalid range.");
         }
 
-        if (sessionStore.update(id, timestamp)) {
-            return sessionStore.get(id);
-        } else {
-            return null;
-        }
+        sessionStore.update(id, timestamp);
+        return sessionStore.get(id);
     }
 
     @Override
-    public Result removeSession(String ip)
-            throws PortalException, NasNotFoundException {
+    public Result removeSession(String ip) throws PortalException {
         Optional<Session> found = sessionRepository.find(ip)
                 .stream().findFirst();
 
-        found.orElseThrow(() -> new SessionNotFoundException("session with ip: " + ip + " not found."));
+        found.orElseThrow(() ->
+                new SessionNotFoundException("session with ip: " + ip + " not found."));
 
         return removeSessionInternal(found.get());
     }

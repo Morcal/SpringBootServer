@@ -9,7 +9,7 @@ import java.util.Objects;
  *
  * @author zhoupeng 2015/12/2.
  */
-public abstract class PortalException extends Exception {
+public abstract class PortalException extends Exception implements PortalErrorContainer {
     /** Portal error. */
     private final PortalError error;
 
@@ -29,7 +29,8 @@ public abstract class PortalException extends Exception {
      * Get portal error.
      * @return portal error.
      */
-    public PortalError getError() {
+    @Override
+    public PortalError getPortalError() {
         return error;
     }
 }
