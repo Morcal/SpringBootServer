@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  *
  * <p>
  * This class provides functionality to identify {@link PortalProtocolException}s
- * based on known error message text signatures,
+ * based on known error text signatures,
  * and translate those exceptions to portal error.
  *
  * Project: xpws

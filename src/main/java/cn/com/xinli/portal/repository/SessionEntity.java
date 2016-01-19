@@ -137,7 +137,7 @@ public class SessionEntity implements Session {
     @Override
     public String toString() {
         return "SessionEntity{" +
-                ", id=" + id +
+                "id=" + id +
                 ", nasId=" + nasId +
                 ", username='" + username + '\'' +
                 ", ip='" + ip + '\'' +

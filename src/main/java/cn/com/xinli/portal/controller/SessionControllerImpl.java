@@ -88,9 +88,9 @@ public class SessionControllerImpl implements SessionController {
 
         // Create portal session.
         Session session = buildSession(nas.getId(), username, password, ip, mac, os, version);
-        Result message = sessionManager.createSession(nas, session);
+        Result result = sessionManager.createSession(nas, session);
         if (logger.isTraceEnabled()) {
-            logger.trace("Connect result: {}", message);
+            logger.trace("Connect result: {}", result);
         }
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
@@ -168,9 +168,9 @@ public class SessionControllerImpl implements SessionController {
     public RestResponse disconnect(@P("session") @PathVariable long id,
                                    @AuthenticationPrincipal Principal principal)
             throws PortalException {
-       Result message = sessionManager.removeSession(id);
+       Result result = sessionManager.removeSession(id);
         if (logger.isTraceEnabled()) {
-            logger.trace("disconnect result: {}", message);
+            logger.trace("disconnect result: {}", result);
         }
 
         logger.info("session removed {}.", id);

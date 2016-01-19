@@ -33,9 +33,9 @@ public class InternalServerHandler implements PortalServerHandler {
 
         try {
             //FIXME remove session directly may drag down server performance.
-            Result message = sessionService.removeSession(ip);
+            Result result = sessionService.removeSession(ip);
             if(logger.isDebugEnabled()) {
-                logger.debug("NTF_LOGOUT {}", message);
+                logger.debug("NTF_LOGOUT {}", result);
             }
             return 0; /* LogoutError.OK */
         } catch (NasNotFoundException e) {

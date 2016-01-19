@@ -118,6 +118,7 @@ public class PortalError {
             of(109, "unsupported_response_type"),
             of(110, "rest_authentication_error"),
             of(121, "invalid_session_grant"),
+            of(122, "session_not_found"),
             of(131, "invalid_system_grant"),
             of(141, "invalid_request"),
             of(151, "rest_request_rate_limited"),
@@ -167,7 +168,7 @@ public class PortalError {
         }
 
         Optional<PortalError> error = Stream.of(errors)
-                .filter(text::equals)
+                .filter(err -> err.getText().equals(text))
                 .findFirst();
         error.orElseThrow(() ->
                 new IllegalArgumentException("Portal error: " + text + " not exists."));

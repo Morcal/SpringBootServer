@@ -206,7 +206,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     @ExceptionHandler(value = {RuntimeException.class})
-    public RestResponse handleServerException(RuntimeException e) {
+    public RestResponse handleRuntimeException(RuntimeException e) {
         if (logger.isDebugEnabled()) {
             logger.error("handle exception: {} ", e.getMessage());
         }

@@ -66,15 +66,26 @@ public class SessionActivityAspect {
     }
 
     /**
+     * Save session activity for a {@link Session}.
+     * @param session session to log.
+     * @param action action.
+     * @param result result.
+     */
+    private void saveActivity(Session session, Activity.SessionAction action, String result) {
+        saveActivity(session.getIp(), session.getUsername(), session.getInfo(), result,
+                action, Activity.Severity.NORMAL);
+    }
+
+    /**
      * Save activity for a {@link Session}.
      * @param id session id.
+     * @param action sessionAction.
      * @param result result text.
      */
-    private void saveActivity(long id, String result) {
+    private void saveActivity(long id, Activity.SessionAction action, String result) {
         try {
             Session session = sessionService.getSession(id);
-            saveActivity(session.getIp(), session.getUsername(), session.getInfo(), result,
-                    Activity.SessionAction.CREATE_SESSION, Activity.Severity.NORMAL);
+            saveActivity(session, action, result);
         } catch (SessionNotFoundException e) {
             if (logger.isTraceEnabled()) {
                 logger.trace("session not found {}", id);
@@ -146,7 +157,7 @@ public class SessionActivityAspect {
             argNames = "id,timestamp,principal,returning",
             returning = "returning")
     public void recordUpdate(long id, long timestamp, Principal principal, RestResponse returning) {
-        saveActivity(id, returning.toString());
+        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, returning.toString());
     }
 
     /**
@@ -162,7 +173,7 @@ public class SessionActivityAspect {
             argNames = "id,timestamp,principal,cause",
             throwing = "cause")
     public void recordUpdate(long id, long timestamp, Principal principal, Throwable cause) {
-        saveActivity(id, cause.getMessage());
+        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, cause.getMessage());
     }
 
     /**
@@ -210,7 +221,7 @@ public class SessionActivityAspect {
             argNames = "id,principal,returning",
             returning = "returning")
     public void recordGet(long id, Principal principal, RestResponse returning) {
-        saveActivity(id, returning.toString());
+        saveActivity(id, Activity.SessionAction.GET_SESSION, returning.toString());
     }
 
     /**
@@ -226,7 +237,7 @@ public class SessionActivityAspect {
             argNames = "id,principal,cause",
             throwing = "cause")
     public void recordGet(long id, Principal principal, Throwable cause) {
-        saveActivity(id, cause.getMessage());
+        saveActivity(id, Activity.SessionAction.GET_SESSION, cause.getMessage());
     }
 
     /**
@@ -241,9 +252,9 @@ public class SessionActivityAspect {
             argNames = "point,id,principal")
     public Object recordLogout(ProceedingJoinPoint point, long id, Principal principal) throws Throwable {
         try {
-            sessionService.getSession(id);
+            Session session = sessionService.getSession(id);
             RestResponse response = (RestResponse) point.proceed(new Object[]{id, principal});
-            saveActivity(id, response.toString());
+            saveActivity(session, Activity.SessionAction.DELETE_SESSION, response.toString());
             return response;
         } catch (Throwable cause) {
             saveActivity("unknown", "unknown", "remove session: " + id, cause.getMessage(),

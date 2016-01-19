@@ -117,7 +117,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      *
      * @param nas target {@link Nas}.
      * @param session session to create.
-     * @return message.
+     * @return result.
      * @throws NasNotFoundException
      */
     @Override
@@ -130,17 +130,17 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         Credentials credentials = new Credentials(
                 session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
 
+        Result result = null;
+
         try {
             if (opt.isPresent()) {
                 /* Check if already existed session was created by current user.
-                 * If so, return existed session, or try to logout existed user
+                 * If so, return existed session, or else try to logout existed user
                  * and then login with current user.
                  */
                 Session existed = opt.get();
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Session already existed, {}", existed);
-                }
+                logger.info("Session already existed, {}", existed);
 
                 if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
                     logger.warn("+ session already exists with different username.");
@@ -151,22 +151,32 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             }
 
             PortalClient client = HuaweiPortal.createClient(nas);
-            Result result = client.login(credentials);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Portal login result: {}", result);
-            }
-
-            sessionRepository.save((SessionEntity) session);
-            /* Only put to cache if no exceptions or rollback occurred. */
-            sessionStore.put(session);
-
-            return result;
+            result = client.login(credentials);
         } catch (IOException e) {
             logger.error("Portal login error", e);
             throw new ServerException(PortalError.of("system_error"), "Failed to login", e);
         } catch (PortalProtocolException e) {
-            throw new PlatformException(e);
+            /*
+             * Wrap protocol exception into a new platform exception,
+             * unless, 1. login CHAP-challenge when already online,
+             * 2. login CHAP-authenticate when already online.
+             */
+            ProtocolError error = e.getProtocolError();
+            if (error.getCode() != 86  && /* challenge_already_online */
+                    error.getCode() != 82) {/* authentication_already_online */
+                throw new PlatformException(e);
+            }
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Portal login result: {}", result);
+        }
+
+        sessionRepository.save((SessionEntity) session);
+        /* Only put to cache if no exceptions or rollback occurred. */
+        sessionStore.put(session);
+
+        return result;
     }
 
     /**
@@ -197,8 +207,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     /**
      * Remove session internal.
+     *
      * @param session session to remove.
-     * @return message.
+     * @return result.
      * @throws PortalException
      */
     private Result removeSessionInternal(Session session) throws PortalException {
@@ -208,28 +219,39 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         Optional<Nas> nas = nasMapping.getNas(session.getNasId());
         nas.orElseThrow(() -> new NasNotFoundException("NAS not found by id: " + session.getNasId()));
 
+        Result result = null;
+
         try {
             PortalClient client = HuaweiPortal.createClient(nas.get());
-            Result result = client.logout(credentials);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Portal logout result: {}", result);
-            }
-
-            long id = session.getId();
-
-                if (!sessionStore.delete(id)) {
-                    logger.error("* Removed session {} from cache failed.", id);
-                }
-                sessionRepository.delete(id);
-                logger.debug("Session {} removed.", id);
-
-            return result;
+            result = client.logout(credentials);
         } catch (IOException e) {
             logger.error("Portal logout error", e);
-            throw new ServerException(PortalError.of("system_error"), "Failed to logout", e);
+            throw new ServerException(
+                    PortalError.of("server_internal_error"), "Failed to logout", e);
         } catch (PortalProtocolException e) {
-            throw new PlatformException(e);
+            /*
+             * Wrap protocol exception into a new Platform exception
+             * unless trying to logout when user already gone.
+             */
+            ProtocolError error = e.getProtocolError();
+            if (error.getCode() != 91 /* logout_already_gone */) {
+                throw new PlatformException(e);
+            }
         }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Portal logout result: {}", result);
+        }
+
+        long id = session.getId();
+
+        if (!sessionStore.delete(id)) {
+            logger.error("* Removed session {} from cache failed.", id);
+        }
+        sessionRepository.delete(id);
+        logger.debug("Session {} removed.", id);
+
+        return result;
     }
 
     /**
@@ -239,7 +261,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * if succeeded, remove session from data store and database.
      *
      * @param id session id.
-     * @return message.
+     * @return result.
      * @throws PortalException
      * @throws NasNotFoundException
      */

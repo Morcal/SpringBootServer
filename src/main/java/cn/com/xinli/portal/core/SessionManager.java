@@ -17,7 +17,7 @@ public interface SessionManager {
      * Create a new portal session.
      *
      * @param session session to create.
-     * @return session message.
+     * @return session result.
      * @throws PortalException
      */
     Result createSession(Nas nas, Session session) throws PortalException;
@@ -25,7 +25,7 @@ public interface SessionManager {
     /**
      * Remove session by id.
      * @param id session id.
-     * @return session message.
+     * @return session result.
      * @throws SessionNotFoundException
      * @throws PortalException
      */
