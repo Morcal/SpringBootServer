@@ -5,7 +5,12 @@ import java.util.Objects;
 /**
  * Portal web server exception.
  *
- * Project: portal
+ * <p>This class provides a base abstract exception for abnormal operation
+ * results in spring-web-mvc controller, services and component.
+ * It implements {@link PortalErrorContainer} so that operation error result
+ * can be retrieved from this exception.
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/2.
  */

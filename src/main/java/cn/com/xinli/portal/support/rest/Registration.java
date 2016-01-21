@@ -2,26 +2,34 @@ package cn.com.xinli.portal.support.rest;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * EntryPoint registration.
- *
+ * REST API endpoint registration.
+ * <p>
+ * A registration contains a set of API {@link EntryPoint}s.
+ * <p>
  * Project: rest-api
  *
  * @author zhoupeng 2015/12/6.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Registration {
     /** EntryPoint type. */
+    @JsonProperty
     private String type;
 
     /** EntryPoint version. */
+    @JsonProperty
     private String version;
 
     /** APIs this registration provides. */
+    @JsonProperty
     private List<EntryPoint> apis;
 
     /** Default constructor for JSON parser. */

@@ -3,7 +3,6 @@ package cn.com.xinli.portal.service;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.Session;
 import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.protocol.Result;
 
 import java.util.Optional;
 
@@ -35,7 +34,7 @@ public interface SessionService {
      * Find session by ip and mac.
      * @param ip ip address.
      * @param mac mac address.
-     * @return session if found or null.
+     * @return optional of session.
      */
     Optional<Session> find(String ip, String mac);
 
@@ -43,16 +42,8 @@ public interface SessionService {
      * Update session's last modified timestamp.
      * @param id session id.
      * @param timestamp last modified timestamp.
-     * @return true if session updated.
+     * @return updated session.
      * @throws PortalException
      */
     Session update(long id, long timestamp) throws PortalException;
-
-    /**
-     * Remove session by ip address.
-     * @param ip ip address.
-     * @return result.
-     * @throws PortalException
-     */
-    Result removeSession(String ip) throws PortalException;
 }

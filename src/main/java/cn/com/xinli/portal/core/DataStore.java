@@ -2,8 +2,11 @@ package cn.com.xinli.portal.core;
 
 /**
  * Data Store.
+ *
+ * <p>Data store is a conceptual container which holds any numbers of
+ * content objects in one place.
  * 
- * Project: xpws
+ * <p>Project: xpws
  *
  * @param <T> data type.
  * @author zhoupeng 2015/12/29.

@@ -6,7 +6,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Session Not Found exception.
  *
- * Project: xpws
+ * <p>This exception will throw when server try to load/locate target
+ * session and target session not exists or expired.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/16.
  */

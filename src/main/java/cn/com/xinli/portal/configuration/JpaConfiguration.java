@@ -25,7 +25,16 @@ import java.io.File;
 
 /**
  * PWS JPA configuration.
- *
+ * <p>
+ * This class defines JPS configurations for package <code>"cn.com.xinli.portal.repository"</code>.
+ * PWS enabled JPA transaction via spring "proxy target class" with {@link AdviceMode#PROXY}.
+ * <p>
+ * The underlying database is <em>Embedded</em> Apache Derby.
+ * <p>
+ * The underlying JPA provider is Hibernate.
+ * <p>
+ * All JPA support was provided by spring-data-jpa.
+ * <p>
  * Project: portal
  *
  * @author zhoupeng 2015/12/7.

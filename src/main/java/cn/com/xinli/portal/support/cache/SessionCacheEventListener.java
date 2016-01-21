@@ -18,7 +18,10 @@ import java.util.Objects;
 /**
  * Session Cache Event Listener.
  *
- * Project: xpws
+ * <p>This class listens on Session cache.
+ * When a session is expired, this class will try to remove it in a future.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/28.
  */

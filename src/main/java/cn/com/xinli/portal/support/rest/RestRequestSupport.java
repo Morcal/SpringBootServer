@@ -13,35 +13,27 @@ import java.util.stream.Collectors;
 
 /**
  * REST APIs request.
- * <p>
- * Project: rest-api
+ *
+ * <p>Default REST APIs request implementation.
+ *
+ * <p>Project: rest-api
  *
  * @author zhoupeng 2015/12/9.
  */
 public class RestRequestSupport implements RestRequest {
-    /**
-     * Log.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(RestRequestSupport.class);
 
-    /**
-     * Credentials.
-     */
+    /** Credentials. */
     private final HttpDigestCredentials credentials;
 
-    /**
-     * Request parameters.
-     */
+    /** Request parameters. */
     private final Map<String, String[]> parameters;
 
-    /**
-     * Request method.
-     */
+    /** Request method. */
     private final String method;
 
-    /**
-     * Request uri.
-     */
+    /** Request uri. */
     private final String uri;
 
     public RestRequestSupport(String method, String uri) {

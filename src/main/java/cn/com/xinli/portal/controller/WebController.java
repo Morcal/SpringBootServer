@@ -123,7 +123,7 @@ public class WebController {
                 break;
             }
 
-            if (!AddressUtil.validateIp(realIp, sourceIp, request)) {
+            if (!AddressUtil.validateIp(realIp, sourceIp, request.getRemoteAddr())) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("invalid ip: {}.", sourceIp);
                 }

@@ -34,9 +34,7 @@ import java.util.Optional;
 @Component
 @RequestMapping("/portal/v1.0")
 public class SessionControllerImpl implements SessionController {
-    /**
-     * Logger.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SessionController.class);
 
     @Autowired

@@ -21,7 +21,23 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * PWS web mvc configuration.
- *
+ * <p>
+ * Spring-web-mvc configuration enable supports for
+ * <ul>
+ *     <li>static contents</li>
+ *     Configure a {@link WebContentInterceptor} for path "/static/*"
+ *     <li>JSP support</li>
+ *     Configure a {@link ViewResolver} for path "/WEB-INF/jsp/"
+ *     <li>cache control</li>
+ *     <li>REST API scheme</li>
+ *     Define a {@link Scheme} bean via {@link #scheme()}
+ *     <li>Default {@link #mainPageView()} and {@link #errorPageView()}</li>
+ *     <li>static resources</li>
+ *     Configure {@link ResourceHandlerRegistry}s for
+ *     "/html/**" with "classpath:/WEB-INF/static/html/"
+ *     "/css/**" with "classpath:/WEB-INF/static/css/"
+ * </ul>
+ * <p>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/15.

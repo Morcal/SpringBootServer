@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,7 +30,14 @@ import java.util.stream.Collectors;
 
 /**
  * PWS spring web security configuration.
- * <p>
+ *
+ * <p>This class configures spring-web-security.
+ * Essential configurations are:
+ * <ul>
+ *     <li>Authentication filter for REST APIs</li>
+ *     <li>Rate limiting filter</li>
+ *     <li>{@link AuthenticationProvider}</li>
+ * </ul>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/10.
@@ -39,22 +47,16 @@ import java.util.stream.Collectors;
 @EnableGlobalMethodSecurity(mode = AdviceMode.PROXY, prePostEnabled = true, proxyTargetClass = true)
 @Order(10)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    /**
-     * Logger.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
 
     /** REST tokens type. */
     public static final String TOKEN_TYPE = "Bearer";
 
-    /**
-     * Challenge response type.
-     */
+    /** Challenge response type. */
     public static final String CHALLENGE_RESPONSE_TYPE = "challenge";
 
-    /**
-     * Minimum update time diff in seconds.
-     */
+    /** Minimum update time diff in seconds. */
     public static final long MIN_TIME_UPDATE_DIFF = 3; // seconds.
 
     /** Access token time to live in seconds. */

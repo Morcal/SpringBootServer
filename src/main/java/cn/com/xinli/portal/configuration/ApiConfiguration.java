@@ -16,7 +16,15 @@ import java.util.StringJoiner;
 
 /**
  * PWS REST APIs configurations.
- *
+ * <p>
+ * REST APIs' structure was defines as:
+ * <pre>
+ *     {
+ *         "vendor": "",
+ *         "registration": [
+ *         ]
+ *     }
+ * </pre>
  * Project: portal
  *
  * @author zhoupeng 2015/12/6.

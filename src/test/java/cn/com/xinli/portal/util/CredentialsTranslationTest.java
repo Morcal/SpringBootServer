@@ -96,6 +96,7 @@ public class CredentialsTranslationTest {
         entity.setIpv4start("192.168.3.1");
         entity.setIpv4end("192.168.3.254");
         entity.setNasId("test-01");
+        entity.setAuthenticateWithDomain(false);
 
         CredentialsTranslationEntity translationEntity = new CredentialsTranslationEntity();
         entity.setTranslation(translationEntity);

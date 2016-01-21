@@ -12,8 +12,8 @@ import org.springframework.security.core.token.Token;
 
 /**
  * Rest response builders.
- * <p>
- * Project: portal
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/8.
  */

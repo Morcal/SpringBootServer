@@ -5,7 +5,10 @@ import cn.com.xinli.portal.core.PortalError;
 /**
  * Bad REST credentials exception.
  *
- * Project: rest-api
+ * <p>This exception will throw if incoming request's credentials
+ * is not well formed.
+ *
+ * <p>Project: xpws.
  *
  * @author zhoupeng 2016/1/4.
  */

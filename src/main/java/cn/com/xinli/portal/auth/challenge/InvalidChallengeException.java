@@ -6,7 +6,10 @@ import cn.com.xinli.portal.core.PortalError;
 /**
  * Invalid Challenge Exception.
  *
- * Project: xpws
+ * <p>This exception will throw when incoming challenge response
+ * failed verification.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/21.
  */

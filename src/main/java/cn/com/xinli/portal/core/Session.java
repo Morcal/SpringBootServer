@@ -7,11 +7,11 @@ import java.util.Date;
 
 /**
  * PWS portal session.
- * <p>
- * This class instances represent portal authentication based
+ *
+ * <p>This class instances represent portal authentication based
  * broadband internet connections.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/2.
  */

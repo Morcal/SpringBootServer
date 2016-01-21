@@ -19,15 +19,13 @@ import java.util.stream.Collectors;
 
 /**
  * Credentials translations.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/30.
  */
 public abstract class CredentialsTranslations {
-    /**
-     * Flyweight translations.
-     */
+    /** Flyweight translations. */
     private static final Map<Long, CredentialsTranslation> translations =
             Collections.synchronizedMap(new HashMap<>());
 

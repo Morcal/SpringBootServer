@@ -8,13 +8,15 @@ import javax.persistence.*;
 /**
  * NAS entity.
  *
- * Project: xpws
+ * <p>This class save {@link cn.com.xinli.portal.protocol.Nas} in a JPA entity.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/17.
  */
 @Entity
 @PersistenceUnit(unitName = "system")
-@Table(schema = "PWS", name="nas")
+@Table(schema = "PWS", name = "nas")
 public class NasEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -61,6 +63,10 @@ public class NasEntity {
     /** Supported domains, separated by comma. */
     @Column(name = "supported_domains")
     private String supportedDomains;
+
+    /** Authenticate with domain. */
+    @Column
+    private boolean authenticateWithDomain;
 
     @ManyToOne
     @JoinColumn(name = "trans_id", referencedColumnName = "id")
@@ -170,6 +176,18 @@ public class NasEntity {
         this.supportedDomains = supportedDomains;
     }
 
+    public boolean isAuthenticateWithDomain() {
+        return authenticateWithDomain;
+    }
+
+    public void setAuthenticateWithDomain(boolean authenticateWithDomain) {
+        this.authenticateWithDomain = authenticateWithDomain;
+    }
+
+    public boolean authenticateWithDomain() {
+        return isAuthenticateWithDomain();
+    }
+
     @Override
     public String toString() {
         return "NasEntity{" +
@@ -185,6 +203,7 @@ public class NasEntity {
                 ", ipv4start='" + ipv4start + '\'' +
                 ", ipv4end='" + ipv4end + '\'' +
                 ", supportedDomains='" + supportedDomains + '\'' +
+                ", authenticateWithDomain=" + authenticateWithDomain +
                 ", translation=" + translation +
                 '}';
     }

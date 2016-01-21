@@ -11,7 +11,11 @@ import org.springframework.stereotype.Service;
 /**
  * REST session token service.
  *
- * Project: portal
+ * <p>This class implements a session token service.
+ * It verifies session token by checking if session id inside token
+ * exists, if not, verification finished exceptionally.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/13.
  */

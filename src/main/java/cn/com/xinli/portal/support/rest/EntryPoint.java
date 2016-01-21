@@ -1,21 +1,32 @@
 package cn.com.xinli.portal.support.rest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.StringJoiner;
 
 /**
- * PWS REST API Entry Point.
- * 
+ * PWS REST API endpoint.
+ * <p>
  * Project: rest-api
  *
  * @author zhoupeng 2015/12/6.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntryPoint {
+    @JsonProperty
     private String scope;
+
+    @JsonProperty
     private String action;
+
+    @JsonProperty
     private String url;
+
+    @JsonProperty
     private String method;
+
+    @JsonProperty
     private String response;
 
     @JsonProperty("requires_auth")

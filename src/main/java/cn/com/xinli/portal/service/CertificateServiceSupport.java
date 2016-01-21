@@ -31,12 +31,13 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     private Ehcache certificateCache;
 
     @Override
-    public Certificate create(String appId, String vendor, String os, String version) {
+    public Certificate create(String appId, String vendor, String os, String version, String sharedSecret) {
         CertificateEntity certificate = new CertificateEntity();
         certificate.setAppId(appId);
         certificate.setVersion(version);
         certificate.setVendor(vendor);
         certificate.setOs(os);
+        certificate.setSharedSecret(sharedSecret);
         certificateRepository.save(certificate);
 
         certificateCache.put(new Element(appId, certificate));

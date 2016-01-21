@@ -5,7 +5,11 @@ import cn.com.xinli.portal.core.Certificate;
 import javax.persistence.*;
 
 /**
- * Project: xpws
+ * Certificate Entity.
+ *
+ * <p>This class implements certificate and entities are used by JPA.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/17.
  */

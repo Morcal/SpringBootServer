@@ -11,7 +11,14 @@ import java.util.Collections;
 /**
  * Ehcache wrapper.
  *
- * Project: xpws
+ * <p>This class is a simple wrapper for ehcache. It defines a single central
+ * ehcache configuration, and all caches required by calling on {@link #createCache(String)}
+ * or {@link #createCache(String, int, Collection, boolean, int)} will create
+ * an internal cache upon the central configuration.
+ *
+ * <p>By default, all created caches do not persist in disk (memory only).
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/16.
  */
@@ -84,7 +91,7 @@ public class EhcacheManagerAdapter {
     /**
      * Create Ehcache.
      *
-     * The created cache is not searchable.
+     * <p>The created cache is not searchable.
      * The created cache has max {@value #DEFAULT_MAX_ENTRIES_LOCAL_HEAP} entries local heap.
      * Items in created cache does not expire.
      *
@@ -97,7 +104,7 @@ public class EhcacheManagerAdapter {
     /**
      * Create Ehcache.
      *
-     * The created cache is not searchable.
+     * <p>The created cache is not searchable.
      * Items in created cache does not expire.
      *
      * @param name cache name.
@@ -110,7 +117,7 @@ public class EhcacheManagerAdapter {
     /**
      * Create Ehcache.
      *
-     * The created cache is not searchable.
+     * <p>The created cache is not searchable.
      *
      * @param name cache name.
      * @param maxEntries max entries local heap.
@@ -124,7 +131,7 @@ public class EhcacheManagerAdapter {
     /**
      * Create Ehcache.
      *
-     * The created cache has give name, max entries local heap.
+     * <p>The created cache has give name, max entries local heap.
      * and it's searchable if given search attributes is not empty.
      * Items in created cache expires in ttl seconds if tllEnabled
      * is set to true.
@@ -135,7 +142,10 @@ public class EhcacheManagerAdapter {
      * @param ttlEnabled if ttl enabled.
      * @param ttl ttl in seconds.
      */
-    public void createCache(String name, int maxEntries, Collection<CacheSearchAttribute> searchAttributes, boolean ttlEnabled, int ttl) {
+    public void createCache(String name, int maxEntries,
+                            Collection<CacheSearchAttribute> searchAttributes,
+                            boolean ttlEnabled,
+                            int ttl) {
         CacheConfiguration cache = new CacheConfiguration();
 
         if (!searchAttributes.isEmpty()) {
@@ -147,7 +157,6 @@ public class EhcacheManagerAdapter {
                     .persistence(new PersistenceConfiguration()
                             .strategy(DEFAULT_STRATEGY));
         } else {
-        /* Add challenge token cache. */
             cache.name(name)
                     .timeToIdleSeconds(ttlEnabled ? ttl : 0)
                     .maxEntriesLocalHeap(maxEntries)

@@ -5,9 +5,17 @@ import org.springframework.security.core.GrantedAuthority;
 /**
  * Challenge.
  *
- * Challenges have no any kind of {@link GrantedAuthority}s.
+ * <p>Challenges are provided by server to ask clients to answer for
+ * a given content. Challenges in PWS record some context in the
+ * challenge process, such as whether client need refresh token,
+ * and whether client required token and what scope client required.
+ * It may make the challenge process less RESTful, considered that
+ * challenges have a very short time to live, (by default, its 10 seconds).
+ * It's almost ok to implement this way.
  *
- * Project: portal
+ * <p>Challenges have no any kind of {@link GrantedAuthority}s.
+ *
+ * <p>Project: xpws.
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -31,7 +39,7 @@ public interface Challenge {
     boolean needRefreshToken();
 
     /**
-     * If chellenge requires token.
+     * If challenge requires token.
      * @return true if requires.
      */
     boolean requiresToken();

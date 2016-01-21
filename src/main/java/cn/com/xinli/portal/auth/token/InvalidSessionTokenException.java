@@ -5,7 +5,10 @@ import cn.com.xinli.portal.core.PortalError;
 /**
  * Invalid Session Token Exception.
  *
- * Project: xpws
+ * <p>This exception will throw when incoming requests failed to
+ * pass session token verification.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/21.
  */

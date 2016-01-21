@@ -16,7 +16,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * PWS {@link Nas} mapping.
  *
- * Project: xpws
+ * <p>This class implements NAS mappings.
+ * It saves client/user information (mainly ip and mac) and which {@link Nas}
+ * it came from. When clients/users require to create portal connection,
+ * PWS retrieve NAS information from this mapping and then communicate with
+ * NAS/BRAS which that {@link Nas} represents.
+ *
+ * <p>This class provides several methods for retrieving NAS entities, includes
+ * by <tt>ip, mac</tt>, by <tt>domain</tt>, by <tt>ip address range</tt>.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */

@@ -3,7 +3,10 @@ package cn.com.xinli.portal.core;
 /**
  * NAS not found exception.
  *
- * Project: xpws
+ * <p>This exception will throw when can't find NAS for incoming
+ * session requests.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */

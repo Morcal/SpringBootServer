@@ -2,9 +2,9 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.NasNotFoundException;
 import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.SessionManager;
 import cn.com.xinli.portal.protocol.PortalServerHandler;
 import cn.com.xinli.portal.protocol.Result;
-import cn.com.xinli.portal.service.SessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,11 @@ import org.springframework.stereotype.Component;
 /**
  * PWS internal portal server handler.
  *
- * Project: xpws
+ * <p>This class handles incoming request in form of portal protocol.
+ * By now (version 1.0), it only process incoming NTF_LOGOUT requests
+ * from NAS/BRAS.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/4.
  */
@@ -23,7 +27,7 @@ public class InternalServerHandler implements PortalServerHandler {
     private final Logger logger = LoggerFactory.getLogger(InternalServerHandler.class);
 
     @Autowired
-    private SessionService sessionService;
+    private SessionManager sessionManager;
 
     @Override
     public int handleNtfLogout(String ip) {
@@ -33,7 +37,7 @@ public class InternalServerHandler implements PortalServerHandler {
 
         try {
             //FIXME remove session directly may drag down server performance.
-            Result result = sessionService.removeSession(ip);
+            Result result = sessionManager.removeSession(ip);
             if(logger.isDebugEnabled()) {
                 logger.debug("NTF_LOGOUT {}", result);
             }

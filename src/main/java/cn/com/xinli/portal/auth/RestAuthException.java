@@ -9,7 +9,17 @@ import java.util.Objects;
 /**
  * REST API authentication and authorization base exception.
  *
- * Project: xpws
+ * <p>This class provides an abstract base exception for all exceptions
+ * which represent REST API authentication and authorization errors.
+ *
+ * <p>Since PWS built REST API error system upon spring-security framework,
+ * all exceptions thrown from within authentication and authorization should
+ * extends from spring's {@link AuthenticationException}. To include globally
+ * defined {@link PortalError}s, this abstract base class was created. It
+ * implements {@link PortalErrorContainer} so that a specific {@link PortalError}
+ * can be retrieved from exceptions.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */

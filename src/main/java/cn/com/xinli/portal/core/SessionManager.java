@@ -37,4 +37,12 @@ public interface SessionManager {
      * @return future.
      */
     Future<?> removeSessionInFuture(long id);
+
+    /**
+     * Remove session by ip address.
+     * @param ip ip address.
+     * @return result.
+     * @throws PortalException
+     */
+    Result removeSession(String ip) throws PortalException;
 }

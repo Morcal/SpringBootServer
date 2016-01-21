@@ -9,16 +9,15 @@ import java.security.Principal;
 
 /**
  * Portal web server session REST APIs controller.
- * <p>
- * <p>
- * Portal web server session controller interface.
+ *
+ * <p>Portal web server session controller interface.
  * Define this controller interface so that spring-aop Aspects
- * can work properly.
- * <p>
- * All spring-web-mvc annotations should be declared in the
+ * can work on it properly.
+ *
+ * <p>All spring-web-mvc annotations should be declared in the
  * implementation class.
- * <p>
- * Project: portal
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/2.
  */

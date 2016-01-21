@@ -2,11 +2,11 @@ package cn.com.xinli.portal.core;
 
 /**
  * Portal error container.
- * <p>
- * System defined exceptions which associate with global defined errors
+ *
+ * <p>System defined exceptions which associate with global defined errors
  * should implement this interface.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */

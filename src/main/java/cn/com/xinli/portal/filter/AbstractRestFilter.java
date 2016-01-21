@@ -11,8 +11,10 @@ import java.util.List;
 /**
  * Abstract Rest filter.
  *
- * This filter extends from spring-security {@link OncePerRequestFilter}.
- * Project: xpws
+ * <p>This filter extends from spring-security {@link OncePerRequestFilter}.
+ *
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/30.
  */

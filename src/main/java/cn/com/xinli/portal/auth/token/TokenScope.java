@@ -7,13 +7,13 @@ import java.util.stream.Stream;
 
 /**
  * Token scope.
- * <p>
- * Each scope represents a set of system facilities.
+ *
+ * <p>Each scope represents a set of system facilities.
  * Clients possess a {@link Token} with specific scope
  * meanings that those clients has authorities to access
  * facilities the scope covers.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/28.
  */

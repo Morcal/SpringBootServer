@@ -17,6 +17,13 @@ public interface CertificateService {
      * @param clientId client id.
      */
     boolean isCertified(String clientId);
+
+    /**
+     * Disable an existed certificate.
+     * @param id certificate id.
+     */
+    void disableCertificate(long id);
+
     /**
      * Load certificate by client id, aka app id.
      * @param clientId client id.

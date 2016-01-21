@@ -20,7 +20,14 @@ import java.util.StringJoiner;
 /**
  * Abstract Token Service
  *
- * Project: xpws
+ * <p>This class provides an abstraction of how to create token
+ * and how to verify them.
+ *
+ * <p>Subclasses of this class need to provide token scope via
+ * {@link #getTokenScope()}, token ttl via {@link #getTokenTtl()}
+ * and token verification method via {@link #verifyExtendedInformation(String)}.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/28.
  */

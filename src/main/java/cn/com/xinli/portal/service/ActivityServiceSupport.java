@@ -19,11 +19,11 @@ import java.util.Date;
 
 /**
  * Activity Service JPA support.
- * <p>
- * Service provides abilities to save activity log to database.
+ *
+ * <p>Service provides abilities to save activity log to database.
  * And clean old activities automatically (based on configuration).
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */
@@ -31,9 +31,7 @@ import java.util.Date;
 @Transactional(rollbackFor = DataAccessException.class)
 @EnableScheduling
 public class ActivityServiceSupport implements ActivityService {
-    /**
-     * Logger.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(ActivityServiceSupport.class);
 
     @Value("${pws.database.derby.keep.recent.days}")

@@ -9,6 +9,7 @@ import cn.com.xinli.portal.util.SignatureUtil;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
  * @author zhoupeng 2015/12/10.
  */
 @Service
-public class EhCacheChallengeManager implements ChallengeService {
+public class EhCacheChallengeManager implements ChallengeService, ChallengeManager {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(EhCacheChallengeManager.class);
 
@@ -82,8 +83,11 @@ public class EhCacheChallengeManager implements ChallengeService {
 
     @Override
     public boolean verify(Challenge challenge, String answer) {
-        if (answer == null)
-            return false;
+        if (StringUtils.isEmpty(answer)) {
+            throw new IllegalArgumentException("challenge answer can not be blank.");
+        }
+
+        deleteChallenge(challenge);
 
         Certificate certificate;
         try {

@@ -30,21 +30,21 @@ import java.util.stream.Collectors;
 
 /**
  * Rate limiting filter.
- *
+ * <p>
  * This filter implements PWS server rate limiting.
- *
+ * <p>
  * Each requests from remote client will be saved in cache.
  * Each cache item has been set with time to idle to 1 second,
  * which means cached items will be expired in exactly 1 second.
- *
+ * <p>
  * If any user try to request server at a rating over server
  * settings, cache item associated with his address may hit
  * multiply times and reaches limited rate set by server.
  * Server will deny that and subsequent requests, and limit
  * remote with a lesser rating (5 requests per 3 seconds).
- *
+ * <p>
  * This class does not implement functionality described ahead.
- *
+ * <p>
  * Project: xpws
  *
  * @author zhoupeng 2015/12/30.
@@ -52,13 +52,19 @@ import java.util.stream.Collectors;
 @Component
 @Order(Integer.MIN_VALUE)
 public class RateLimitingFilter extends AbstractRestFilter {
-    /** Logger. */
+    /**
+     * Logger.
+     */
     private final Logger logger = LoggerFactory.getLogger(RateLimitingFilter.class);
 
-    /** Json factory. */
+    /**
+     * Json factory.
+     */
     private static final JsonFactory factory = new JsonFactory();
 
-    /** Fallback error string. */
+    /**
+     * Fallback error string.
+     */
     private static final String RATE_LIMITING_REACHED_ERROR = "{\"error\": \"request_rate_limited\"}";
 
     @Autowired
@@ -89,6 +95,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
 
     /**
      * Deny remote with error HTTP 403.
+     *
      * @param response response.
      */
     private void denyRemoteWithError(HttpServletResponse response) {
@@ -150,20 +157,26 @@ public class RateLimitingFilter extends AbstractRestFilter {
 
     /**
      * Records of REST API accesses.
-     *
+     * <p>
      * This implementation should be thread-safe.
      * Project: xpws
      *
      * @author zhoupeng 2015/12/31.
      */
     class AccessTimeTrack {
-        /** Allowed access max counter. */
+        /**
+         * Allowed access max counter.
+         */
         private int allowed;
 
-        /** Allowed access counter time range in milliseconds. */
+        /**
+         * Allowed access counter time range in milliseconds.
+         */
         private long maxTimeDiff;
 
-        /** Tracked records. */
+        /**
+         * Tracked records.
+         */
         private final Queue<Long> accessTimes;
 
         public AccessTimeTrack(int allowed, long maxTimeDiff) {
@@ -174,6 +187,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
 
         /**
          * Track current access time and check if exceeds rate-limiting.
+         *
          * @param timestamp current access time.
          * @return true if access is allowed.
          */

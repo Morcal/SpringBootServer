@@ -32,7 +32,16 @@ import java.util.stream.Collectors;
 /**
  * EhCache based session data store.
  *
- * Project: xpws
+ * <p>This class implements a session data store based on
+ * <a href="http://ehcache.org">Ehcache</a>.
+ *
+ * <p>Session eviction implemented by schedule a fixed delay
+ * spring-task which evicts expired {@link Session}s periodically.
+ *
+ * <p>This class registers a Ehcache event listener so that
+ * it can perform actions when elements in the cache expires.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/29.
  */
@@ -115,7 +124,10 @@ public class EhCacheSessionDataStore implements SessionStore {
     /**
      * {@inheritDoc}
      *
-     * Update session in the cache.
+     * Update session in the cache in steps:
+     * <br>1. retrieve session from cache.
+     * <br>2. update last modified of session.
+     * <br>3. put session back to cache.
      *
      * @param id session id.
      * @param lastModified last modified time (UNIX epoch time).

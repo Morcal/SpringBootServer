@@ -1,18 +1,15 @@
 package cn.com.xinli.portal.controller;
 
+import cn.com.xinli.portal.auth.challenge.Challenge;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
+import cn.com.xinli.portal.service.AuthorizationServer;
 import cn.com.xinli.portal.support.rest.RestResponse;
 import cn.com.xinli.portal.support.rest.RestResponseBuilders;
-import cn.com.xinli.portal.auth.challenge.Challenge;
-import cn.com.xinli.portal.service.AuthorizationServer;
-import cn.com.xinli.portal.util.AddressUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,8 +32,6 @@ public class AuthorizeController {
     @Autowired
     private AuthorizationServer authorizationServer;
 
-    @Value("${pws.nat.allowed}") private boolean natAllowed;
-
     @ResponseBody
     @RequestMapping("/authorize")
     public RestResponse authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,
@@ -58,16 +53,8 @@ public class AuthorizeController {
             break; // missing ip or mac.
         }
         */
-
-        if (!natAllowed) {
-            if ((!StringUtils.isEmpty(realIp) || !StringUtils.isEmpty(ip)) &&
-                    !AddressUtil.validateIp(realIp, ip, request)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("IP check failed, real: {} , remote: {} , given: {}.",
-                            realIp, request.getRemoteAddr(), ip);
-                }
-                throw new RemoteException(PortalError.of("nat_not_allowed"), "not not allowed.");
-            }
+        if (!authorizationServer.verifyIp(realIp, ip, request.getRemoteAddr())) {
+            throw new RemoteException(PortalError.of("nat_not_allowed"), "not not allowed.");
         }
 
         if (logger.isDebugEnabled()) {

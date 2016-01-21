@@ -3,7 +3,9 @@ package cn.com.xinli.portal.auth.challenge;
 /**
  * PWS Challenge implementation.
  *
- * Project: portal
+ * <p>This class provides a default challenge entity implementation.
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/11.
  */

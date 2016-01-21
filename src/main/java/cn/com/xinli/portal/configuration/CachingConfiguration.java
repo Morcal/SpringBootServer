@@ -20,7 +20,10 @@ import java.util.List;
 /**
  * PWS Caching configurations.
  *
- * Project: portal
+ * <p>This class configures one central Ehcache serving for all system
+ * objects via an {@link EhcacheManagerAdapter} bean defined by {@link #ehcacheManagerAdapter()}.
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/11.
  */

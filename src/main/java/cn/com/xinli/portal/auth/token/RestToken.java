@@ -6,10 +6,10 @@ import org.springframework.security.core.token.Token;
 /**
  * REST token.
  *
- * REST tokens covers {@link TokenScope#PORTAL_ACCESS_TOKEN_SCOPE},
+ * <p>REST tokens covers {@link TokenScope#PORTAL_ACCESS_TOKEN_SCOPE},
  * {@link TokenScope#PORTAL_SESSION_TOKEN_SCOPE} and {@link TokenScope#SYSTEM_ADMIN_TOKEN_SCOPE}.
  *
- * Project: portal
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/12.
  */
@@ -54,10 +54,6 @@ public final class RestToken implements Token {
 
     public TokenScope getScope() {
         return scope;
-    }
-
-    public long getCreationTime() {
-        return creationTime;
     }
 
     public String getType() {

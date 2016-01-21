@@ -10,7 +10,11 @@ import org.springframework.web.servlet.View;
 /**
  * Web exception advisor.
  *
- * Project: xpws
+ * <p>This class handles exceptions thrown from web controllers.
+ * It returns an error view so that server will redirect result
+ * page to an error page.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */

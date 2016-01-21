@@ -3,7 +3,13 @@ package cn.com.xinli.portal.core;
 /**
  * PWS exception.
  *
- * Project: xpws
+ * <p>Server exceptions will throw when server encountered internal errors.
+ * Normally, those errors can not be recovered.
+ *
+ * <p>Server exceptions extend from {@link PortalException}, so portal errors
+ * can be retrieved from server exceptions.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  * @see PortalError

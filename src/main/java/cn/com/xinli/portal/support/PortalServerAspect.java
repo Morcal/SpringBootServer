@@ -15,9 +15,9 @@ import java.util.Calendar;
 /**
  * Portal server aspect.
  *
- * This class records all NTF_LOGOUT events.
+ * <p>This class watches on internal portal server and records all NTF_LOGOUT events.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/10.
  */

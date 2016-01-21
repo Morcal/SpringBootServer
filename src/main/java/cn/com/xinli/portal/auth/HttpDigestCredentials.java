@@ -16,7 +16,15 @@ import java.util.stream.Stream;
 /**
  * HTTP Authentication credential.
  *
- * Project: rest-api
+ * <p>PWS REST APIs authentication is built on HTTP headers.
+ * Which means that incoming REST API requests must provide authentiaction
+ * credentials inside http headers.
+ *
+ * <p>The authentication credentials requires certain encoding and
+ * additional signature which should be calculated against credentials itself,
+ * HTTP request entities and secret key shared by PWS and client vendors.
+ *
+ * <p>Project: rest-api
  *
  * @author zhoupeng 2015/12/9.
  */
@@ -96,10 +104,7 @@ public class HttpDigestCredentials {
      * @param source other credentials copy from.
      */
     public void copy(HttpDigestCredentials source) {
-        //source.parameters.forEach((s, o) -> parameters.put(s, o));
-        for (Map.Entry<String, String> entry : source.parameters.entrySet()) {
-            parameters.put(entry.getKey(), entry.getValue());
-        }
+        source.parameters.forEach((s, o) -> parameters.put(s, o));
     }
 
     /**
@@ -220,19 +225,12 @@ public class HttpDigestCredentials {
         /* Integrity check. */
         Map<String, String> parameters = credentials.parameters;
 
-        for (String name : ACCESS_TOKEN_REQUIRES) {
-            if (!parameters.containsKey(name))
-                return false;
-        }
+        Optional<String> opt = Stream.of(ACCESS_TOKEN_REQUIRES)
+                .filter(name -> !parameters.containsKey(name))
+                .findAny();
 
-        return parameters.containsKey(CLIENT_TOKEN);
-
-//        Optional<String> opt = Stream.of(ACCESS_TOKEN_REQUIRES)
-//                .filter(name -> !parameters.containsKey(name))
-//                .findAny();
-//
-//        return !opt.isPresent() &&
-//                credentials.parameters.keySet().stream().anyMatch(key -> key.equals(CLIENT_TOKEN));
+        return !opt.isPresent() &&
+                parameters.containsKey(CLIENT_TOKEN);
     }
 
     /**
@@ -244,19 +242,12 @@ public class HttpDigestCredentials {
         /* Integrity check. */
         Map<String, String> parameters = credentials.parameters;
 
-        for (String name : SESSION_TOKEN_REQUIRES) {
-            if (!parameters.containsKey(name))
-                return false;
-        }
+        Optional<String> opt = Stream.of(SESSION_TOKEN_REQUIRES)
+                .filter(name -> !parameters.containsKey(name))
+                .findAny();
 
-        return parameters.containsKey(SESSION_TOKEN);
-
-//        Optional<String> opt = Stream.of(SESSION_TOKEN_REQUIRES)
-//                .filter(name -> !parameters.containsKey(name))
-//                .findAny();
-//
-//        return !opt.isPresent() &&
-//                credentials.parameters.keySet().stream().anyMatch(key -> key.equals(SESSION_TOKEN));
+        return !opt.isPresent() &&
+                parameters.containsKey(SESSION_TOKEN);
     }
 
     @Override

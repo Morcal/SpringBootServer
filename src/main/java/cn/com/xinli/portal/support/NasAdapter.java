@@ -8,27 +8,22 @@ import cn.com.xinli.portal.protocol.NasType;
 
 /**
  * Device (NAS/BRAS) supports Portal protocol configuration.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */
 public class NasAdapter implements Nas {
-    /**
-     * Default nas type name.
-     */
+    /** Default nas type name. */
     NasType DEFAULT_NAS_TYPE = NasType.HuaweiV2;
 
-    /**
-     * Default nas listen port.
-     */
+    /** Default nas listen port. */
     int DEFAULT_NAS_LISTEN_PORT = 2000;
 
-    /**
-     * Default NAS authentication type.
-     */
+    /** Default NAS authentication type. */
     AuthType DEFAULT_NAS_AUTHENTICATION_TYPE = AuthType.CHAP;
 
+    /** Internal NAS entity. */
     final NasEntity entity;
 
     public NasAdapter(NasEntity entity) {
@@ -68,6 +63,11 @@ public class NasAdapter implements Nas {
     @Override
     public AuthType getAuthType() {
         return entity.getAuthType() == null ? DEFAULT_NAS_AUTHENTICATION_TYPE : entity.getAuthType();
+    }
+
+    @Override
+    public boolean authenticateWithDomain() {
+        return entity.authenticateWithDomain();
     }
 
     @Override

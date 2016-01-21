@@ -2,10 +2,13 @@ package cn.com.xinli.portal.service;
 
 import cn.com.xinli.portal.auth.challenge.Challenge;
 import cn.com.xinli.portal.auth.challenge.ChallengeManager;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.portal.util.SecureRandomStringGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Service;
 public class RestAuthorizationServer implements AuthorizationServer {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(RestAuthorizationServer.class);
+
+    @Value("${pws.nat.allowed}") private boolean natAllowed;
 
     @Autowired
     private SecureRandomStringGenerator secureRandomGenerator;
@@ -42,6 +47,21 @@ public class RestAuthorizationServer implements AuthorizationServer {
         Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
         logger.info("challenge created: {}.", cha);
         return cha;
+    }
+
+    @Override
+    public boolean verifyIp(String realIp, String ip, String remote) {
+        if (!natAllowed) {
+            if ((!StringUtils.isEmpty(realIp) || !StringUtils.isEmpty(ip)) &&
+                    !AddressUtil.validateIp(realIp, ip, remote)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("IP check failed, real: {} , remote: {} , given: {}.",
+                            realIp, remote, ip);
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
 }

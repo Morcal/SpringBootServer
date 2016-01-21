@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.auth;
 
 import cn.com.xinli.portal.auth.token.RestToken;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
@@ -16,7 +17,13 @@ import java.util.Collection;
  *
  * @author zhoupeng 2015/12/16.
  */
-public class AccessAuthentication extends AbstractAuthentication {
+public class AccessAuthentication extends AbstractAuthenticationToken {
+    /** Authentication principal. */
+    private final String principal;
+
+    /** Authentication credentials. */
+    private HttpDigestCredentials credentials;
+
     /** Associated session token. */
     private RestToken sessionToken;
 
@@ -25,12 +32,17 @@ public class AccessAuthentication extends AbstractAuthentication {
 
     public AccessAuthentication(Collection<? extends GrantedAuthority> authorities,
                                 String principal, HttpDigestCredentials credentials) {
-        super(authorities, principal, credentials);
+        super(authorities);
+        this.principal = principal;
+        this.credentials = credentials;
     }
 
     public AccessAuthentication(String principal, HttpDigestCredentials credentials) {
         this(AuthorityUtils.NO_AUTHORITIES, principal, credentials);
     }
+
+    private static final AccessAuthentication EMPTY =
+            new AccessAuthentication(AuthorityUtils.NO_AUTHORITIES, null, null);
 
     public void setAccessToken(RestToken accessToken) {
         this.accessToken = accessToken;
@@ -40,11 +52,33 @@ public class AccessAuthentication extends AbstractAuthentication {
         this.sessionToken = sessionSessionToken;
     }
 
+    public static AccessAuthentication empty() {
+        return EMPTY;
+    }
+
+    /**
+     * Get session token.
+     * @return session token.
+     */
     public RestToken getSessionToken() {
         return sessionToken;
     }
 
+    /**
+     * Get access token.
+     * @return access token.
+     */
     public RestToken getAccessToken() {
         return accessToken;
+    }
+
+    @Override
+    public HttpDigestCredentials getCredentials() {
+        return credentials;
+    }
+
+    @Override
+    public String getPrincipal() {
+        return principal;
     }
 }

@@ -14,10 +14,10 @@ import java.util.Calendar;
 
 /**
  * System activity aspect.
- * <p>
- * Service provides system activities log via {@link ActivityService}.
- * <p>
- * Project: xpws
+ *
+ * <p>Service provides system activities log via {@link ActivityService}.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/10.
  */

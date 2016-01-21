@@ -14,15 +14,10 @@ public interface CertificateManager {
      * @param vendor vendor name.
      * @param os operating system name.
      * @param version application/client version.
+     * @param sharedSecret secret key shared by PWS and client applications.
      * @return new certificate.
      */
-    Certificate create(String appId, String vendor, String os, String version);
-
-    /**
-     * Disable an existed certificate.
-     * @param id certificate id.
-     */
-    void disableCertificate(long id);
+    Certificate create(String appId, String vendor, String os, String version, String sharedSecret);
 
     /**
      * Delete a certificate.

@@ -6,7 +6,11 @@ import cn.com.xinli.portal.core.PortalError;
 /**
  * Abstract Token Exception.
  *
- * Project: xpws
+ * <p>Abstract token exception implements {@link TokenContainer}
+ * so that when processing token exceptions, the token key failed to
+ * pass verification can be retrieved.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */

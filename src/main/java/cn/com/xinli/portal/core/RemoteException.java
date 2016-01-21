@@ -3,11 +3,10 @@ package cn.com.xinli.portal.core;
 /**
  * Remote exception.
  *
- * <p>
- * Remote exceptions will be thrown when remote client requests violates
+ * <p>Remote exceptions will be thrown when remote client requests violates
  * certain restrictions or critical information not provided in those requests.
- * <p>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */

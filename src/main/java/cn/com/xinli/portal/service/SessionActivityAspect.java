@@ -19,8 +19,11 @@ import java.util.Calendar;
 
 /**
  * Session activity aspect.
- * <p>
- * Project: xpws
+ *
+ * <p>This aspect watches session operations in the controller,
+ * and save operation log as {@link Activity}s.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/8.
  */

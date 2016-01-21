@@ -3,5 +3,6 @@ xpws.iml
 target
 .project
 .classpath
+javadoc
 PWS
 derby.log

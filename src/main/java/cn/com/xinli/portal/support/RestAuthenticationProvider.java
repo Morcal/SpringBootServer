@@ -133,7 +133,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
     private void handleChallenge(AccessAuthentication authentication,
                                  HttpDigestCredentials credentials,
                                  Collection<GrantedAuthority> authorities) {
-            /* Credentials contains challenge, authenticate it. */
+        /* Credentials contains challenge, authenticate it. */
         String nonce = credentials.getParameter(HttpDigestCredentials.NONCE),
                 response = credentials.getParameter(HttpDigestCredentials.RESPONSE);
         Challenge challenge = challengeService.loadChallenge(nonce);
@@ -143,8 +143,6 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
             throw new InvalidChallengeException("Incorrect challenge answer.");
         } else {
             logger.debug("challenge verified.");
-            /* Remove challenge immediately. */
-            challengeService.deleteChallenge(challenge);
 
             /* TODO Provide better information, like Username for token allocation. */
             if (challenge.requiresToken()) {

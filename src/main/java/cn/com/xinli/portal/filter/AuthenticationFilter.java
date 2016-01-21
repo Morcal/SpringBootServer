@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.filter;
 
-import cn.com.xinli.portal.auth.AbstractAuthentication;
 import cn.com.xinli.portal.auth.AccessAuthentication;
 import cn.com.xinli.portal.admin.auth.AuthenticationFailureEvent;
 import cn.com.xinli.portal.auth.HttpDigestCredentials;
@@ -39,7 +38,20 @@ import java.util.stream.Collectors;
 /**
  * Rest Authentication Filter.
  *
- * Project: portal
+ * <p>This filter was created to verify REST client credentials
+ * before server start to process incoming requests. It's a part of spring-security
+ * framework. This filter was place in the spring-web-security filter chain
+ * before spring's anonymous filter.
+ *
+ * <p>This filter works only when client try to accept protected APIs,
+ * which is identified by "requires_auth" attribute.
+ *
+ * <p>All exceptions thrown by this class are extends from spring-security framework's
+ * {@link AuthenticationException}. When exceptions occurs, pre-defined
+ * {@link AuthenticationEntryPoint} will try to commence, it respond a
+ * error message in JSON back to remote client.
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -194,7 +206,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                         logger.trace("authorities: {}.", result.getAuthorities());
                     }
                 } catch (AuthenticationException e) {
-                    unsuccessfulAuthentication(request, response, AbstractAuthentication.empty(), e);
+                    unsuccessfulAuthentication(request, response, AccessAuthentication.empty(), e);
                     if (!continueFilterChainOnUnsuccessful) {
                         authenticationEntryPoint.commence(request, response, e);
                         return; // skip filter china on unsuccessful.

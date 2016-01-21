@@ -3,7 +3,9 @@ package cn.com.xinli.portal.auth.token;
 /**
  * Token container.
  *
- * Project: xpws
+ * <p>Classes implement this interface must contains a token key.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */

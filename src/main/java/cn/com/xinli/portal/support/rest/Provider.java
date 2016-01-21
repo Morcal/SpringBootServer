@@ -2,6 +2,8 @@ package cn.com.xinli.portal.support.rest;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -11,14 +13,20 @@ import java.util.Optional;
 /**
  * PWS api provider.
  *
- * Project: rest-api
+ * <p>This class implements a REST API scheme.
+ * A provider contains API {@link EntryPoint}s in {@link Registration}s.
+ *
+ * <p>Project: rest-api
  *
  * @author zhoupeng 2015/12/6.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Provider extends RestResponse {
     /** EntryPoint provider vendor. */
+    @JsonProperty
     private String vendor;
 
+    @JsonProperty
     private List<Registration> registrations = new ArrayList<>();
 
     public void setVendor(String vendor) {
@@ -55,8 +63,9 @@ public class Provider extends RestResponse {
 
     /**
      * Find REST Api by method and uri.
+     *
      * @param method http method.
-     * @param uri uri.
+     * @param uri    uri.
      * @return api entry point.
      */
     public Optional<EntryPoint> findApi(String method, String uri) {

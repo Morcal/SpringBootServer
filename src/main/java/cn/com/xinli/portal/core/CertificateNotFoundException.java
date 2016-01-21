@@ -3,7 +3,10 @@ package cn.com.xinli.portal.core;
 /**
  * Certificate Not Found Exception.
  *
- * Project: xpws
+ * <p>This exception will throw when try to retrieve certificate by identity
+ * provided in request credentials.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/21.
  */
