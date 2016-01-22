@@ -1,8 +1,11 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.protocol.PortalProtocolException;
 import cn.com.xinli.portal.protocol.ProtocolError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import java.util.*;
@@ -11,94 +14,243 @@ import java.util.stream.Stream;
 
 /**
  * Portal Error Translator.
- * <p>
- * This class provides functionality to identify {@link PortalProtocolException}s
- * based on known error text signatures,
- * and translate those exceptions to portal error.
- * <p>
- * This class also provides functionality to translate {@link PortalError}s to
- * HTTP status codes.
- * <p>
- * Project: xpws
+ *
+ * <ul>
+ *     <li>translate text error messages to error codes.</li>
+ *      Provides functionality to identify {@link PortalProtocolException}s
+ *      based on known error text signatures,
+ *      and translate those exceptions to portal error.
+ *     <li>translate error codes to HTTP status codes.</li>
+ *      This class also provides functionality to translate {@link PortalError}s to
+ *      HTTP status codes.
+ * </ul>
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */
 public class PortalErrorTranslator {
-    /** Translator internal entry. */
-    static class Entry {
-        String[] identifiers;
-        int error;
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(PortalErrorTranslator.class);
 
-        static Entry of(int error, String... identifiers) {
-            Entry entry = new Entry();
-            entry.error = error;
-            entry.identifiers = identifiers;
-            return entry;
+    /** Message translate table. */
+    private MessageEntry[] messageTable;
+
+    /** HTTP status translate table. */
+    private HttpStatusEntry[] httpStatusTable;
+
+    /** Protocol error translate table. */
+    private ProtocolEntry[] protocolTable;
+
+    /**
+     * Internal portal error codes to HTTP status codes mapping.
+     * key: portal error code,
+     * value: HTTP status code.
+     */
+    static final Map<Integer, Integer> statusCodeMapping = Collections.synchronizedMap(new HashMap<>());
+
+    public void setMessageTable(MessageEntry[] table) {
+        this.messageTable = table;
+    }
+
+    public void setHttpStatusTable(HttpStatusEntry[] httpStatusTable) {
+        this.httpStatusTable = httpStatusTable;
+    }
+
+    public void setProtocolTable(ProtocolEntry[] protocolTable) {
+        this.protocolTable = protocolTable;
+    }
+
+    /**
+     * Translate portal error to HTTP status code.
+     *
+     * <p>This method implements a lazy-load mapping for translation.
+     * If no HTTP status defined for a portal error, it will return
+     * a {@link HttpStatus#INTERNAL_SERVER_ERROR} as default.
+     *
+     * @param error portal error.
+     * @return http status code.
+     */
+    public int translate(PortalError error) {
+        Objects.requireNonNull(error);
+        int err = error.getValue();
+        synchronized (statusCodeMapping) {
+            if (!statusCodeMapping.containsKey(err)) {
+                Optional<HttpStatusEntry> entry = Stream.of(httpStatusTable)
+                        .filter(e -> e.contains(err))
+                        .findAny();
+
+                if (entry.isPresent()) {
+                    statusCodeMapping.put(err, entry.get().status);
+                } else {
+                    logger.error("no HTTP status defined for: {}", error);
+                    statusCodeMapping.put(err, HttpStatus.INTERNAL_SERVER_ERROR.value());
+                }
+
+            }
+            return statusCodeMapping.get(err);
+        }
+    }
+
+    /**
+     * Translate portal protocol exception to portal error.
+     *
+     * @param ex portal protocol exception.
+     * @return portal error.
+     * @throws ServerException If no portal error defined for protocol error
+     * or no portal error defined for protocol error.
+     */
+    public PortalError translate(PortalProtocolException ex) throws ServerException {
+        ProtocolError error = ex.getProtocolError();
+
+        if (error.isAuthenticationError()) {
+            return translateAuthenticationError(ex.getMessage());
+        } else {
+            return translate(error);
+        }
+    }
+
+    /**
+     * Translate {@link ProtocolError}s to {@link PortalError}s.
+     *
+     * @param error protocol error.
+     * @return portal error.
+     * @throws ServerException If no portal error defined for protocol error.
+     */
+    private PortalError translate(ProtocolError error) throws ServerException {
+        Optional<ProtocolEntry> entry = Stream.of(protocolTable)
+                .filter(e -> e.protocolError == error.getValue())
+                .findAny();
+
+        entry.orElseThrow(() -> new ServerException(
+                PortalError.UNKNOWN_PROTOCOL_ERROR, String.valueOf(error)));
+
+        return PortalError.of(entry.get().portalError);
+    }
+
+    /**
+     * Check if text contains any one of given string array.
+     *
+     * @param text       text.
+     * @param identifies string array.
+     * @return true if found match(es).
+     */
+    private boolean contains(String text, String[] identifies) {
+        for (String id : identifies) {
+            if (text.contains(id))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Translate portal authentication error.
+     *
+     * @param text error text.
+     * @return portal error.
+     * @throws ServerException If no portal error defined for portal message text.
+     */
+    private PortalError translateAuthenticationError(String text) throws ServerException {
+        Optional<MessageEntry> entry = Stream.of(messageTable)
+                .filter(e -> contains(text, e.identifiers))
+                .findAny();
+
+        entry.orElseThrow(() ->
+                new ServerException(PortalError.UNKNOWN_PROTOCOL_ERROR, text));
+
+        return PortalError.of(entry.get().error);
+    }
+
+    /**
+     * Translator internal entry.
+     * <p>This class uses partial content of message as identifier.
+     * <p>Each entry contains one or more partial content of error message.
+     * If error message (from Portal service nodes, such as NAS/BRAS, AAA)
+     * contains one of signatures defined in an entry, that error message will
+     * translate to the error code defined in the entry.
+     */
+    public static class MessageEntry {
+        /** Identifiers. */
+        private final String[] identifiers;
+
+        /** Portal service error code which message will be translated to. */
+        private final int error;
+
+        public MessageEntry(int error, String[] identifiers) {
+            this.error = error;
+            this.identifiers = identifiers;
+        }
+
+        public static MessageEntry of(int error, String... identifiers) {
+            return new MessageEntry(error, identifiers);
+        }
+    }
+
+    /** Simple error code range. */
+    public static class Range {
+        /** Range start value (inclusive). */
+        final int start;
+
+        /** Range end value (inclusive). */
+        final int end;
+
+        private Range(int start, int end) {
+            this.start = start;
+            this.end = end;
         }
 
         /**
-         * Known Xinli-AAA authentication error signatures.
+         * Create an error code range from start to end (inclusive).
+         * @param start start error code.
+         * @param end end error code.
+         * @return error code range.
          */
-        static final Entry[] entries = {
-                of(231, "1|90|"),
-                of(232, "2|91|"),
-                of(233, "4|82|"),
-                of(234, "8|134|", "8|179|"),
-                of(235, "44|-1|"),
-                of(236, "-1|-1|"),
-                of(237, "8|180|", "8|181|"),
-                of(238, "10|53|"),
-                of(239, "Login interval is too short"),
-                of(240, "You are already logged in - access denied"),
-                of(241, "User not found"),
-                of(242, "Password Error"),
-                of(243, "User state error!Pls.recharge or connect the admin"),
-                of(244, "Please the merge account to login"),
-                of(245, "user already in"),
-        };
+        public static Range of(int start, int end) {
+            return new Range(start, end);
+        }
     }
 
-    /** Internal portal error codes to HTTP status codes mapping. */
-    static final Map<Integer, Integer> statusCodeMapping = Collections.synchronizedMap(new HashMap<>());
-
-    /** HTTP status codes translator internal entry. */
-    static class HttpTranslateEntry {
-        /** Simple error code range. */
-        static class Range {
-            final int start;
-            final int end;
-
-            private Range(int start, int end) {
-                this.start = start;
-                this.end = end;
-            }
-
-            static Range of(int start, int end) {
-                return new Range(start, end);
-            }
-        }
+    /**
+     * HTTP status codes translator internal entry.
+     * <p>When exceptions/errors occurred when process clients' requests,
+     * PWS respond an error message with specific HTTP status code.
+     * This class defines Entry of the translation table.
+     */
+    public static class HttpStatusEntry {
 
         /** Included error codes. */
-        int[] errors;
+        final int[] errors;
 
         /** Included error codes range. */
-        Range[] ranges;
+        final Range[] ranges;
 
         /** Result http status code. */
-        int status;
+        final int status;
 
-        private HttpTranslateEntry(int status, int[] errors, Range[] ranges) {
+        private HttpStatusEntry(int status, int[] errors, Range[] ranges) {
             this.errors = errors;
             this.ranges = ranges;
             this.status = status;
         }
 
-        static HttpTranslateEntry of(HttpStatus status, int... errors) {
-            return new HttpTranslateEntry(status.value(), errors, null);
+        /**
+         * Create a HTTP status error entry with errors in an array.
+         * @param status HTTP status translate to.
+         * @param errors error codes in an array.
+         * @return HTTP status entry.
+         */
+        public static HttpStatusEntry of(HttpStatus status, int... errors) {
+            return new HttpStatusEntry(status.value(), errors, null);
         }
 
-        static HttpTranslateEntry of(HttpStatus status, Range... ranges) {
-            return new HttpTranslateEntry(status.value(), null, ranges);
+        /**
+         * Create a HTTP status error entry with error code ranges in an array.
+         * @param status HTTP status translate to.
+         * @param ranges error code ranges in an array.
+         * @return HTTP status entry.
+         */
+        public static HttpStatusEntry of(HttpStatus status, Range... ranges) {
+            return new HttpStatusEntry(status.value(), null, ranges);
         }
 
         /**
@@ -112,89 +264,23 @@ public class PortalErrorTranslator {
                             .filter(r -> r.start <= error && r.end >= error)
                             .findAny().isPresent()));
         }
-
-        /** Default translation table. */
-        static final HttpTranslateEntry[] entries = {
-                of(HttpStatus.BAD_GATEWAY, 12),
-                of(HttpStatus.BAD_REQUEST, 141),
-                of(HttpStatus.FORBIDDEN, Range.of(110, 120), Range.of(152, 299)),
-                of(HttpStatus.GATEWAY_TIMEOUT, 70, 71),
-                of(HttpStatus.GONE, 11),
-                of(HttpStatus.INTERNAL_SERVER_ERROR, Range.of(1, 11), Range.of(13, 13), Range.of(15, 69), Range.of(73, 99)),
-                of(HttpStatus.NOT_FOUND, 122),
-                of(HttpStatus.SERVICE_UNAVAILABLE, 14),
-                of(HttpStatus.TOO_MANY_REQUESTS, 151),
-                of(HttpStatus.UNAUTHORIZED, Range.of(101, 109)),
-                of(HttpStatus.UNPROCESSABLE_ENTITY, 142),
-        };
     }
 
-    /**
-     * Translate portal error to HTTP status code.
-     * @param error portal error.
-     * @return http status code.
-     */
-    public static int translate(PortalError error) {
-        Objects.requireNonNull(error);
-        int err = error.getCode();
-        synchronized (statusCodeMapping) {
-            if (!statusCodeMapping.containsKey(err)) {
-                HttpTranslateEntry entry = Stream.of(HttpTranslateEntry.entries)
-                        .filter(e -> e.contains(err))
-                        .findAny()
-                        .get();
-                statusCodeMapping.put(err, entry.status);
-            }
-            return statusCodeMapping.get(err);
-        }
-    }
+    /** Protocol error translate table entry. */
+    public static class ProtocolEntry {
+        /** Protocol error code. */
+        private final int protocolError;
 
-    /**
-     * Translate portal protocol exception to portal error.
-     *
-     * @param ex portal protocol exception.
-     * @return portal error.
-     */
-    public static PortalError translate(PortalProtocolException ex) {
-        ProtocolError error = ex.getProtocolError();
-        switch (error.getText()) {
-            case "authentication_failure":
-                return translateAuthenticationError(ex.getMessage());
+        /** Portal error code translate to. */
+        private final int portalError;
+
+        private ProtocolEntry(int portalError, int protocolError) {
+            this.portalError = portalError;
+            this.protocolError = protocolError;
         }
 
-        return PortalError.of("unknown_portal_error");
-    }
-
-    /**
-     * Check if text contains any one of given string array.
-     *
-     * @param text       text.
-     * @param identifies string array.
-     * @return true if found match(es).
-     */
-    private static boolean contains(String text, String[] identifies) {
-        for (String id : identifies) {
-            if (text.contains(id))
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * Translate portal authentication error.
-     *
-     * @param text error text.
-     * @return portal error.
-     */
-    private static PortalError translateAuthenticationError(String text) {
-        Optional<Entry> entry = Stream.of(Entry.entries)
-                .filter(e -> contains(text, e.identifiers))
-                .findAny();
-
-        if (entry.isPresent()) {
-            return PortalError.of(entry.get().error);
-        } else {
-            return PortalError.of("unknown_login_error");
+        public static ProtocolEntry of(int portalError, int protocolError) {
+            return new ProtocolEntry(portalError, protocolError);
         }
     }
 }

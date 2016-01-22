@@ -15,6 +15,6 @@ import cn.com.xinli.portal.core.PortalError;
  */
 public class InvalidChallengeException extends RestAuthException {
     public InvalidChallengeException(String message) {
-        super(PortalError.of("invalid_challenge_response"), message);
+        super(PortalError.INVALID_CHALLENGE_RESPONSE, message);
     }
 }

@@ -16,6 +16,6 @@ import cn.com.xinli.portal.core.PortalError;
  */
 public class ChallengeNotFoundException extends RestAuthException {
     public ChallengeNotFoundException(String msg) {
-        super(PortalError.of("challenge_not_found"), msg);
+        super(PortalError.CHALLENGE_NOT_FOUND, msg);
     }
 }

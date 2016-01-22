@@ -121,6 +121,6 @@ public class EntryPoint {
 
     @Override
     public String toString() {
-        return "REST Entry Point: {" + getText() + "}";
+        return "REST MessageEntry Point: {" + getText() + "}";
     }
 }

@@ -1,7 +1,6 @@
 package cn.com.xinli.portal.core;
 
 import cn.com.xinli.portal.protocol.PortalProtocolException;
-import cn.com.xinli.portal.support.PortalErrorTranslator;
 
 /**
  * Portal platform (including NAS/BRAS, AAA platform) exception.
@@ -22,7 +21,7 @@ import cn.com.xinli.portal.support.PortalErrorTranslator;
  * @author zhoupeng 2016/1/19.
  */
 public class PlatformException extends PortalException {
-    public PlatformException(PortalProtocolException ex) {
-        super(PortalErrorTranslator.translate(ex), ex.getMessage());
+    public PlatformException(PortalError error, String message, Throwable cause) {
+        super(error, message, cause);
     }
 }

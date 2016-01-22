@@ -11,6 +11,10 @@ package cn.com.xinli.portal.core;
  * @author zhoupeng 2016/1/19.
  */
 public class RemoteException extends PortalException {
+    public RemoteException(PortalError error) {
+        super(error);
+    }
+
     public RemoteException(PortalError error, String message) {
         super(error, message);
     }

@@ -13,11 +13,15 @@ import cn.com.xinli.portal.core.PortalError;
  * @author zhoupeng 2016/1/4.
  */
 public class BadRestCredentialsException extends RestAuthException {
+    public BadRestCredentialsException() {
+        super(PortalError.BAD_CLIENT_CREDENTIALS);
+    }
+
     public BadRestCredentialsException(String message) {
-        super(PortalError.of("bad_client_credentials"), message);
+        super(PortalError.BAD_CLIENT_CREDENTIALS, message);
     }
 
     public BadRestCredentialsException(String message, Throwable cause) {
-        super(PortalError.of("bad_client_credentials"), message, cause);
+        super(PortalError.BAD_CLIENT_CREDENTIALS, message, cause);
     }
 }

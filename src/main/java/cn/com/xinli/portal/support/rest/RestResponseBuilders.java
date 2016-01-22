@@ -272,7 +272,7 @@ public class RestResponseBuilders {
         @Override
         protected RestError buildInternal() {
             RestError error = new RestError();
-            error.setError(this.error.getCode());
+            error.setError(this.error.getValue());
             error.setDescription(StringUtils.defaultString(description));
             error.setUrl(StringUtils.defaultString(url));
             error.setToken(StringUtils.defaultString(token));

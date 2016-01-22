@@ -12,6 +12,6 @@ package cn.com.xinli.portal.core;
  */
 public class CertificateNotFoundException extends PortalException {
     public CertificateNotFoundException(String message) {
-        super(PortalError.of("invalid_certificate"), message);
+        super(PortalError.INVALID_CERTIFICATE, message);
     }
 }

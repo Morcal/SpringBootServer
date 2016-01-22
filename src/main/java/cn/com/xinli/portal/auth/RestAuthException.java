@@ -27,14 +27,21 @@ public abstract class RestAuthException extends AuthenticationException implemen
     /** Internal portal error. */
     private final PortalError error;
 
+
+    public RestAuthException(PortalError error) {
+        super(error.getReason());
+        Objects.requireNonNull(error);
+        this.error = error;
+    }
+
     public RestAuthException(PortalError error, String message, Throwable cause) {
-        super(message, cause);
+        super(error.getReason() + ", info:" + message, cause);
         Objects.requireNonNull(error);
         this.error = error;
     }
 
     public RestAuthException(PortalError error, String message) {
-        super(message);
+        super(error.getReason() + ", info:" + message);
         Objects.requireNonNull(error);
         this.error = error;
     }

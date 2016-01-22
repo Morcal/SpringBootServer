@@ -43,13 +43,13 @@ public class CachingConfiguration implements CachingConfigurer {
 
     public static final String RATE_LIMITING_CACHE_NAME = "rate-limiting-cache";
 
-    /** Max cache entries. */
+    /** Max cache MESSAGE_TRANSLATE_TABLE. */
     private static final int MAX_SESSION_CACHE_ENTRIES = 10_000;
 
-    /** Max challenge entries. */
+    /** Max challenge MESSAGE_TRANSLATE_TABLE. */
     private static final int MAX_CHALLENGE_CACHE_ENTRIES = 10_000;
 
-    /** Max limiting entries. */
+    /** Max limiting MESSAGE_TRANSLATE_TABLE. */
     private static final int MAX_RATE_LIMITING_CACHE_ENTRIES = 200;
 
     /** {@link Ehcache} element version. */

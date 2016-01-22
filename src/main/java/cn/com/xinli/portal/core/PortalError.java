@@ -1,201 +1,226 @@
 package cn.com.xinli.portal.core;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * PWS Supported Errors.
- * <p>
+ *
  * <p>All errors are defined in three logic scopes.
+ *
  * <ul>
  * <li>Internal server errors</li>
- * Internal errors have code range of 1~99.
- * <p>
+ * Internal errors have value range of 1~99.
  * <li>REST API errors</li>
- * REST API errors have code range of 100~199
- * <p>
+ * REST API errors have value range of 100~199
  * <li>Portal service errors</li>
  * Portal server errors describe errors occurred in the whole portal service
  * process, involves portal web server, NAS/BRAS devices and AAA platform.
  * PWS translate all possible abnormal process results into {@link PortalError}s.
  * </ul>
- * Project: xpws
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/17.
  */
-public class PortalError {
-    /**
-     * PortalError code.
-     */
-    private final int code;
+public enum PortalError {
+    /* System internal errors. */
+    SERVER_FAILED_TO_START(1, "server failed to start"),
+    SERVER_FAILED_TO_LISTEN(2, "server failed to listen"),
+    SERVER_FAILED_TO_BIND(3, "server failed to bind"),
+    SERVER_FAILED_TO_LOAD_DB(4, "server failed to load db"),
+    INVALID_DB_SCHEMA(5, "invalid db schema"),
+    SERVER_API_UPGRADED(11, "server api upgraded"),
+    SERVER_MAINTENANCE(12, "server maintenance"),
+    SERVER_INTERNAL_ERROR(13, "server internal error"),
+    SERVICE_UNAVAILABLE(14, "service unavailable"),
+    IO_ERROR(15, "server io error"),
+    INVALID_PWS_CONFIGURATION(21, "invalid pws configuration"),
+    INVALID_NAS_CONFIGURATION(31, "invalid nas configuration"),
+    NAS_NOT_FOUND(32, "nas not found"),
+    NEED_SSL(41, "need ssl"),
+    REDUNDANT_API_REGISTRATION(61, "redundant api registration"),
+    REDUNDANT_API_ENTRY(62, "redundant api entry"),
 
-    /**
-     * PortalError text.
-     */
-    private final String text;
+    /* NAS errors. */
+    NAS_UNREACHABLE(70, "nas unreachable"),
+    NAS_NOT_RESPOND(71, "nas not respond"),
+    UNSUPPORTED_PROTOCOL(72, "unsupported protocol"),
+    UNSUPPORTED_NAS(73, "unsupported nas"),
+    UNSUPPORTED_AUTHENTICATION(74, "unsupported authentication"),
+    UNRECOGNIZED_RESPONSE(75, "unrecognized response"),
+    INVALID_CREDENTIALS(76, "invalid credentials"),
+    AUTHENTICATION_REJECTED(81, "authentication rejected"),
+    AUTHENTICATION_ALREADY_ONLINE(82, "authentication already online"),
+    AUTHENTICATION_UNAVAILABLE(83, "authentication unavailable"),
+    AUTHENTICATION_FAILURE(84, "authentication failure"),
+    CHALLENGE_REJECTED(85, "challenge rejected"),
+    CHALLENGE_ALREADY_ONLINE(86, "challenge already online"),
+    CHALLENGE_UNAVAILABLE(87, "challenge unavailable"),
+    CHALLENGE_FAILURE(88, "challenge failure"),
+    LOGOUT_REJECTED(89, "logout rejected"),
+    LOGOUT_FAILURE(90, "logout failure"),
+    LOGOUT_ALREADY_GONE(91, "logout already gone"),
+    UNKNOWN_PROTOCOL_ERROR(92, "unknown protocol error"),
 
-    public PortalError(int code, String text) {
-        this.code = code;
-        this.text = text;
+    /* REST API errors. */
+    INVALID_CLIENT(101, "invalid client"),
+    INVALID_CERTIFICATE(102, "invalid certificate"),
+    INVALID_SCOPE(103, "invalid scope"),
+    INVALID_CLIENT_GRANT(104, "invalid client grant"),
+    CHALLENGE_NOT_FOUND(105, "challenge not found"),
+    INVALID_CHALLENGE_RESPONSE(106, "invalid challenge response"),
+    BAD_CLIENT_CREDENTIALS(107, "bad client credentials"),
+    UNSUPPORTED_RESPONSE_TYPE(108, "unsupported response type"),
+    REST_AUTHENTICATION_ERROR(109, "rest authentication error"),
+    UNAUTHORIZED_REQUEST(110, "unauthorized request"),
+    INVALID_SESSION_GRANT(121, "invalid session grant"),
+    SESSION_NOT_FOUND(122, "session not found"),
+    INVALID_UPDATE_TIMESTAMP(123, "invalid update timestamp"),
+    INVALID_SYSTEM_GRANT(131, "invalid system grant"),
+    INVALID_REQUEST(142, "invalid request"),
+    UNPROCESSABLE_ENTITY(143, "unprocessable entity"),
+    REST_REQUEST_RATE_LIMITED(151, "rest request rate limited"),
+
+    /* Portal service errors. */
+    INVALID_AUTHENTICATE_CREDENTIALS(201, "invalid authenticate credentials"),
+    INVALID_ACCOUNT_TYPE(202, "invalid account type"),
+    INVALID_ACCOUNT_STATE(203, "invalid account state"),
+    INACTIVE_ACCOUNT(204, "inactive account"),
+    INVALID_AUTHOR_CREDENTIALS(205, "invalid author credentials"),
+    MAX_SESSION_COUNT(206, "max session count"),
+    NOT_ALLOWED(207, "not allowed"),
+    PORT_NOT_ALLOWED(208, "port not allowed"),
+    NAT_NOT_ALLOWED(209, "nat not allowed"),
+    NOT_ENOUGH_BALANCE(210, "not enough balance"),
+    TIME_QUOTA_EXCEEDED(211, "time quota exceeded"),
+    QUOTA_EXCEEDED(212, "quota exceeded"),
+    X_INVALID_CREDENTIALS(231, "x invalid credentials"),
+    X_INACTIVE_ACCOUNT(232, "x inactive account"),
+    X_ACCOUNT_ALREADY_ONLINE(233, "x account already online"),
+    X_PORT_TERM_NOT_ALLOWED(234, "x port term not allowed"),
+    X_DIAL_FORBIDDEN(235, "x dial forbidden"),
+    X_DIAL_REJECTED_BAD_ENCODE(236, "x dial rejected bad encode"),
+    X_TERM_PORT_NOT_ALLOWED(237, "x term port not allowed"),
+    X_NO_PACKAGE_AVAILABLE(238, "x no package available"),
+    XL_LOGIN_TOO_OFTEN(239, "xl login too often"),
+    XL_ALREADY_LOGIN_IN(240, "xl already login in"),
+    XL_USER_NOT_FOUND(241, "xl user not found"),
+    XL_INCORRECT_PASSWORD(242, "xl incorrect password"),
+    XL_INVALID_ACCOUNT_STATE(243, "xl invalid account state"),
+    XL_NEED_MERGE_ACCOUNT(244, "xl need merge account"),
+    XL_ALREADY_IN(245, "xl already in"),
+    XL_UNKNOWN_ERROR(249, "xl unknown error"),
+    UNKNOWN_LOGIN_ERROR(291, "unknown login error"),
+    UNKNOWN_LOGOUT_ERROR(292, "unknown logout error"),
+    UNKNOWN_PORTAL_ERROR(299, "unknown portal error");
+    
+    /** PortalError value. */
+    private final int value;
+
+    /** PortalError reason. */
+    private final String reason;
+
+    PortalError(int value, String reason) {
+        this.value = value;
+        this.reason = reason;
     }
 
-    public int getCode() {
-        return code;
+    /**
+     * Get portal error value.
+     * @return portal error value.
+     */
+    public int getValue() {
+        return value;
     }
 
-    public String getText() {
-        return text;
+    /**
+     * Get error reason.
+     * @return error reason.
+     */
+    public String getReason() {
+        return reason;
     }
 
     @Override
     public String toString() {
         return "PortalError{" +
-                "code=" + code +
-                ", text='" + text + '\'' +
+                "value=" + value +
+                ", reason='" + reason + '\'' +
                 '}';
     }
 
     /**
-     * Create a portal error.
-     * @param code error code.
-     * @param text error text.
-     * @return portal error.
+     * Check if error is a system error.
+     * @return true if error is a system error.
      */
-    public static PortalError of(int code, String text) {
-        return new PortalError(code, text);
+    public boolean isSystemError() {
+        return Series.SYSTEM == Series.of(value);
     }
 
     /**
-     * All defined portal java client errors.
+     * Check if error is a rest error.
+     * @return true if error is a rest error.
      */
-    private static final PortalError[] errors = {
-            /* System internal errors. */
-            of(1, "server_failed_to_start"),
-            of(2, "server_failed_to_listen"),
-            of(3, "server_failed_to_bind"),
-            of(4, "server_failed_to_load_db"),
-            of(5, "invalid_db_schema"),
-            of(11, "server_api_upgraded"),
-            of(12, "server_maintenance"),
-            of(13, "server_internal_error"),
-            of(14, "service_unavailable"),
-            of(21, "invalid_pws_configuration"),
-            of(31, "invalid_nas_configuration"),
-            of(41, "need_ssl"),
-            of(61, "redundant_api_registration"),
-            of(62, "redundant_api_entry"),
-
-            /* NAS errors. */
-            of(70, "nas_unreachable"),
-            of(71, "nas_not_respond"),
-            of(72, "unsupported_protocol"),
-            of(73, "unsupported_nas"),
-            of(74, "unsupported_authentication"),
-            of(75, "unrecognized_response"),
-            of(76, "nas_not_found"),
-            of(77, "invalid_credentials"),
-            of(81, "authentication_rejected"),
-            of(82, "authentication_already_online"),
-            of(83, "authentication_unavailable"),
-            of(84, "authentication_failure"),
-            of(85, "challenge_rejected"),
-            of(86, "challenge_already_online"),
-            of(87, "challenge_unavailable"),
-            of(88, "challenge_failure"),
-            of(89, "logout_rejected"),
-            of(90, "logout_failure"),
-            of(91, "logout_already_gone"),
-
-            /* REST API errors. */
-            of(101, "invalid_client"),
-            of(102, "invalid_certificate"),
-            of(103, "invalid_scope"),
-            of(104, "invalid_client_grant"),
-            of(105, "challenge_not_found"),
-            of(106, "invalid_challenge_response"),
-            of(107, "bad_client_credentials"),
-            of(108, "unsupported_response_type"),
-            of(109, "rest_authentication_error"),
-            of(121, "invalid_session_grant"),
-            of(122, "session_not_found"),
-            of(123, "invalid_update_timestamp"),
-            of(131, "invalid_system_grant"),
-            of(141, "unauthorized_request"),
-            of(142, "invalid_request"),
-            of(143, "unprocessable_entity"),
-            of(151, "rest_request_rate_limited"),
-
-            /* Portal service errors. */
-            of(201, "invalid_authenticate_credentials"),
-            of(202, "invalid_account_type"),
-            of(203, "invalid_account_state"),
-            of(204, "inactive_account"),
-            of(205, "invalid_author_credentials"),
-            of(206, "max_session_count"),
-            of(207, "not_allowed"),
-            of(208, "port_not_allowed"),
-            of(209, "nat_not_allowed"),
-            of(210, "not_enough_balance"),
-            of(211, "time_quota_exceeded"),
-            of(212, "quota_exceeded"),
-
-            of(231, "x_invalid_credentials"),
-            of(232, "x_inactive_account"),
-            of(233, "x_account_already_online"),
-            of(234, "x_port_term_not_allowed"),
-            of(235, "x_dial_forbidden"),
-            of(236, "x_dial_rejected_bad_encode"),
-            of(237, "x_term_port_not_allowed"),
-            of(238, "x_no_package_available"),
-
-            of(239, "xl_login_too_often"),
-            of(240, "xl_already_login_in"),
-            of(241, "xl_user_not_found"),
-            of(242, "xl_incorrect_password"),
-            of(243, "xl_invalid_account_state"),
-            of(244, "xl_need_merge_account"),
-            of(245, "xl_already_in"),
-            of(249, "xl_unknown_error"),
-
-            of(291, "unknown_login_error"),
-            of(292, "unknown_logout_error"),
-            of(299, "unknown_portal_error")
-    };
+    public boolean isRestError() {
+        return Series.REST_SERVICE == Series.of(value);
+    }
 
     /**
-     * Get portal error by code.
+     * Check if error is a service error.
+     * @return true if error is a service error.
+     */
+    public boolean isServiceError() {
+        return Series.PORTAL_SERVICE == Series.of(value);
+    }
+
+    /**
+     * Get portal error by value.
      *
-     * @param text error text.
+     * @param value error value.
      * @return portal error.
      */
-    public static PortalError of(String text) {
-        if (StringUtils.isEmpty(text)) {
-            throw new IllegalArgumentException("portal error can not be blank.");
+    public static PortalError of(int value) {
+        Optional<PortalError> error = Stream.of(values())
+                .filter(err -> err.getValue() == value)
+                .findFirst();
+
+        error.orElseThrow(() ->
+                new IllegalArgumentException("Portal error value: " + value + " not exists."));
+        return error.get();
+    }
+
+    /** Portal error series. */
+    public enum Series {
+        SYSTEM(1),
+        REST_SERVICE(2),
+        PORTAL_SERVICE(3);
+
+        private final int value;
+
+        Series(int value) {
+            this.value = value;
         }
 
-        Optional<PortalError> error = Stream.of(errors)
-                .filter(err -> err.getText().equals(text))
-                .findFirst();
-        error.orElseThrow(() ->
-                new IllegalArgumentException("Portal error: " + text + " not exists."));
-        return error.get();
-    }
+        public int getValue() {
+            return value;
+        }
 
-    /**
-     * Get portal error by code.
-     *
-     * @param code error code.
-     * @return portal error.
-     */
-    public static PortalError of(int code) {
-        Optional<PortalError> error = Stream.of(errors)
-                .filter(err -> err.getCode() == code)
-                .findFirst();
+        /**
+         * Get series of error.
+         * @param value error.
+         * @return series.
+         */
+        public static Series of(int value) {
+            int v = value / 100 + 1;
+            Optional<Series> series = Stream.of(values())
+                    .filter(s -> s.value == v)
+                    .findAny();
 
-        error.orElseThrow(() ->
-                new IllegalArgumentException("Portal error code: " + code + " not exists."));
-        return error.get();
+            series.orElseThrow(() ->
+                    new IllegalArgumentException("no mathching constant for: " + value));
+
+            return series.get();
+        }
     }
 }

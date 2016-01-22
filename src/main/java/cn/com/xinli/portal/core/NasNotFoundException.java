@@ -12,6 +12,6 @@ package cn.com.xinli.portal.core;
  */
 public class NasNotFoundException extends PortalException {
     public NasNotFoundException(String message) {
-        super(PortalError.of("nas_not_found"), message);
+        super(PortalError.NAS_NOT_FOUND, message);
     }
 }

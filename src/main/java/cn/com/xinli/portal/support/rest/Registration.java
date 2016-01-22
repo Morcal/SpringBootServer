@@ -88,9 +88,7 @@ public class Registration {
      */
     public synchronized EntryPoint registerApi(EntryPoint api) throws ServerException {
         if (apis.contains(api)) {
-            throw new ServerException(
-                    PortalError.of("redundant_api_entry"),
-                    "api: " + api.toString() + " already registered");
+            throw new ServerException(PortalError.REDUNDANT_API_ENTRY);
         }
         apis.add(api);
         return api;

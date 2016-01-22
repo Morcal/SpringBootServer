@@ -54,7 +54,7 @@ public class AuthorizeController {
         }
         */
         if (!authorizationServer.verifyIp(realIp, ip, request.getRemoteAddr())) {
-            throw new RemoteException(PortalError.of("nat_not_allowed"), "not not allowed.");
+            throw new RemoteException(PortalError.NAT_NOT_ALLOWED);
         }
 
         if (logger.isDebugEnabled()) {
@@ -63,8 +63,7 @@ public class AuthorizeController {
 
         if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {
             if (!authorizationServer.certificated(clientId)) {
-                throw new RemoteException(
-                        PortalError.of("invalid_certificate"), "invalid certificate");
+                throw new RemoteException(PortalError.INVALID_CERTIFICATE);
             } else {
                 Challenge challenge =
                         authorizationServer.createChallenge(clientId, scope, requireToken, needRefreshToken);
@@ -73,8 +72,7 @@ public class AuthorizeController {
                         .build();
             }
         } else {
-            throw new RemoteException(
-                    PortalError.of("unsupported_response_type"), "unsupported response type");
+            throw new RemoteException(PortalError.UNSUPPORTED_RESPONSE_TYPE);
         }
     }
 }

@@ -134,7 +134,7 @@ public class HttpDigestCredentials {
             for (String pair : content.split(CREDENTIAL_DELIMITER_REGEX)) {
                 Matcher matcher = Pattern.compile(CREDENTIAL_REGEXP).matcher(pair.trim());
                 if (!matcher.matches() || matcher.groupCount() < 2) {
-                    throw new BadRestCredentialsException("Invalid authentication credential.");
+                    throw new BadRestCredentialsException();
                 }
 
                 String key = matcher.group(1), value = matcher.group(2);

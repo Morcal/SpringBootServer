@@ -6,6 +6,7 @@ import cn.com.xinli.portal.repository.SessionEntity;
 import cn.com.xinli.portal.repository.SessionRepository;
 import cn.com.xinli.portal.protocol.*;
 import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
+import cn.com.xinli.portal.support.PortalErrorTranslator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import java.util.concurrent.Future;
 /**
  * Session Service Support.
  *
- * This implementation employees {@link net.sf.ehcache.Ehcache} as {@link DataStore}
+ * <p>This implementation employees {@link net.sf.ehcache.Ehcache} as {@link DataStore}
  * with the "Cache-aside" pattern.
  *
  * <ul>
@@ -48,7 +49,8 @@ import java.util.concurrent.Future;
  *     <li>Delete session</li>
  *     Delete a session revolving delete a database record and a session cache.
  * </ul>
- * Project: portal
+ *
+ * <p>Project: portal
  *
  * @author zhoupeng 2015/12/6.
  */
@@ -66,6 +68,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Autowired
     private NasMapping nasMapping;
+
+    @Autowired
+    private PortalErrorTranslator errorTranslator;
 
     /** Remover executor. */
     private ExecutorService executor = Executors.newFixedThreadPool(
@@ -154,7 +159,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             result = client.login(credentials);
         } catch (IOException e) {
             logger.error("Portal login error", e);
-            throw new ServerException(PortalError.of("system_error"), "Failed to login", e);
+            throw new ServerException(PortalError.IO_ERROR, "Failed to login", e);
         } catch (PortalProtocolException e) {
             /*
              * Wrap protocol exception into a new platform exception,
@@ -162,9 +167,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
              * 2. login CHAP-authenticate when already online.
              */
             ProtocolError error = e.getProtocolError();
-            if (error.getCode() != 86  && /* challenge_already_online */
-                    error.getCode() != 82) {/* authentication_already_online */
-                throw new PlatformException(e);
+            if (error != ProtocolError.CHALLENGE_ALREADY_ONLINE &&
+                    error != ProtocolError.AUTHENTICATION_ALREADY_ONLINE) {
+                PortalError err = errorTranslator.translate(e);
+                throw new PlatformException(err, e.getMessage(), e);
             }
         }
 
@@ -227,15 +233,16 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         } catch (IOException e) {
             logger.error("Portal logout error", e);
             throw new ServerException(
-                    PortalError.of("server_internal_error"), "Failed to logout", e);
+                    PortalError.IO_ERROR, "Failed to logout", e);
         } catch (PortalProtocolException e) {
             /*
              * Wrap protocol exception into a new Platform exception
              * unless trying to logout when user already gone.
              */
             ProtocolError error = e.getProtocolError();
-            if (error.getCode() != 91 /* logout_already_gone */) {
-                throw new PlatformException(e);
+            if (error != ProtocolError.LOGOUT_ALREADY_GONE) {
+                PortalError err = errorTranslator.translate(e);
+                throw new PlatformException(err, e.getMessage(), e);
             }
         }
 
@@ -325,8 +332,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         if (Math.abs(lastUpdateTime - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
             /* Assume it's a replay attack. */
-            throw new RemoteException(
-                    PortalError.of("invalid_update_timestamp"), "Update within an invalid range.");
+            throw new RemoteException(PortalError.INVALID_UPDATE_TIMESTAMP);
         }
 
         sessionStore.update(id, timestamp);
@@ -339,7 +345,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
                 .stream().findFirst();
 
         found.orElseThrow(() ->
-                new SessionNotFoundException("session with ip: " + ip + " not found."));
+                new SessionNotFoundException("ip: " + ip));
 
         return removeSessionInternal(found.get());
     }

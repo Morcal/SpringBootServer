@@ -76,7 +76,7 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
     public Challenge loadChallenge(String nonce) throws ChallengeNotFoundException {
         Element element = challengeCache.get(nonce);
         if (element == null) {
-            throw new ChallengeNotFoundException("challenge not found for: " + nonce + ".");
+            throw new ChallengeNotFoundException("nonce: " + nonce + ".");
         }
         return (Challenge) element.getObjectValue();
     }

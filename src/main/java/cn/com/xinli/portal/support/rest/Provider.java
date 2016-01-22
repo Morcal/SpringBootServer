@@ -54,8 +54,7 @@ public class Provider extends RestResponse {
     public synchronized void addRegistration(Registration registration)
             throws ServerException {
         if (registrations.contains(registration)) {
-            throw new ServerException(
-                    PortalError.of("redundant_api_registration"), "Registration already exists.");
+            throw new ServerException(PortalError.REDUNDANT_API_REGISTRATION);
         }
 
         registrations.add(registration);

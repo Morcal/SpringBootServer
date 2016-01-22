@@ -15,6 +15,11 @@ package cn.com.xinli.portal.core;
  * @see PortalError
  */
 public class ServerException extends PortalException {
+
+    public ServerException(PortalError error) {
+        super(error);
+    }
+
     public ServerException(PortalError error, String message) {
         super(error, message);
     }

@@ -136,7 +136,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             }
         } else {
             /* Generic authentication exception thrown by spring-security. */
-            commence(PortalError.of("rest_authentication_error"), httpServletResponse);
+            commence(PortalError.REST_AUTHENTICATION_ERROR, httpServletResponse);
         }
     }
 }

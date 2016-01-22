@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Session not exists or already gone.")
 public class SessionNotFoundException extends PortalException {
     public SessionNotFoundException(String message) {
-        super(PortalError.of("session_not_found"), message);
+        super(PortalError.SESSION_NOT_FOUND, message);
     }
 
     public SessionNotFoundException(long sessionId) {
-        this("Session: " + sessionId + " not found.");
+        this("id:" + sessionId);
     }
 }

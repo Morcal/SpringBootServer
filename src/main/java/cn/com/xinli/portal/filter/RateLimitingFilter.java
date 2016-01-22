@@ -100,7 +100,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
      */
     private void denyRemoteWithError(HttpServletResponse response) {
         RestResponse error = RestResponseBuilders.errorBuilder()
-                .setError(PortalError.of("rest_request_rate_limited"))
+                .setError(PortalError.REST_REQUEST_RATE_LIMITED)
                 .setDescription("Request rate limiting reached.")
                 .build();
 

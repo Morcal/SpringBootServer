@@ -14,6 +14,6 @@ import cn.com.xinli.portal.core.PortalError;
  */
 public class InvalidAccessTokenException extends AbstractTokenException {
     public InvalidAccessTokenException(String token) {
-        super(PortalError.of("invalid_client_grant"), token);
+        super(PortalError.INVALID_CLIENT_GRANT, token);
     }
 }

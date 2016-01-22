@@ -28,7 +28,7 @@ public class PortalErrorTest {
         PortalError error = PortalError.of(101);
         Assert.assertNotNull(error);
 
-        Assert.assertNotNull(error.getText());
+        Assert.assertNotNull(error.getReason());
 
         logger.debug("error 101: {}", error);
     }

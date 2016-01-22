@@ -14,6 +14,6 @@ import cn.com.xinli.portal.core.PortalError;
  */
 public class InvalidSessionTokenException extends AbstractTokenException {
     public InvalidSessionTokenException(String token) {
-        super(PortalError.of("invalid_session_grant"), token);
+        super(PortalError.INVALID_SESSION_GRANT, token);
     }
 }
