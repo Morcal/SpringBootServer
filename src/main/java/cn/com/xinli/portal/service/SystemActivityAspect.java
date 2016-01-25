@@ -1,8 +1,7 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.admin.Activity;
-import cn.com.xinli.portal.admin.ActivityService;
-import cn.com.xinli.portal.repository.ActivityEntity;
+import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.web.admin.ActivityService;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -33,7 +32,7 @@ public class SystemActivityAspect {
      * @param result result.
      */
     private void saveActivity(String result) {
-        ActivityEntity activity = new ActivityEntity();
+        Activity activity = new Activity();
         activity.setSource("system");
         activity.setFacility(Activity.Facility.SYSTEM);
         activity.setAction(Activity.SystemAction.DELETE_OLD_ACTIVITIES.name());
@@ -49,7 +48,7 @@ public class SystemActivityAspect {
      * Define method pointcut for
      * {@link ActivityService#deleteOldActivities()}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.admin.ActivityService.deleteOldActivities(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.admin.ActivityService.deleteOldActivities(..))")
     public void deleteOldActivities() {
     }
 

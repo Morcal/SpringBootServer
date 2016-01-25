@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.admin.Activity;
-import cn.com.xinli.portal.auth.token.TokenScope;
+import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.web.auth.token.TokenScope;
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.support.rest.EntryPoint;
-import cn.com.xinli.portal.support.rest.Provider;
-import cn.com.xinli.portal.support.rest.Registration;
+import cn.com.xinli.portal.web.rest.EntryPoint;
+import cn.com.xinli.portal.web.rest.Provider;
+import cn.com.xinli.portal.web.rest.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -16,16 +16,28 @@ import java.util.StringJoiner;
 
 /**
  * PWS REST APIs configurations.
- * <p>
- * REST APIs' structure was defines as:
+ *
+ * <p>REST APIs' structure was defines as:
  * <pre>
  *     {
  *         "vendor": "",
- *         "registration": [
- *         ]
+ *         "registrations": [{
+ *              "type":"REST",
+ *              "version":"v1.0",
+ *              "apis":[{
+ *                  "scope":"portal-rest-api",
+ *                  "action":"authorize",
+ *                  "url":"/portal/v1.0/authorize",
+ *                  "method":"GET",
+ *                  "response":"JSON",
+ *                  "requires_auth":false
+ *              },
+ *              ...
+ *         }]
  *     }
  * </pre>
- * Project: portal
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/6.
  */
@@ -44,6 +56,11 @@ public class ApiConfiguration {
     public static final String REST_API_FIND = "sessions/find";
     public static final String REST_API_AUTHORIZE = "authorize";
 
+    /**
+     * Create portal api end point url.
+     * @param api api end point.
+     * @return url.
+     */
     private String url(String api) {
         StringJoiner joiner = new StringJoiner("/");
         joiner.add("/portal")
@@ -52,6 +69,12 @@ public class ApiConfiguration {
         return joiner.toString();
     }
 
+    /**
+     * Define portal REST api provider.
+     *
+     * @return portal REST api provider.
+     * @throws ServerException
+     */
     @Bean
     public Provider restApiProvider() throws ServerException {
         Provider provider = new Provider();
@@ -60,6 +83,11 @@ public class ApiConfiguration {
         return provider;
     }
 
+    /**
+     * Define REST api registration.
+     * @return REST api registration.
+     * @throws ServerException
+     */
     private Registration restApiRegistration() throws ServerException {
         Registration registration = new Registration(API_TYPE, REST_API_VERSION);
         logger.info("Creating: {}.", registration);
@@ -74,6 +102,10 @@ public class ApiConfiguration {
         return registration;
     }
 
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
     private EntryPoint authorize() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_ACCESS_TOKEN_SCOPE.alias(),
@@ -86,6 +118,10 @@ public class ApiConfiguration {
         return api;
     }
 
+    /**
+     * Define connect end point.
+     * @return connect end point.
+     */
     private EntryPoint connect() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
@@ -98,6 +134,10 @@ public class ApiConfiguration {
         return api;
     }
 
+    /**
+     * Define disconnect end point.
+     * @return disconnect end point.
+     */
     private EntryPoint disconnect() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
@@ -110,6 +150,10 @@ public class ApiConfiguration {
         return api;
     }
 
+    /**
+     * Define get end point.
+     * @return get end point.
+     */
     private EntryPoint get() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
@@ -122,6 +166,10 @@ public class ApiConfiguration {
         return api;
     }
 
+    /**
+     * Define update end point.
+     * @return update end point.
+     */
     private EntryPoint update() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
@@ -134,6 +182,10 @@ public class ApiConfiguration {
         return api;
     }
 
+    /**
+     * Define find end point.
+     * @return find end point.
+     */
     private EntryPoint find() {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),

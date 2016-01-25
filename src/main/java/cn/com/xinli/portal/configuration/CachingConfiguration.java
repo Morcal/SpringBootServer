@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.support.cache.CacheErrorHandlerSupport;
 import cn.com.xinli.portal.support.cache.EhcacheManagerAdapter;
 import cn.com.xinli.portal.core.Certificate;
@@ -23,7 +23,7 @@ import java.util.List;
  * <p>This class configures one central Ehcache serving for all system
  * objects via an {@link EhcacheManagerAdapter} bean defined by {@link #ehcacheManagerAdapter()}.
  *
- * <p>Project: portal
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/11.
  */
@@ -70,7 +70,7 @@ public class CachingConfiguration implements CachingConfigurer {
         List<EhcacheManagerAdapter.CacheSearchAttribute> attributes = new ArrayList<>();
         attributes.add(EhcacheManagerAdapter.search("ip", String.class, "value.getIp()"));
         attributes.add(EhcacheManagerAdapter.search("mac", String.class, "value.getMac()"));
-        attributes.add(EhcacheManagerAdapter.search("nas_id", Long.class, "value.getNasId()"));
+        attributes.add(EhcacheManagerAdapter.search("nas", String.class, "value.getNas()"));
         attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
 
         /* Create session cache. */

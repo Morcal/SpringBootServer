@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.core;
 
-import cn.com.xinli.portal.protocol.Nas;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
@@ -50,10 +49,10 @@ public interface Session {
     String getMac();
 
     /**
-     * Get {@link Nas} id.
-     * @return nas id.
+     * Get {@link Nas} name.
+     * @return nas name.
      */
-    long getNasId();
+    String getNasName();
 
     /**
      * Get session user name.
@@ -62,35 +61,15 @@ public interface Session {
     String getUsername();
 
     /**
-     * Get session user password.
-     * @return session user password.
+     * Get client application name.
+     * @return client application name.
      */
-    String getPassword();
-
-    /**
-     * Get session user operation system name.
-     * @return session user operation system name.
-     */
-    String getOs();
-
-    /**
-     * Get session user client version.
-     * @return user client version.
-     */
-    String getVersion();
-
-    /**
-     * Get session additional information.
-     * @return session additional information.
-     */
-    default String getInfo()  {
-        return getPassword() + ":" + getMac() + ":" + getOs() + ":" + getVersion();
-    }
+    String getAppName();
 
     /**
      * Create a paired information for ip and mac.
-     * <p>
-     * If mac is missing, "unknown" will be used.
+     *
+     * <p>If mac is missing, "unknown" will be used.
      *
      * @param ip  ip address.
      * @param mac mac address.

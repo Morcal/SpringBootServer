@@ -17,6 +17,26 @@ public interface SessionStore extends DataStore<Session> {
     /**
      * {@inheritDoc}
      *
+     * Get session last update time.
+     * @param id session id.
+     * @return last update time (UNIX epoch time).
+     * @throws SessionNotFoundException
+     */
+    long getLastUpdateTime(long id) throws SessionNotFoundException;
+
+    /**
+     * {@inheritDoc}
+     *
+     * Find data with query parameters.
+     * @param parameters query parameters.
+     * @return result list.
+     * @throws IllegalArgumentException if parameters is null or empty.
+     */
+    List<Session> find(Map<String, String> parameters);
+
+    /**
+     * {@inheritDoc}
+     *
      * Get session by id.
      *
      * @param id session id.
@@ -43,24 +63,4 @@ public interface SessionStore extends DataStore<Session> {
      */
     @Override
     boolean delete(long id) throws SessionNotFoundException;
-
-    /**
-     * {@inheritDoc}
-     *
-     * Get session last update time.
-     * @param id session id.
-     * @return last update time (UNIX epoch time).
-     * @throws SessionNotFoundException
-     */
-    long getLastUpdateTime(long id) throws SessionNotFoundException;
-
-    /**
-     * {@inheritDoc}
-     *
-     * Find data with query parameters.
-     * @param parameters query parameters.
-     * @return result list.
-     * @throws IllegalArgumentException if parameters is null or empty.
-     */
-    List<Session> find(Map<String, String> parameters);
 }

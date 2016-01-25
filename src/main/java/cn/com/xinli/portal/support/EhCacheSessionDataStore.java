@@ -1,10 +1,7 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.Session;
-import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.core.SessionStore;
+import cn.com.xinli.portal.core.*;
 import cn.com.xinli.portal.support.cache.SessionCacheEventListener;
-import cn.com.xinli.portal.repository.SessionEntity;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -90,27 +87,37 @@ public class EhCacheSessionDataStore implements SessionStore {
      * @return session found or null if not found.
      */
     @Override
-    public Session get(long id) throws SessionNotFoundException {
+    public CachedSession get(long id) throws SessionNotFoundException {
         Element element = sessionCache.get(id);
         if (element == null) {
             throw new SessionNotFoundException(id);
         }
-        return (Session) element.getObjectValue();
+        return (CachedSession) element.getObjectValue();
     }
 
     @Override
     public void put(Session session) {
+        if (session instanceof Cacheable) {
+            putInternal(Cacheable.class.cast(session));
+        } else if (session instanceof DbSession) {
+            putInternal(CachedSession.from(DbSession.class.cast(session)));
+        } else {
+            throw new UnsupportedOperationException(session.getClass().getName() + " not supported");
+        }
+    }
+
+    private void putInternal(Cacheable cacheable) {
         Element element;
 
         if (isSessionTtiEnabled) {
             element = new Element(
-                    session.getId(),
-                    session,
+                    cacheable.getKey(),
+                    cacheable,
                     sessionTti,
                     sessionTti);
         } else {
             /* Create cache element without time to idle and time to live. */
-            element = new Element(session.getId(), session);
+            element = new Element(cacheable.getKey(), cacheable);
         }
         element.updateUpdateStatistics();
         sessionCache.put(element);
@@ -138,12 +145,12 @@ public class EhCacheSessionDataStore implements SessionStore {
         if (element == null) {
             throw new SessionNotFoundException(id);
         } else {
-            SessionEntity entity = (SessionEntity) element.getObjectValue();
+            CachedSession value = (CachedSession) element.getObjectValue();
             if (logger.isTraceEnabled()) {
                 logger.trace("session {} last modified at: {}, update to {}.",
-                        id, entity.getLastModified(), lastModified);
+                        id, value.getLastModified(), lastModified);
             }
-            entity.setLastModified(lastModified);
+            value.setLastModified(lastModified);
             sessionCache.put(element);
         }
     }
@@ -157,7 +164,7 @@ public class EhCacheSessionDataStore implements SessionStore {
     @Override
     public long getLastUpdateTime(long id) {
         Element element = sessionCache.get(id);
-        return element == null ? -1L : ((Session) element.getObjectValue()).getLastModified();
+        return element == null ? -1L : ((CachedSession) element.getObjectValue()).getLastModified();
     }
 
     @Override
@@ -166,7 +173,7 @@ public class EhCacheSessionDataStore implements SessionStore {
             throw new IllegalArgumentException("Data store query parameters can not be empty.");
         }
 
-        List<Criteria> criterias = new ArrayList<>();
+        List<Criteria> criteria = new ArrayList<>();
         for (String key : parameters.keySet()) {
             try {
                 Attribute<String> attr = sessionCache.getSearchAttribute(key);
@@ -174,26 +181,25 @@ public class EhCacheSessionDataStore implements SessionStore {
                 if (StringUtils.isEmpty(value) && logger.isDebugEnabled()) {
                     logger.trace("+ query parameter {} is empty, ignored.", key);
                 } else {
-                    criterias.add(attr.eq(parameters.get(key)));
+                    criteria.add(attr.eq(parameters.get(key)));
                 }
             } catch (CacheException e) {
                 logger.trace("+ EhCache search attribute: {} not found, ignored.", key);
             }
         }
 
-        if (criterias.isEmpty()) {
+        if (criteria.isEmpty()) {
             logger.warn("+ empty query parameters.");
             return Collections.emptyList();
         }
 
         Query query = sessionCache.createQuery();
-        criterias.forEach(query::addCriteria);
+        criteria.forEach(query::addCriteria);
 
         Results results = query.includeValues().execute();
 
         return results.all().stream()
-                .map(result -> (Session) result.getValue())
+                .map(result -> (CachedSession) result.getValue())
                 .collect(Collectors.toList());
     }
-
 }

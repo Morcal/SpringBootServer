@@ -1,9 +1,5 @@
 package cn.com.xinli.portal.core;
 
-import cn.com.xinli.portal.protocol.Nas;
-
-import java.util.Optional;
-
 /**
  * Nas Mapping.
  *
@@ -21,46 +17,14 @@ import java.util.Optional;
  *
  * @author zhoupeng 2015/12/2.
  */
+@FunctionalInterface
 public interface NasMapping {
-    /**
-     * Reload.
-     */
-    void reload();
-
-    /**
-     * Get NAS/BRAS by id.
-     *
-     * @param id NAS/BRAS id.
-     * @return NAS if found or null.
-     */
-    Optional<Nas> getNas(long id);
-
-    /**
-     * Get NAS/BRAS by nas id.
-     * @param nasId NAS id.
-     * @return {@link Nas} if found or null.
-     * @see Nas#getNasId()
-     */
-    Optional<Nas> getNasByNasId(String nasId);
-
     /**
      * Create a mapping from user ip and mac to NAS device configuration.
      *
-     * @param userIp  user ip.
-     * @param userMac user mac.
-     * @param nasIp   NAS ip.
+     * @param credentials User credentials.
+     * @param nas NAS.
      * @throws NasNotFoundException
      */
-    void map(String userIp, String userMac, String nasIp) throws NasNotFoundException;
-
-    /**
-     * Find user incoming NAS.
-     * @param username user name.
-     * @param ip ip address.
-     * @param mac mac address.
-     * @return NAS if found.
-     * @throws NasNotFoundException
-     */
-    Nas find(String username, String ip, String mac) throws NasNotFoundException;
-
+    void map(Credentials credentials, Nas nas) throws NasNotFoundException;
 }

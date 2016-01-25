@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Portal web server session service.
  *
- * Project: portal
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/2.
  */

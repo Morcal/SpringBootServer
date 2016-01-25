@@ -1,9 +1,9 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.auth.challenge.Challenge;
-import cn.com.xinli.portal.auth.challenge.ChallengeManager;
-import cn.com.xinli.portal.util.AddressUtil;
-import cn.com.xinli.portal.util.SecureRandomStringGenerator;
+import cn.com.xinli.portal.web.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.auth.challenge.ChallengeManager;
+import cn.com.xinli.portal.web.util.AddressUtil;
+import cn.com.xinli.portal.web.util.SecureRandomStringGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 /**
  * Rest Authorization Server.
  *
- * Project: portal
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/12.
  */

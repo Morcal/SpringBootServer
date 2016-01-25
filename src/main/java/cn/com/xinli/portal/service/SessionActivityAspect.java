@@ -1,12 +1,11 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.admin.Activity;
-import cn.com.xinli.portal.admin.ActivityService;
-import cn.com.xinli.portal.controller.SessionController;
+import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.web.controller.SessionController;
 import cn.com.xinli.portal.core.Session;
 import cn.com.xinli.portal.core.SessionNotFoundException;
-import cn.com.xinli.portal.repository.ActivityEntity;
-import cn.com.xinli.portal.support.rest.RestResponse;
+import cn.com.xinli.portal.web.rest.RestResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.Calendar;
+import java.util.StringJoiner;
 
 /**
  * Session activity aspect.
@@ -41,6 +41,14 @@ public class SessionActivityAspect {
     @Autowired
     private SessionService sessionService;
 
+    private String buildInfo(Session session) {
+        StringJoiner joiner = new StringJoiner(",");
+        joiner.add(session.getIp())
+                .add(session.getMac())
+                .add(session.getAppName());
+        return joiner.toString();
+    }
+
     /**
      * Save activity.
      * @param ip ip address.
@@ -56,7 +64,7 @@ public class SessionActivityAspect {
                               String result,
                               Activity.SessionAction sessionAction,
                               Activity.Severity severity) {
-        ActivityEntity activity = new ActivityEntity();
+        Activity activity = new Activity();
         activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(severity);
         activity.setResult(result);
@@ -75,7 +83,7 @@ public class SessionActivityAspect {
      * @param result result.
      */
     private void saveActivity(Session session, Activity.SessionAction action, String result) {
-        saveActivity(session.getIp(), session.getUsername(), session.getInfo(), result,
+        saveActivity(session.getIp(), session.getUsername(), buildInfo(session), result,
                 action, Activity.Severity.NORMAL);
     }
 
@@ -109,42 +117,42 @@ public class SessionActivityAspect {
     /**
      * Define pointcut within {@link SessionController}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.*(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.*(..))")
     public void inSessionController() {}
 
     /**
      * Define method pointcut for
      * {@link SessionController#connect(String, String, String, String, String, String, Principal)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.connect(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.connect(..))")
     public void connect() {}
 
     /**
      * Define method pointcut for
      * {@link SessionController#get(long, Principal)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.get(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.get(..))")
     public void acquire() {}
 
     /**
      * Define method pointcut for
      * {@link SessionController#update(long, long, Principal)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.update(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.update(..))")
     public void update() {}
 
     /**
      * Define method pointcut for
      * {@link SessionController#disconnect(long, Principal)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.disconnect(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.disconnect(..))")
     public void disconnect() {}
 
     /**
      * Define method pointcut for
      * {@link SessionController#find(String, String, Principal)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.controller.SessionController.find(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.find(..))")
     public void find() {}
 
     /**

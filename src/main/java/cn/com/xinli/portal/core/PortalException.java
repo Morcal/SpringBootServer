@@ -10,7 +10,7 @@ import java.util.Objects;
  * It implements {@link PortalErrorContainer} so that operation error result
  * can be retrieved from this exception.
  *
- * <p>Project: portal
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/2.
  */

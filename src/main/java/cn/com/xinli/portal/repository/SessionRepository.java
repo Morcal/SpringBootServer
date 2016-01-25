@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.repository;
 
+import cn.com.xinli.portal.core.DbSession;
 import cn.com.xinli.portal.core.Session;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -10,18 +11,18 @@ import java.util.List;
 /**
  * Spring data session repository.
  *
- * Project: portal
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/7.
  */
-public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
+public interface SessionRepository extends CrudRepository<DbSession, Long> {
     /**
      * Find session by user name.
      *
      * @param username user name.
      * @return session list.
      */
-    @Query("select s from SessionEntity s where s.username = :username")
+    @Query("select s from DbSession s where s.username = :username")
     List<Session> findByUsername(@Param("username") String username);
 
     /**
@@ -29,7 +30,7 @@ public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
      * @param ip ip address.
      * @return session.
      */
-    @Query("select s from SessionEntity s where s.ip = :ip")
+    @Query("select s from DbSession s where s.ip = :ip")
     List<Session> find(@Param("ip") String ip);
 
     /**
@@ -37,7 +38,7 @@ public interface SessionRepository extends CrudRepository<SessionEntity, Long> {
      * @param ip ip address.
      * @return session.
      */
-    @Query("select s from SessionEntity s where s.ip = :ip and s.mac = :mac")
+    @Query("select s from DbSession s where s.ip = :ip and s.mac = :mac")
     List<Session> find(@Param("ip") String ip, @Param("mac") String mac);
 
 }

@@ -3,7 +3,7 @@ package cn.com.xinli.radius.attribute;
 /**
  * RADIUS attribute.
  *
- * Project: portal
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/2.
  */

@@ -1,8 +1,7 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.admin.Activity;
-import cn.com.xinli.portal.admin.ActivityService;
-import cn.com.xinli.portal.repository.ActivityEntity;
+import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.web.admin.ActivityService;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -73,7 +72,7 @@ public class PortalServerAspect {
      * @param result result.
      */
     private void saveActivity(String ip, String result) {
-        ActivityEntity activity = new ActivityEntity();
+        Activity activity = new Activity();
         activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(Activity.Severity.NORMAL);
         activity.setResult(result);

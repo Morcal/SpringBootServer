@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.filter.AuthenticationFilter;
+import cn.com.xinli.portal.web.filter.AuthenticationFilter;
 import cn.com.xinli.portal.support.RestAuthenticationProvider;
-import cn.com.xinli.portal.support.rest.EntryPoint;
-import cn.com.xinli.portal.support.rest.Provider;
-import cn.com.xinli.portal.support.rest.Registration;
-import cn.com.xinli.portal.support.rest.RestAuthenticationEntryPoint;
+import cn.com.xinli.portal.web.rest.EntryPoint;
+import cn.com.xinli.portal.web.rest.Provider;
+import cn.com.xinli.portal.web.rest.Registration;
+import cn.com.xinli.portal.web.rest.RestAuthenticationEntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

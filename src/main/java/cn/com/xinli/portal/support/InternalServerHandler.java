@@ -3,8 +3,8 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.portal.core.NasNotFoundException;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.SessionManager;
-import cn.com.xinli.portal.protocol.PortalServerHandler;
-import cn.com.xinli.portal.protocol.Result;
+import cn.com.xinli.portal.transport.huawei.LogoutError;
+import cn.com.xinli.portal.transport.huawei.PortalServerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,23 +30,23 @@ public class InternalServerHandler implements PortalServerHandler {
     private SessionManager sessionManager;
 
     @Override
-    public int handleNtfLogout(String ip) {
+    public LogoutError handleNtfLogout(String ip) {
         if (logger.isTraceEnabled()) {
             logger.trace("NAS NtfLogout, ip: {}.", ip);
         }
 
         try {
             //FIXME remove session directly may drag down server performance.
-            Result result = sessionManager.removeSession(ip);
+            sessionManager.removeSession(ip);
             if(logger.isDebugEnabled()) {
-                logger.debug("NTF_LOGOUT {}", result);
+                logger.debug("NTF_LOGOUT {}", ip);
             }
-            return 0; /* LogoutError.OK */
+            return LogoutError.OK;
         } catch (NasNotFoundException e) {
             logger.error("Failed to remove session, ip: {}", ip, e);
-            return 0x02; /* LogoutError.FAILED. */
+            return LogoutError.FAILED;
         } catch (PortalException e) {
-            return 0x03; /* LogoutError.GONE. */
+            return LogoutError.GONE;
         }
     }
 }

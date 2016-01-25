@@ -1,16 +1,16 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.auth.AccessAuthentication;
-import cn.com.xinli.portal.auth.HttpDigestCredentials;
-import cn.com.xinli.portal.auth.RestRole;
-import cn.com.xinli.portal.auth.SessionAuthority;
-import cn.com.xinli.portal.auth.challenge.Challenge;
-import cn.com.xinli.portal.auth.challenge.ChallengeService;
-import cn.com.xinli.portal.auth.challenge.InvalidChallengeException;
-import cn.com.xinli.portal.auth.token.*;
+import cn.com.xinli.portal.web.auth.AccessAuthentication;
+import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
+import cn.com.xinli.portal.web.auth.RestRole;
+import cn.com.xinli.portal.web.auth.SessionAuthority;
+import cn.com.xinli.portal.web.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.auth.challenge.ChallengeService;
+import cn.com.xinli.portal.web.auth.challenge.InvalidChallengeException;
+import cn.com.xinli.portal.web.auth.token.*;
 import cn.com.xinli.portal.core.Certificate;
 import cn.com.xinli.portal.core.CertificateNotFoundException;
-import cn.com.xinli.portal.support.rest.RestRequest;
+import cn.com.xinli.portal.web.rest.RestRequest;
 import cn.com.xinli.portal.service.AccessTokenService;
 import cn.com.xinli.portal.service.CertificateService;
 import cn.com.xinli.portal.service.SessionTokenService;

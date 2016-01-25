@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.auth.token.AbstractTokenService;
-import cn.com.xinli.portal.auth.token.TokenScope;
+import cn.com.xinli.portal.web.auth.token.AbstractTokenService;
+import cn.com.xinli.portal.web.auth.token.TokenScope;
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.configuration;
 
-import cn.com.xinli.portal.support.rest.Scheme;
+import cn.com.xinli.portal.web.rest.Scheme;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     @Value("${pws.rest.header}") private String restSchemeHeader;
     @Value("${pws.rest.meta}") private String restSchemeMeta;
 
-    @Value("${pws.redirect.url") private String redirectUrl;
+    @Value("${pws.redirect.url}") private String redirectUrl;
 
     @Bean
     public Scheme scheme() {
@@ -135,7 +135,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
 //     * <p>REST modules should handle unhandled exceptions thrown from REST modules
 //     * differently and separately.</p>
 //     *
-//     * @see cn.com.xinli.portal.controller.RestExceptionAdvisor
+//     * @see cn.com.xinli.portal.web.controller.RestExceptionAdvisor
 //     * @return {@link HandlerExceptionResolver}
 //     */
 //    @Bean

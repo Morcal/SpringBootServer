@@ -3,7 +3,9 @@ package cn.com.xinli.portal.core;
 /**
  * Certificate manager.
  *
- * Project: xpws
+ * <p>Classes implements this interface to provide certificate management.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/21.
  */

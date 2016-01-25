@@ -35,13 +35,13 @@ import java.io.File;
  * <p>
  * All JPA support was provided by spring-data-jpa.
  * <p>
- * Project: portal
+ * Project: xpws
  *
  * @author zhoupeng 2015/12/7.
  */
 @Configuration
 @EnableTransactionManagement(proxyTargetClass = true, mode = AdviceMode.PROXY)
-@EnableJpaRepositories(basePackages = "cn.com.xinli.portal.repository")
+@EnableJpaRepositories(basePackages = {"cn.com.xinli.portal.repository"})
 public class JpaConfiguration {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(JpaConfiguration.class);
@@ -113,7 +113,7 @@ public class JpaConfiguration {
         factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setJpaDialect(jpaDialect());
         //factory.setBeanFactory(beanFactory);
-        factory.setPackagesToScan("cn.com.xinli.portal.repository");
+        factory.setPackagesToScan("cn.com.xinli.portal.core");
 
         return factory;
     }

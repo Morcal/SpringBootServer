@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.auth.challenge.Challenge;
 
 /**
  * Authorization Server.
@@ -14,7 +14,7 @@ import cn.com.xinli.portal.auth.challenge.Challenge;
  *
  * <p>It also verifies client's ip address if server option configured.
  *
- * <p>Project: portal
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/11/30.
  */

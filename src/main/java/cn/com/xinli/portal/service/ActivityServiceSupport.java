@@ -1,8 +1,7 @@
 package cn.com.xinli.portal.service;
 
-import cn.com.xinli.portal.admin.Activity;
-import cn.com.xinli.portal.admin.ActivityService;
-import cn.com.xinli.portal.repository.ActivityEntity;
+import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.web.admin.ActivityService;
 import cn.com.xinli.portal.repository.ActivityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +41,12 @@ public class ActivityServiceSupport implements ActivityService {
 
     @Override
     public void log(Activity activity) {
-        if (activity != null && activity instanceof ActivityEntity) {
+        if (activity != null && activity instanceof Activity) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Saving activity {}", activity);
             }
 
-            activityRepository.save((ActivityEntity) activity);
+            activityRepository.save((Activity) activity);
         }
     }
 

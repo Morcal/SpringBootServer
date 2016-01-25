@@ -114,12 +114,6 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.8.7</version>
         </dependency>
-        <!-- Xinli portal protocol. -->
-        <dependency>
-            <groupId>cn.com.xinli</groupId>
-            <artifactId>portal-protocol</artifactId>
-            <version>1.0</version>
-        </dependency>
     </dependencies>
 
 	<build>

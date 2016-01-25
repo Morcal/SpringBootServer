@@ -3,7 +3,6 @@ package cn.com.xinli.portal.service;
 import cn.com.xinli.portal.core.Certificate;
 import cn.com.xinli.portal.core.CertificateManager;
 import cn.com.xinli.portal.core.CertificateNotFoundException;
-import cn.com.xinli.portal.repository.CertificateEntity;
 import cn.com.xinli.portal.repository.CertificateRepository;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -32,7 +31,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public Certificate create(String appId, String vendor, String os, String version, String sharedSecret) {
-        CertificateEntity certificate = new CertificateEntity();
+        Certificate certificate = new Certificate();
         certificate.setAppId(appId);
         certificate.setVersion(version);
         certificate.setVendor(vendor);
@@ -47,7 +46,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public void disableCertificate(long id) {
-        CertificateEntity certificate = certificateRepository.findOne(id);
+        Certificate certificate = certificateRepository.findOne(id);
         certificate.setDisabled(true);
         certificateRepository.save(certificate);
         certificateCache.put(new Element(certificate.getAppId(), certificate));
@@ -56,7 +55,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     @Override
     public void delete(Certificate certificate) {
         certificateCache.remove(certificate.getAppId());
-        certificateRepository.delete((CertificateEntity) certificate);
+        certificateRepository.delete(certificate);
     }
 
     @Override
@@ -72,7 +71,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     public Certificate loadCertificate(String clientId) throws CertificateNotFoundException {
         Element element = certificateCache.get(clientId);
         if (element == null) {
-            Optional<CertificateEntity> opt = certificateRepository.find(clientId).stream().findFirst();
+            Optional<Certificate> opt = certificateRepository.find(clientId).stream().findFirst();
 
             if (opt.isPresent()) {
                 certificateCache.put(new Element(clientId, opt.get()));

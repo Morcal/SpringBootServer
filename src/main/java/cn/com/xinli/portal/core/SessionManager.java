@@ -1,8 +1,5 @@
 package cn.com.xinli.portal.core;
 
-import cn.com.xinli.portal.protocol.Nas;
-import cn.com.xinli.portal.protocol.Result;
-
 import java.util.concurrent.Future;
 
 /**
@@ -16,20 +13,21 @@ public interface SessionManager {
     /**
      * Create a new portal session.
      *
-     * @param session session to create.
-     * @return session result.
+     * @param nas target NAS.
+     * @param certificate client certificate.
+     * @param credentials user's credentials.
+     * @return session.
      * @throws PortalException
      */
-    Result createSession(Nas nas, Session session) throws PortalException;
+    Session createSession(Nas nas, Certificate certificate, Credentials credentials) throws PortalException;
 
     /**
      * Remove session by id.
      * @param id session id.
-     * @return session result.
      * @throws SessionNotFoundException
      * @throws PortalException
      */
-    Result removeSession(long id) throws PortalException;
+    void removeSession(long id) throws PortalException;
 
     /**
      * Remove session in a future.
@@ -41,8 +39,7 @@ public interface SessionManager {
     /**
      * Remove session by ip address.
      * @param ip ip address.
-     * @return result.
      * @throws PortalException
      */
-    Result removeSession(String ip) throws PortalException;
+    void removeSession(String ip) throws PortalException;
 }

@@ -1,7 +1,5 @@
 package cn.com.xinli.portal.core;
 
-import cn.com.xinli.portal.protocol.PortalProtocolException;
-
 /**
  * Portal platform (including NAS/BRAS, AAA platform) exception.
  *
@@ -12,7 +10,7 @@ import cn.com.xinli.portal.protocol.PortalProtocolException;
  * NAS/BRAS. Errors may occurs in the underlying communicating layer or
  * occurs in the business logic layer like portal related authentication.
  *
- * <p>When a {@link PortalProtocolException} been thrown, server should translate
+ * <p>When a PortalProtocolException been thrown, server should translate
  * underlying exception to {@link PortalError} and then send error response
  * to remote client.
  *

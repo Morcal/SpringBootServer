@@ -2,25 +2,26 @@ package cn.com.xinli.portal.service;
 
 import cn.com.xinli.portal.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.core.*;
-import cn.com.xinli.portal.repository.SessionEntity;
 import cn.com.xinli.portal.repository.SessionRepository;
-import cn.com.xinli.portal.protocol.*;
-import cn.com.xinli.portal.protocol.huawei.HuaweiPortal;
 import cn.com.xinli.portal.support.PortalErrorTranslator;
+import cn.com.xinli.portal.transport.PortalClient;
+import cn.com.xinli.portal.transport.PortalProtocolException;
+import cn.com.xinli.portal.transport.ProtocolError;
+import cn.com.xinli.portal.transport.Result;
+import cn.com.xinli.portal.transport.huawei.HuaweiPortal;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -50,12 +51,23 @@ import java.util.concurrent.Future;
  *     Delete a session revolving delete a database record and a session cache.
  * </ul>
  *
- * <p>Project: portal
+ * <p>This implement is based on a fact that Huawei portal protocol logout requests
+ * only require user's ip address. So, when portal web server try to logout
+ * certain user, user's authentication information includes account name and user's
+ * password may be left out. As result, logout user's credentials may can not pass
+ * credentials integrity validation.
+ *
+ * <p>The {@link Session} class was designed to support Huawei based portal protocol,
+ * and it does not contains full user's credentials. If protocol (such as other protocol
+ * providers) requires full user's credentials, then full user's credentials need
+ * be accessible through {@link Session}s.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/6.
  */
 @Service
-@Transactional(rollbackFor = { PortalException.class})
+@Transactional(rollbackFor = { PortalException.class, DataAccessException.class})
 public class SessionServiceSupport implements SessionService, SessionManager, InitializingBean {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SessionServiceSupport.class);
@@ -67,10 +79,12 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     private SessionStore sessionStore;
 
     @Autowired
-    private NasMapping nasMapping;
+    private NasService nasService;
 
     @Autowired
     private PortalErrorTranslator errorTranslator;
+
+    @Value("${pws.cluster.enable}") private boolean clusterEnabled;
 
     /** Remover executor. */
     private ExecutorService executor = Executors.newFixedThreadPool(
@@ -115,28 +129,41 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     /**
+     * Build a session with nas, certificate and credentials.
+     * @param nas target nas.
+     * @param certificate client certificate.
+     * @param credentials credentials.
+     * @return session.
+     */
+    private DbSession buildDbSession(Nas nas, Certificate certificate, Credentials credentials) {
+        DbSession session = new DbSession();
+        session.setIp(credentials.getIp());
+        session.setMac(credentials.getMac());
+        session.setUsername(credentials.getUsername());
+        session.setCertificate(certificate);
+        session.setNas(nas);
+        session.setStartTime(Calendar.getInstance().getTime());
+        return session;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * Try to create a portal session by communicating with target NAS.
      * If succeeded, put session into cache and save session in the database.
      *
      * @param nas target {@link Nas}.
-     * @param session session to create.
+     * @param certificate client certificate.
+     * @param credentials user's credentials.
      * @return result.
      * @throws NasNotFoundException
      */
     @Override
-    public Result createSession(Nas nas, Session session) throws PortalException {
+    public Session createSession(Nas nas, Certificate certificate, Credentials credentials) throws PortalException {
         Optional<Session> opt =
-                sessionRepository.find(Session.pair(session.getIp(), session.getMac()))
+                sessionRepository.find(Session.pair(credentials.getIp(), credentials.getMac()))
                         .stream()
                         .findFirst();
-
-        Credentials credentials = new Credentials(
-                session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
-
-        Result result = null;
-
         try {
             if (opt.isPresent()) {
                 /* Check if already existed session was created by current user.
@@ -147,16 +174,20 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
                 logger.info("Session already existed, {}", existed);
 
-                if (!StringUtils.equals(existed.getUsername(), session.getUsername())) {
+                if (!StringUtils.equals(existed.getUsername(), credentials.getUsername())) {
                     logger.warn("+ session already exists with different username.");
                     removeSessionInternal(existed);
                 } else {
-                    return () -> "Session already exists.";
+                    return existed;
                 }
             }
 
             PortalClient client = HuaweiPortal.createClient(nas);
-            result = client.login(credentials);
+            Result result = client.login(credentials);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Portal login result: {}", result);
+            }
         } catch (IOException e) {
             logger.error("Portal login error", e);
             throw new ServerException(PortalError.IO_ERROR, "Failed to login", e);
@@ -174,15 +205,12 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Portal login result: {}", result);
-        }
-
-        sessionRepository.save((SessionEntity) session);
+        DbSession session = buildDbSession(nas, certificate, credentials);
+        sessionRepository.save(session);
         /* Only put to cache if no exceptions or rollback occurred. */
         sessionStore.put(session);
 
-        return result;
+        return session;
     }
 
     /**
@@ -192,44 +220,47 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * then try to load from database.
      * If session loaded from database, put it into data store, or else
      * throw {@link SessionNotFoundException}. ("Cache-aside" pattern).
+     *
      * @param id session id.
      * @return session found.
      * @throws SessionNotFoundException if session not found.
      */
     @Override
     public Session getSession(long id) throws SessionNotFoundException {
-        Session found = sessionStore.get(id);
+        Session cached = sessionStore.get(id);
 
-        if (found == null) {
-            found = sessionRepository.findOne(id);
-            if (found == null) {
-                throw new SessionNotFoundException(id);
+        if (cached == null) {
+            if (!clusterEnabled) {
+                Session session = sessionRepository.findOne(id);
+                if (session != null) {
+                    sessionStore.put(session);
+                    return session;
+                }
             }
+            throw new SessionNotFoundException(id);
+        } else {
+            return cached;
         }
-
-        sessionStore.put(found);
-        return found;
     }
 
     /**
      * Remove session internal.
      *
      * @param session session to remove.
-     * @return result.
      * @throws PortalException
      */
-    private Result removeSessionInternal(Session session) throws PortalException {
-        Credentials credentials = new Credentials(
-                session.getUsername(), session.getPassword(), session.getIp(), session.getMac());
+    private void removeSessionInternal(Session session) throws PortalException {
+        Credentials credentials = new Credentials(null, null, session.getIp(), null);
 
-        Optional<Nas> nas = nasMapping.getNas(session.getNasId());
-        nas.orElseThrow(() -> new NasNotFoundException("NAS not found by id: " + session.getNasId()));
-
-        Result result = null;
+        Nas nas = nasService.find(session.getNasName());
 
         try {
-            PortalClient client = HuaweiPortal.createClient(nas.get());
-            result = client.logout(credentials);
+            PortalClient client = HuaweiPortal.createClient(nas);
+            Result result = client.logout(credentials);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Portal logout result: {}", result);
+            }
         } catch (IOException e) {
             logger.error("Portal logout error", e);
             throw new ServerException(
@@ -246,10 +277,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Portal logout result: {}", result);
-        }
-
         long id = session.getId();
 
         if (!sessionStore.delete(id)) {
@@ -257,8 +284,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         }
         sessionRepository.delete(id);
         logger.debug("Session {} removed.", id);
-
-        return result;
     }
 
     /**
@@ -273,13 +298,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @throws NasNotFoundException
      */
     @Override
-    public Result removeSession(long id) throws PortalException {
+    public void removeSession(long id) throws PortalException {
         Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
         }
 
-        return removeSessionInternal(session);
+        removeSessionInternal(session);
     }
 
     /**
@@ -340,13 +365,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    public Result removeSession(String ip) throws PortalException {
+    public void removeSession(String ip) throws PortalException {
         Optional<Session> found = sessionRepository.find(ip)
                 .stream().findFirst();
 
         found.orElseThrow(() ->
                 new SessionNotFoundException("ip: " + ip));
 
-        return removeSessionInternal(found.get());
+        removeSessionInternal(found.get());
     }
 }

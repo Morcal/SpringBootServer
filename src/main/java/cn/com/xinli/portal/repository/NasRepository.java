@@ -1,9 +1,7 @@
 package cn.com.xinli.portal.repository;
 
-import org.springframework.data.jpa.repository.Query;
+import cn.com.xinli.portal.core.Nas;
 import org.springframework.data.repository.PagingAndSortingRepository;
-
-import java.util.List;
 
 /**
  * Nas/bras device respositoy.
@@ -12,11 +10,5 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/17.
  */
-public interface NasRepository extends PagingAndSortingRepository<NasEntity, Long> {
-    /**
-     * Get all nas configurations.
-     * @return all nas configurations.
-     */
-    @Query("from NasEntity")
-    List<NasEntity> all();
+public interface NasRepository extends PagingAndSortingRepository<Nas, Long> {
 }
