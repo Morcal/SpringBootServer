@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
     <logger name="cn.com.xinli.portal" level="trace"/>
+    <logger name="cn.com.xinli.scratch" level="trace"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

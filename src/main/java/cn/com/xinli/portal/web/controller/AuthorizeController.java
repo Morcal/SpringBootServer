@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
-import cn.com.xinli.portal.service.AuthorizationServer;
+import cn.com.xinli.portal.web.auth.AuthorizationServer;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class AuthorizeController {
                                   @RequestParam(name = "user_mac", defaultValue = "") String mac,
                                   HttpServletRequest request) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("{} ==> {}", request.getMethod(), request.getRequestURI());
+            logger.debug("{} ==> http://{}", request.getMethod(), request.getRequestURI());
         }
 
         /*

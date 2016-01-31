@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Huawei Portal Protocol Error.
+ * HUAWEI Portal Protocol Error.
  *
  * <p>This class defines errors in the communication between portal-client
  * and NAS/BRAS.

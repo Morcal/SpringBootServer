@@ -1,12 +1,12 @@
 package cn.com.xinli.portal.web.auth.challenge;
 
-import cn.com.xinli.portal.core.Certificate;
-import cn.com.xinli.portal.core.CertificateNotFoundException;
-import cn.com.xinli.portal.service.CertificateService;
-import cn.com.xinli.portal.configuration.CachingConfiguration;
+import cn.com.xinli.portal.core.certificate.Certificate;
+import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
+import cn.com.xinli.portal.core.certificate.CertificateService;
+import cn.com.xinli.portal.support.configuration.CachingConfiguration;
 import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.web.util.SignatureUtil;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;

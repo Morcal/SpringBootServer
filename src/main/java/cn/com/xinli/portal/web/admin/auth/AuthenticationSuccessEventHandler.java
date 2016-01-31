@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.admin.auth;
 
-import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.web.admin.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

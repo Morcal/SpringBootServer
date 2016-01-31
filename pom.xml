@@ -50,6 +50,10 @@
             <version>1.9.1.RELEASE</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-redis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <version>4.2.3.RELEASE</version>
@@ -135,6 +139,20 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
+            <!-- jar plugin. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Title>Xinli Portal Web Server</Implementation-Title>
+                            <Implementation-Vendor>Xinli Software Technology ltd., co.</Implementation-Vendor>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <!-- dependency plugin. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -150,11 +168,11 @@
                         </configuration>
                     </execution>
                 </executions>
-                <version>2.10</version>
             </plugin>
+
+            <!-- resources plugin. -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

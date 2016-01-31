@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.admin.auth;
 
-import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.core.activity.Activity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
@@ -18,7 +18,7 @@ public class AuthenticationFailureEvent extends AbstractRestAuthenticationEvent 
                                       HttpServletResponse response,
                                       Authentication authentication,
                                       AuthenticationException e) {
-        super(request, response, authentication, Activity.Severity.VERBOSE);
+        super(request, response, authentication, Activity.Severity.TRACE);
         exception = e;
     }
 

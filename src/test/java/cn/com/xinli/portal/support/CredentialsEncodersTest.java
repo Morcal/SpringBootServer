@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.Credentials;
-import cn.com.xinli.portal.core.CredentialsEncoder;
-import cn.com.xinli.portal.core.CredentialsEncoders;
+import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
+import cn.com.xinli.portal.core.credentials.CredentialsEncoders;
 import cn.com.xinli.portal.util.CodecUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -32,7 +32,7 @@ public class CredentialsEncodersTest {
 
     @Before
     public void setup() {
-        credentials = new Credentials(USERNAME, PASSWORD, IP, MAC);
+        credentials = Credentials.of(USERNAME, PASSWORD, IP, MAC);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class CredentialsEncodersTest {
         encoded = md5.encode(credentials, secret);
 
         logger.debug("md5 encoded: {}", encoded);
-        String md5summary = new String(Hex.encodeHex(CodecUtils.md5sum(credentials.getPassword().getBytes())));
+        String md5summary = Hex.encodeHexString(CodecUtils.md5sum(credentials.getPassword().getBytes()));
 
         Assert.assertEquals(md5summary, encoded.getPassword());
 
@@ -61,12 +61,12 @@ public class CredentialsEncodersTest {
 
         logger.debug("sha1 hex encoded: {}", encoded);
 
-        Assert.assertEquals(new String(Hex.encodeHex(sha1)), encoded.getPassword());
+        Assert.assertEquals(Hex.encodeHexString(sha1), encoded.getPassword());
 
         encoded = sha1base64.encode(credentials, secret);
 
         logger.debug("sha1 base64 encoded: {}", encoded);
 
-        Assert.assertEquals(new String(Base64.encodeBase64(sha1)), encoded.getPassword());
+        Assert.assertEquals(Base64.encodeBase64String(sha1), encoded.getPassword());
     }
 }

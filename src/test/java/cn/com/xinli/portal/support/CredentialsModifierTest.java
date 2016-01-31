@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.Credentials;
-import cn.com.xinli.portal.core.CredentialsModifier;
+import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.CredentialsModifier;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ public class CredentialsModifierTest {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(CredentialsModifierTest.class);
 
-    final Credentials credentials = new Credentials("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
+    final Credentials credentials = Credentials.of("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
 
     @Test
     public void testPrefixPostfix() {

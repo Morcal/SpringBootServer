@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.transport.huawei;
 
 /**
- * Huawei logout request error.
+ * HUAWEI logout request error.
  *
  * <p>This error will be used when portal client requests for logout to
  * remote portal server. Normal logout requests should use {@link #REQUEST}

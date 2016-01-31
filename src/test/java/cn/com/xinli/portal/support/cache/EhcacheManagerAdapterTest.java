@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support.cache;
 
+import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import org.junit.Assert;

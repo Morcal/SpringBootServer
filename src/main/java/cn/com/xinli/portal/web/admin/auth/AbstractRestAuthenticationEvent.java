@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.admin.auth;
 
-import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.core.activity.Activity;
 import org.springframework.security.authentication.event.AbstractAuthenticationEvent;
 import org.springframework.security.core.Authentication;
 

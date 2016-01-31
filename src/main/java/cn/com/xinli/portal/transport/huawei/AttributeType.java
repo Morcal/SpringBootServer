@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.transport.huawei;
 
 /**
- * Huawei portal protocol attribute.
+ * HUAWEI portal protocol attribute.
  *
  * <p>Project: xpws
  *

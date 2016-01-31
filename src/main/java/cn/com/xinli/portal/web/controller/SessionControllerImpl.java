@@ -1,18 +1,23 @@
 package cn.com.xinli.portal.web.controller;
 
-import cn.com.xinli.portal.core.*;
-import cn.com.xinli.portal.service.CertificateService;
-import cn.com.xinli.portal.service.SessionService;
-import cn.com.xinli.portal.service.SessionTokenService;
+import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.certificate.Certificate;
+import cn.com.xinli.portal.core.certificate.CertificateService;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.session.Session;
+import cn.com.xinli.portal.core.session.SessionManager;
+import cn.com.xinli.portal.core.session.SessionNotFoundException;
+import cn.com.xinli.portal.core.session.SessionService;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.web.auth.token.RestToken;
+import cn.com.xinli.portal.web.auth.token.SessionTokenService;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.method.P;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +30,7 @@ import java.util.Optional;
 /**
  * Session controller implementation.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/2.
  */
@@ -45,16 +50,20 @@ public class SessionControllerImpl implements SessionController {
     private SessionTokenService sessionTokenService;
 
     @Autowired
-    private NasLocator nasLocator;
-
-    @Autowired
     private CertificateService certificateService;
 
-    @Value("${pws.session.keepalive.requires}") private boolean requiresKeepAlive;
+    @Autowired
+    private ServerConfiguration serverConfiguration;
 
-    @Value("${pws.session.keepalive.interval}") private int keepAliveInterval;
-
-    @Value("${pws.nat.allowed}") private boolean natAllowed;
+    private RestResponse buildResponse(Session session, AccessAuthentication authentication, boolean grantToken) {
+        return RestResponseBuilders.successBuilder()
+                .setSession(session)
+                .setAccessAuthentication(authentication)
+                .setRequiresKeepAlive(serverConfiguration.getSessionConfiguration().isEnableHeartbeat())
+                .setKeepAliveInterval(serverConfiguration.getSessionConfiguration().getHeartbeatInterval())
+                .setGrantToken(grantToken)
+                .build();
+    }
 
     @Override
     @ResponseBody
@@ -68,16 +77,13 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
-        Credentials credentials = new Credentials(username, password, ip, mac);
-
-        // Get NAS if mapped.
-        Nas nas = nasLocator.locate(credentials);
+        Credentials credentials = Credentials.of(username, password, ip, mac);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
         Certificate certificate = certificateService.loadCertificate(app);
 
-        Session session = sessionManager.createSession(nas, certificate, credentials);
+        Session session = sessionManager.createSession(certificate, credentials);
         if (logger.isTraceEnabled()) {
             logger.trace("session created: {}", session);
         }
@@ -92,13 +98,7 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("session created id: {}", session.getId());
 
-        return RestResponseBuilders.successBuilder()
-                .setSession(session)
-                .setAccessAuthentication(authentication)
-                .setRequiresKeepAlive(requiresKeepAlive)
-                .setKeepAliveInterval(keepAliveInterval)
-                .setGrantToken(true)
-                .build();
+        return buildResponse(session, authentication, false);
     }
 
     @Override
@@ -115,12 +115,7 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("get session {{}}", session.getId());
 
-        return RestResponseBuilders.successBuilder()
-                .setSession(session)
-                .setAccessAuthentication((AccessAuthentication) principal)
-                .setRequiresKeepAlive(requiresKeepAlive)
-                .setKeepAliveInterval(keepAliveInterval)
-                .build();
+        return buildResponse(session, (AccessAuthentication) principal, false);
     }
 
     @Override
@@ -140,12 +135,7 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session {{}} updated", updated.getId());
 
         /* send updated session information. */
-        return RestResponseBuilders.successBuilder()
-                .setSession(updated)
-                .setAccessAuthentication((AccessAuthentication) principal)
-                .setRequiresKeepAlive(requiresKeepAlive)
-                .setKeepAliveInterval(keepAliveInterval)
-                .build();
+        return buildResponse(updated, (AccessAuthentication) principal, false);
     }
 
     @Override
@@ -191,13 +181,7 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("session found, id: {}", session.getId());
 
-        return RestResponseBuilders.successBuilder()
-                .setSession(session)
-                .setAccessAuthentication((AccessAuthentication) principal)
-                .setRequiresKeepAlive(requiresKeepAlive)
-                .setKeepAliveInterval(keepAliveInterval)
-                .setGrantToken(true)
-                .build();
+        return buildResponse(session, (AccessAuthentication) principal, true);
     }
 
 }

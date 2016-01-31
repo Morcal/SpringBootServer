@@ -2,8 +2,8 @@ package cn.com.xinli.portal.web.rest;
 
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.core.PortalError;
-import cn.com.xinli.portal.core.Session;
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.core.session.Session;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.RestToken;

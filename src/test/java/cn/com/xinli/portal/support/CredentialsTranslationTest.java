@@ -1,14 +1,16 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.*;
+import cn.com.xinli.portal.core.credentials.*;
+import cn.com.xinli.portal.core.nas.HuaweiNas;
+import cn.com.xinli.portal.transport.huawei.AuthType;
 import cn.com.xinli.portal.util.CodecUtils;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.codec.Base64;
-import org.springframework.security.crypto.codec.Hex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +25,9 @@ public class CredentialsTranslationTest {
     private final Logger logger = LoggerFactory.getLogger(CredentialsTranslationTest.class);
 
     final String privateKey = "some-private-key";
-    final Credentials credentials = new Credentials("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
+    final Credentials credentials = Credentials.of("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
 
-    Nas nas;
+    HuaweiNas nas;
 
     @Test
     public void testMd5Encoder() {
@@ -37,7 +39,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(Hex.encode(CodecUtils.md5sum(credentials.getPassword().getBytes())));
+        final String encodedPassword = Hex.encodeHexString(CodecUtils.md5sum(credentials.getPassword().getBytes()));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -54,8 +56,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(
-                Hex.encode(CodecUtils.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
+        final String encodedPassword = Hex.encodeHexString(CodecUtils.hmacSha1(credentials.getPassword().getBytes(), privateKey));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -72,8 +73,7 @@ public class CredentialsTranslationTest {
 
         Assert.assertNotEquals(credentials.getPassword(), encoded.getPassword());
 
-        final String encodedPassword = new String(
-                Base64.encode(CodecUtils.hmacSha1(credentials.getPassword().getBytes(), privateKey)));
+        final String encodedPassword = Base64.encodeBase64String(CodecUtils.hmacSha1(credentials.getPassword().getBytes(), privateKey));
         Assert.assertNotNull(encodedPassword);
         logger.debug("encoded password: {}", encodedPassword);
 
@@ -82,13 +82,12 @@ public class CredentialsTranslationTest {
 
     @Before
     public void createNas() {
-        nas = new Nas();
-        nas.setType(NasType.HuaweiV2);
+        nas = new HuaweiNas();
         nas.setSharedSecret("aaa");
         nas.setName("test-01");
         nas.setIpv4Address("127.0.0.1");
         nas.setListenPort(2000);
-        nas.setAuthType(AuthType.CHAP);
+        nas.setAuthType(AuthType.CHAP.name());
         nas.setId(1);
 
 //        nas.setIpv4start("192.168.3.1");

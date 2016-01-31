@@ -45,7 +45,7 @@ public class SignatureUtil {
         String digest = null;
         try {
             byte[] fin = hmac(data, key, algorithm);
-            digest = new String(Hex.encodeHex(fin));
+            digest = Hex.encodeHexString(fin);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
         }

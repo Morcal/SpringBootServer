@@ -1,0 +1,17 @@
+/**
+ *
+ This package contains sample applications that
+ show how to use TinyRadius.
+
+ <p><ul>
+ <li>TestClient shows how to send Radius Access-Request and
+ Accounting-Request packets.</li>
+ <li>TestServer can answer both to Access-Request and Access-Response
+ packets with Access-Accept/Reject or Accounting-Response, respectively.</li>
+ <li>TestProxy shows how to implement a proxy radius server. You can use
+ this class together with TestClient and TestServer.</li>
+ <li>TestDictionary demonstrates the use of custom dictionaries.</li>
+ </ul>
+ *
+ */
+package cn.com.xinli.radius;

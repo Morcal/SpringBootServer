@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.auth.token;
 
-import cn.com.xinli.portal.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import org.springframework.security.core.token.Token;
 
 /**

@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Huawei Protocol Authentication error.
+ * HUAWEI Protocol Authentication error.
  *
  * <p>Project: xpws
  *

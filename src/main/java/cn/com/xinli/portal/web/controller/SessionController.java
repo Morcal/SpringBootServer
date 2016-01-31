@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.PortalException;
-import cn.com.xinli.portal.core.SessionNotFoundException;
+import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.web.auth.RestRole;
 import cn.com.xinli.portal.web.rest.RestResponse;
 
@@ -25,9 +25,9 @@ public interface SessionController {
 
     /**
      * Create a portal session so that user can access broadband connection.
-     * <p>
+     *
      * <p>Only request authenticated with role of {@link RestRole#USER}
-     * and has authority of this session can proceed.</p>
+     * and has authority of this session can proceed.
      *
      * @param ip        source ip address.
      * @param mac       source mac address.
@@ -45,10 +45,10 @@ public interface SessionController {
 
     /**
      * Get portal session information.
-     * <p>
+     *
      * <p>Only request authenticated with role of {@link RestRole#USER}
-     * and has authority of this session can proceed.</p>
-     * <p>
+     * and has authority of this session can proceed.
+     *
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
@@ -60,10 +60,10 @@ public interface SessionController {
 
     /**
      * Update portal session.
-     * <p>
+     *
      * <p>Only request authenticated with role of {@link RestRole#USER}
-     * and has authority of this session can proceed.</p>
-     * <p>
+     * and has authority of this session can proceed.
+     *
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
@@ -77,10 +77,10 @@ public interface SessionController {
 
     /**
      * Disconnect portal session.
-     * <p>
+     *
      * <p>Only request authenticated with role of {@link RestRole#USER}
-     * and has authority of this session can proceed.</p>
-     * <p>
+     * and has authority of this session can proceed.
+     *
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
@@ -92,8 +92,9 @@ public interface SessionController {
 
     /**
      * Find portal session created by user ip and user mac.
+     *
      * <p>Only request authenticated with role of {@link RestRole#USER}
-     * and has authority of this session can proceed.</p>
+     * and has authority of this session can proceed.
      *
      * @param ip        user ip address.
      * @param mac       user mac address.

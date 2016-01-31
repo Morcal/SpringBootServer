@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.transport;
 
-import cn.com.xinli.portal.core.Credentials;
+import cn.com.xinli.portal.core.credentials.Credentials;
 
 import java.io.IOException;
 

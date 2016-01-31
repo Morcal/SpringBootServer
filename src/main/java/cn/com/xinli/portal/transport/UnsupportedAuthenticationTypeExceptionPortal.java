@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.transport;
 
-import cn.com.xinli.portal.core.AuthType;
+import cn.com.xinli.portal.transport.huawei.AuthType;
 
 /**
  * Authentication type not supported exception.

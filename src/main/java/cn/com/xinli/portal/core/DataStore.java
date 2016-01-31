@@ -8,42 +8,36 @@ package cn.com.xinli.portal.core;
  * 
  * <p>Project: xpws
  *
- * @param <T> data type.
+ * @param <T> value type.
+ * @param <K> key type.
  * @author zhoupeng 2015/12/29.
  */
-public interface DataStore<T> {
+public interface DataStore<T, K> {
     /**
-     * Get session by id.
+     * Get session by key.
      *
-     * @param id session id.
+     * @param key key.
      * @return session
      */
-    T get(long id) throws Exception;
+    T get(K key) throws Exception;
 
     /**
-     * Put data into data store.
-     * @param t data.
+     * Put value into store.
+     * @param value value.
      */
-    void put(T t);
+    void put(T value);
 
     /**
-     * Check if data with id exists.
-     * @param id data id.
+     * Check if data with key exists.
+     * @param key key.
      * @return true if exists.
      */
-    boolean exists(long id);
-
-    /**
-     * Update data's last modified timestamp.
-     * @param id data id.
-     * @param lastModified last modified time (UNIX epoch time).
-     */
-    void update(long id, long lastModified) throws Exception;
+    boolean exists(K key);
 
     /**
      * Remove.
-     * @param id data id.
-     * @return true if data with id deleted.
+     * @param key key.
+     * @return true if value with key deleted.
      */
-    boolean delete(long id) throws Exception;
+    boolean delete(K key) throws Exception;
 }

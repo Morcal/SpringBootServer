@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.configuration.ErrorConfiguration;
+import cn.com.xinli.portal.support.configuration.ErrorConfiguration;
 import cn.com.xinli.portal.core.PlatformException;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;

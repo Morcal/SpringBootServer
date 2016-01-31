@@ -1,13 +1,13 @@
 package cn.com.xinli.portal.web.admin;
 
-import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.core.activity.Activity;
 
 /**
  * Portal web server activity service.
- * <p>
- * Service provides abilities to save activity log to database.
- * <p>
- * Project: xpws
+ *
+ * <p>Service provides abilities to save activity log to database.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */

@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.auth;
 
-import cn.com.xinli.portal.core.Session;
+import cn.com.xinli.portal.core.session.Session;
 import org.springframework.security.core.GrantedAuthority;
 
 /**

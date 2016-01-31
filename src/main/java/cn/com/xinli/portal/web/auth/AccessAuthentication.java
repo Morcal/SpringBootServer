@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.web.auth;
 
-import cn.com.xinli.portal.core.Certificate;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.PlatformException;
+import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.core.*;
 import cn.com.xinli.portal.support.PortalErrorTranslator;

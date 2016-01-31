@@ -1,3 +1,4 @@
 
-INSERT INTO PWS.app_authentication (app_id, shared_secret)
-VALUE ("xinli-android", "s3c3t");
+INSERT INTO PWS.certificate
+(id, app_id, disabled, os, shared_secret, vendor, version)
+VALUES(1, 'jportal', false, 'android', 's3cr3t', 'xinli', 'v1.0');

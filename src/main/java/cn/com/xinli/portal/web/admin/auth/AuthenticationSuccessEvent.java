@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.web.admin.auth;
 
-import cn.com.xinli.portal.core.Activity;
+import cn.com.xinli.portal.core.activity.Activity;
 import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +15,6 @@ public class AuthenticationSuccessEvent extends AbstractRestAuthenticationEvent 
     public AuthenticationSuccessEvent(HttpServletRequest request,
                                       HttpServletResponse response,
                                       Authentication authentication) {
-        super(request, response, authentication, Activity.Severity.VERBOSE);
+        super(request, response, authentication, Activity.Severity.TRACE);
     }
 }

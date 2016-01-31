@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.web.auth.token;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.web.util.SecureRandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.core.token.Token;
 import org.springframework.security.core.token.TokenService;
@@ -39,7 +39,8 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     @Autowired
     private SecureRandomStringGenerator secureRandomStringGenerator;
 
-    @Value("${pws.private_key") private String serverPrivateKey;
+    @Autowired
+    private ServerConfiguration serverConfiguration;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -89,7 +90,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return SHA summary.
      */
     private String sha(String content) {
-        return Sha512DigestUtils.shaHex(content + ":" + serverPrivateKey/*serverConfig.getPrivateKey()*/);
+        return Sha512DigestUtils.shaHex(content + ":" + serverConfiguration.getPrivateKey());
     }
 
     @Override

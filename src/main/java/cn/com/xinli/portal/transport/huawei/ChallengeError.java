@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Huawei Protocol Challenge error.
+ * HUAWEI Protocol Challenge error.
  *
  * <p>Project: xpws
  *

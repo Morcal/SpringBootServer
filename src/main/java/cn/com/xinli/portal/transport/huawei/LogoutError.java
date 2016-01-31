@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Huawei Protocol logout error.
+ * HUAWEI Protocol logout error.
  *
  * <p>Project: xpws
  *

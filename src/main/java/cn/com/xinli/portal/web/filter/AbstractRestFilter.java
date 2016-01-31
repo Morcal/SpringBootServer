@@ -13,7 +13,6 @@ import java.util.List;
  *
  * <p>This filter extends from spring-security {@link OncePerRequestFilter}.
  *
- *
  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/30.

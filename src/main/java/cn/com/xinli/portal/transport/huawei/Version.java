@@ -1,19 +1,20 @@
 package cn.com.xinli.portal.transport.huawei;
 
 /**
- * Huawei protocol version.
+ * HUAWEI protocol version.
  *
  * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/24.
  */
 public enum Version {
-    /** Huawei protocol v1. */
+    /** HUAWEI protocol v1. */
     V1(0x01),
 
-    /** Huawei protocol v2. */
+    /** HUAWEI protocol v2. */
     V2(0x02);
 
+    /** Version value. */
     private final int value;
 
     Version(int value) {

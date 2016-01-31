@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.transport;
 
-import cn.com.xinli.portal.core.NasType;
+import cn.com.xinli.portal.core.nas.NasType;
 
 /**
  * Nas not supported exception.
