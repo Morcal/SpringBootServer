@@ -19,7 +19,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 /**
- * Project: xpws
+ * Cluster configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/30.
  */

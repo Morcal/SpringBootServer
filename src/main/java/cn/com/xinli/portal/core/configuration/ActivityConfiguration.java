@@ -1,24 +1,17 @@
 package cn.com.xinli.portal.core.configuration;
 
+import cn.com.xinli.portal.core.activity.Activity;
+
 /**
- * Project: xpws
+ * Activity Configuration.
+ *
+ *<p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
 public class ActivityConfiguration {
-
-    /** Severity. */
-    public enum Severity {
-        FATAL,
-        ERROR,
-        WARN,
-        INFO,
-        DEBUG,
-        TRACE
-    }
-
     private int mostRecent;
-    private Severity severity;
+    private Activity.Severity severity;
 
     public int getMostRecent() {
         return mostRecent;
@@ -28,11 +21,11 @@ public class ActivityConfiguration {
         this.mostRecent = mostRecent;
     }
 
-    public Severity getSeverity() {
+    public Activity.Severity getSeverity() {
         return severity;
     }
 
-    public void setSeverity(Severity severity) {
+    public void setSeverity(Activity.Severity severity) {
         this.severity = severity;
     }
 

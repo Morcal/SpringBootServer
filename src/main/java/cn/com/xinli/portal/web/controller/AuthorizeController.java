@@ -44,7 +44,7 @@ public class AuthorizeController {
                                   @RequestParam(name = "user_mac", defaultValue = "") String mac,
                                   HttpServletRequest request) throws RemoteException {
         if (logger.isDebugEnabled()) {
-            logger.debug("{} ==> http://{}", request.getMethod(), request.getRequestURI());
+            logger.debug("{} ==> http://localhost{}", request.getMethod(), request.getRequestURI());
         }
 
         /*

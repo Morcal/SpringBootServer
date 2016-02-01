@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.credentials;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
@@ -14,18 +16,23 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="credentials_modifier")
+@JsonInclude
 public class CredentialsModifier {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     protected long id;
 
     @Column(nullable = false)
+    @JsonProperty
     protected CredentialsModifier.Target target;
 
     @Column(nullable = false)
+    @JsonProperty
     protected CredentialsModifier.Position position;
 
     @Column(nullable = false)
+    @JsonProperty
     protected String value;
 
     public long getId() {

@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 /**
- * Project: xpws
+ * NAS/BRAS device persistence.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/31.
  */

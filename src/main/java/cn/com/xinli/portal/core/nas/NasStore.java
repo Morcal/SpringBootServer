@@ -1,6 +1,9 @@
 package cn.com.xinli.portal.core.nas;
 
+import cn.com.xinli.portal.core.RouteMapper;
 import cn.com.xinli.portal.core.DataStore;
+import cn.com.xinli.portal.core.Locatable;
+import cn.com.xinli.portal.core.credentials.Credentials;
 
 import java.util.stream.Stream;
 
@@ -15,7 +18,7 @@ import java.util.stream.Stream;
  *
  * @author zhoupeng 2016/1/30.
  */
-public interface NasStore extends NasLocator, DataStore<Nas, String> {
+public interface NasStore extends RouteMapper, Locatable<Credentials, Nas>, DataStore<Nas, String> {
     /**
      * Get NAS/BRAS by device id.
      * @param name NAS device name.
@@ -27,6 +30,9 @@ public interface NasStore extends NasLocator, DataStore<Nas, String> {
 
     @Override
     boolean delete(String key) throws NasNotFoundException;
+
+    @Override
+    Nas locate(Credentials credentials) throws NasNotFoundException;
 
     /**
      * Find NAS/BRAS by device ip address.
@@ -41,4 +47,6 @@ public interface NasStore extends NasLocator, DataStore<Nas, String> {
     Stream<NasRule> rules();
 
     Stream<Nas> devices();
+
+    void reload();
 }

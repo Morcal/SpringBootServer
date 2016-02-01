@@ -1,9 +1,9 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.activity.Activity;
+import cn.com.xinli.portal.core.activity.ActivityStore;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.support.aspect.SystemActivityAspect;
-import cn.com.xinli.portal.support.repository.ActivityRepository;
 import cn.com.xinli.portal.web.admin.ActivityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +35,19 @@ public class ActivityServiceSupport implements ActivityService {
     private final Logger logger = LoggerFactory.getLogger(ActivityServiceSupport.class);
 
     @Autowired
-    private ActivityRepository activityRepository;
+    private ActivityStore activityStore;
 
     @Autowired
     private ServerConfiguration serverConfiguration;
 
     @Override
     public void log(Activity activity) {
-//        if (activity != null && activity instanceof Activity) {
         if (activity != null) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Saving activity {}", activity);
             }
 
-            activityRepository.save(activity);
+            activityStore.put(activity);
         }
     }
 
@@ -68,6 +67,6 @@ public class ActivityServiceSupport implements ActivityService {
         Date date = calendar.getTime();
         logger.info("Deleting old activities before {}", date);
 
-        activityRepository.deleteOlderThan(date);
+        activityStore.deleteOlderThan(date);
     }
 }

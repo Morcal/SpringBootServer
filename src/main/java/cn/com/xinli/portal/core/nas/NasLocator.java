@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.nas;
 
+import cn.com.xinli.portal.core.RouteMapper;
+import cn.com.xinli.portal.core.Locatable;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.session.Session;
 
@@ -23,22 +25,16 @@ import cn.com.xinli.portal.core.session.Session;
  *
  * @author zhoupeng 2016/1/23.
  */
-public interface NasLocator {
+public interface NasLocator extends Locatable<Credentials, Nas>, RouteMapper {
     /**
-     * Locate user incoming NAS.
+     * {@inheritDoc}
+     *
+     * <p>Locate user originate routing NAS.
      *
      * @param credentials user credentials.
      * @return originate NAS.
      * @throws NasNotFoundException
      */
+    @Override
     Nas locate(Credentials credentials) throws NasNotFoundException;
-
-    /**
-     * Map user/client to their originate NAS/BRAS device by device's ip address.
-     * @param ip user ip.
-     * @param mac user mac.
-     * @param nasIp NAS/BRAS device ip address.
-     * @throws NasNotFoundException
-     */
-    void map(String ip, String mac, String nasIp) throws NasNotFoundException;
 }

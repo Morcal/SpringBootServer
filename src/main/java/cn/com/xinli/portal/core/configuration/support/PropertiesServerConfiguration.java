@@ -2,6 +2,7 @@ package cn.com.xinli.portal.core.configuration.support;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
+import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.configuration.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,23 +62,9 @@ public class PropertiesServerConfiguration {
     public static final String PORTAL_SERVER_LISTEN_PORT = "portal-server.listen.port";
     public static final String PORTAL_SERVER_CORE_THREADS = "portal-server.core-threads";
     public static final String PORTAL_SERVER_SHARED_SECRET = "portal-server.shared-secret";
-    /**
-     * Configuration options for Developing.
-     */
-    public static final String MOCK_NAS_HOST = "mock-nas.host";
-    public static final String MOCK_NAS_ENABLED = "mock-nas.enabled";
-    public static final String MOCK_NAS_NAME = "mock-nas.name";
-    public static final String MOCK_NAS_LISTEN_PORT = "mock-nas.listen.port";
-    public static final String MOCK_NAS_SHARED_SECRET = "mock-nas.shared-secret";
 
     @Autowired
     private ResourceLoader resourceLoader;
-
-    private PortalServerConfiguration mockNas;
-
-    public PortalServerConfiguration getMockNas() {
-        return mockNas;
-    }
 
     public ServerConfiguration loadFromProperties(String resource) throws ServerException {
         ServerConfiguration configuration = new ServerConfiguration();
@@ -111,16 +98,6 @@ public class PropertiesServerConfiguration {
         internal.setVersion(config.valueOf(PORTAL_SERVER_PROTOCOL_VERSION));
         internal.setSharedSecret(config.valueOf(PORTAL_SERVER_SHARED_SECRET));
         configuration.setPortalServerConfiguration(internal);
-
-        /* Create mock huawei NAS (portal server) configuration. */
-        configuration.setEnableMockedHuaweiNas(config.valueOf(MOCK_NAS_ENABLED));
-        if (configuration.isEnableMockedHuaweiNas()) {
-            mockNas = new PortalServerConfiguration();
-            mockNas.setHost(config.valueOf(MOCK_NAS_HOST));
-            mockNas.setName(config.valueOf(MOCK_NAS_NAME));
-            mockNas.setPort(config.valueOf(MOCK_NAS_LISTEN_PORT));
-            mockNas.setSharedSecret(config.valueOf(MOCK_NAS_SHARED_SECRET));
-        }
 
         /* Create rate limiting configuration. */
         configuration.setEnableRateLimiting(config.valueOf(RATE_LIMITING_ENABLED));
@@ -193,12 +170,6 @@ public class PropertiesServerConfiguration {
                 Entry.of(PORTAL_SERVER_LISTEN_PORT, ValueType.INTEGER),
                 Entry.of(PORTAL_SERVER_CORE_THREADS, ValueType.INTEGER),
                 Entry.of(PORTAL_SERVER_SHARED_SECRET, ValueType.STRING),
-                /* Mock HUAWEI NAS configurations. */
-                Entry.of(MOCK_NAS_HOST, ValueType.STRING),
-                Entry.of(MOCK_NAS_ENABLED, ValueType.BOOLEAN),
-                Entry.of(MOCK_NAS_NAME, ValueType.STRING),
-                Entry.of(MOCK_NAS_LISTEN_PORT, ValueType.INTEGER),
-                Entry.of(MOCK_NAS_SHARED_SECRET, ValueType.STRING),
         };
 
         <T>T valueOf(String entry) {
@@ -250,7 +221,7 @@ public class PropertiesServerConfiguration {
         BOOLEAN(Boolean.class),
         INTEGER(Integer.class),
         STRING(String.class),
-        SEVERITY(ActivityConfiguration.Severity.class);
+        SEVERITY(Activity.Severity.class);
 
         private final Class<?> cls;
 
@@ -279,7 +250,7 @@ public class PropertiesServerConfiguration {
                     break;
 
                 case SEVERITY:
-                    this.value = ActivityConfiguration.Severity.valueOf(value);
+                    this.value = Activity.Severity.valueOf(value);
                     break;
             }
         }

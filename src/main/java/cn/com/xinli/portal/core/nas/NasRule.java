@@ -2,6 +2,9 @@ package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.Matcher;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -22,12 +25,18 @@ import java.util.Objects;
 @Table(schema = "PWS", name = "nas_rule")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "rule_type", discriminatorType = DiscriminatorType.STRING)
+@JsonInclude
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "rule_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = IPv4RangeBasedNasRule.class, name = "IPv4-RANGE"),
+        @JsonSubTypes.Type(value = DomainBasedNasRule.class, name = "DOMAIN"),
+})
 public abstract class NasRule implements Matcher<Credentials> {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nas_id", referencedColumnName = "id")
     private Nas nas;
 

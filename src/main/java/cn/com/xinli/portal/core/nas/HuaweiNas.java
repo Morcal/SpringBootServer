@@ -1,6 +1,10 @@
 package cn.com.xinli.portal.core.nas;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 /**
@@ -11,20 +15,26 @@ import javax.persistence.Entity;
  * @author zhoupeng 2016/1/30.
  */
 @Entity
+@DiscriminatorValue("HUAWEI")
+@JsonInclude
 public class HuaweiNas extends Nas {
     /** Portal server shared secret. */
-    @Column(name = "shared_secret", nullable = false)
+    @Column(name = "portal_shared_secret")
+    @JsonProperty("portal_shared_secret")
     private String sharedSecret;
 
     /** Portal listen port. */
-    @Column(name = "listen_port", nullable = false)
+    @Column(name = "listen_port")
+    @JsonProperty("listen_port")
     private int listenPort;
 
     /** Authentication type (PAP/CHAP). */
-    @Column(name = "authentication_type", nullable = false)
+    @Column(name = "authentication_type")
+    @JsonProperty("authentication_type")
     private String authType;
 
     /** HUAWEI portal protocol version. */
+    @JsonProperty
     private String version;
 
     @Override

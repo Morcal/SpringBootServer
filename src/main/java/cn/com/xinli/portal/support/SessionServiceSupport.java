@@ -6,6 +6,7 @@ import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasLocator;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
@@ -56,7 +57,7 @@ import java.util.concurrent.Future;
  * @author zhoupeng 2015/12/6.
  */
 @Service
-@Transactional(rollbackFor = { PortalException.class, DataAccessException.class})
+@Transactional(rollbackFor = { PortalException.class, DataAccessException.class })
 public class SessionServiceSupport implements SessionService, SessionManager, InitializingBean {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SessionServiceSupport.class);
@@ -157,6 +158,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
         try {
             Nas nas = nasLocator.locate(credentials);
+            CredentialsTranslation translation = nas.getTranslation();
+            if (translation != null) {
+                credentials = translation.translate(credentials);
+            }
             SessionProvider provider = find(nas);
             Session session = provider.createSession(nas, credentials);
             session = provider.authenticate(session);

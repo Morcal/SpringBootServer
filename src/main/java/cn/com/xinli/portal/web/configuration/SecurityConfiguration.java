@@ -97,7 +97,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        logger.warn("configuring web security... ");
+        logger.info("configuring web security... ");
         web.ignoring().antMatchers("/static/**");
     }
 

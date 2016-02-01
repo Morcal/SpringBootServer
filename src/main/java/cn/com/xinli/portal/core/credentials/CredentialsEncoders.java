@@ -1,9 +1,12 @@
 package cn.com.xinli.portal.core.credentials;
 
 import cn.com.xinli.portal.util.CodecUtils;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 /**
@@ -21,6 +24,7 @@ public class CredentialsEncoders {
      * <p>This encoder only copies original credentials without modifying.
      */
     @Entity
+    @DiscriminatorValue("NO-OP")
     public static class NoOpEncoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {
@@ -38,6 +42,7 @@ public class CredentialsEncoders {
      * <p>Encode password in {@link Credentials} with MD5 summary.
      */
     @Entity
+    @DiscriminatorValue("MD5")
     public static class Md5Encoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {
@@ -55,6 +60,7 @@ public class CredentialsEncoders {
      * <p>Encode password in {@link Credentials} with HMAC-SHA1 Hex string.
      */
     @Entity
+    @DiscriminatorValue("SHA1-HEX")
     public static class Sha1HexEncoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {
@@ -77,6 +83,7 @@ public class CredentialsEncoders {
      * <p>Encode password in {@link Credentials} with HMAC-SHA1 Base64 string.
      */
     @Entity
+    @DiscriminatorValue("SHA1-BASE64")
     public static class Sha1Base64Encoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {

@@ -1,10 +1,12 @@
 package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.util.AddressUtil;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 /**
  * IPv4 range based NAS rule.
@@ -16,11 +18,14 @@ import javax.persistence.*;
  * @author zhoupeng 2016/1/23.
  */
 @Entity
+@DiscriminatorValue("IPv4-RANGE")
 public class IPv4RangeBasedNasRule extends NasRule {
-    @Column(name = "ipv4_start", nullable = false)
+    /** IPv4 Start. */
+    @Column(name = "ipv4_start")
     private String ipv4start;
 
-    @Column(name = "ipv4_end", nullable = false)
+    /** IPv4 end. */
+    @Column(name = "ipv4_end")
     private String ipv4end;
 
     @Transient

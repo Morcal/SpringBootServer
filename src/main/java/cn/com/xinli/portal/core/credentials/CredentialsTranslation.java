@@ -1,5 +1,9 @@
 package cn.com.xinli.portal.core.credentials;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -18,10 +22,12 @@ import java.util.List;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="credentials_translation")
+@JsonInclude
 public class CredentialsTranslation {
     /** Internal translation id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     private long id;
 
     /** Associated foreign modifiers. */
@@ -29,19 +35,23 @@ public class CredentialsTranslation {
     @JoinTable(name = "translation_modifier", schema = "PWS",
             joinColumns = @JoinColumn(name = "trans_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "mod_id", referencedColumnName = "id"))
+    @JsonProperty
     private List<CredentialsModifier> modifiers;
 
     /** Associated credentials encoder. */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "encoder_id", referencedColumnName = "id")
+    @JsonProperty
     private CredentialsEncoder encoder;
 
     /** Optional encoder additional value. */
     @Column(name = "encoder_value")
+    @JsonProperty("encoder_value")
     private String encoderAdditional;
 
     /** NAS truncate domain when authenticate or not. */
     @Column(name ="authenticate_with_domain", nullable = false)
+    @JsonProperty("authenticate_with_domain")
     private boolean authenticateWithDomain;
 
     public long getId() {
@@ -88,6 +98,7 @@ public class CredentialsTranslation {
      * Check if translation has no modifiers.
      * @return true if no modifiers.
      */
+    @JsonIgnore
     public boolean isEmpty() {
         return modifiers.isEmpty();
     }

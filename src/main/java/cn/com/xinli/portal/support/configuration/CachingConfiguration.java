@@ -3,9 +3,9 @@ package cn.com.xinli.portal.support.configuration;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
-import cn.com.xinli.portal.support.ehcache.NasSerializerAdapter;
-import cn.com.xinli.portal.support.ehcache.SessionSerializerAdapter;
+import cn.com.xinli.portal.support.ehcache.SerializerAdapter;
 import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
 import cn.com.xinli.portal.util.Serializer;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
@@ -49,8 +49,17 @@ public class CachingConfiguration {
     /** NAS cache name. */
     public static final String NAS_CACHE_NAME = "nas-cache";
 
+    /** NAS search cache name. */
+    public static final String NAS_SARCH_CACHE_NAME = "nas-search-cache";
+
+    /** NAS rule cache name. */
+    public static final String NAS_RULE_CACHE_NAME = "nas-rule-cache";
+
     /** NAS mapping cache name. */
     public static final String NAS_MAPPING_CACHE_NAME = "nas-mapping-cache";
+
+    /** Radius server cache name. */
+    public static final String RADIUS_CACHE_NAME = "radius-cache";
 
     /** Max cache MESSAGE_TRANSLATE_TABLE. */
     private static final int MAX_SESSION_CACHE_ENTRIES = 10_000;
@@ -69,12 +78,17 @@ public class CachingConfiguration {
 
     @Bean
     public Serializer<Session> sessionSerializer() {
-        return new SessionSerializerAdapter();
+        return new SerializerAdapter<>(Session.class);
     }
 
     @Bean
     public Serializer<Nas> nasSerializer() {
-        return new NasSerializerAdapter();
+        return new SerializerAdapter<>(Nas.class);
+    }
+
+    @Bean
+    public Serializer<NasRule> nasRuleSerializer() {
+        return new SerializerAdapter<>(NasRule.class);
     }
 
     @Bean
@@ -99,8 +113,17 @@ public class CachingConfiguration {
         /* Create nas cache. */
         adapter.createCache(NAS_CACHE_NAME, 1000);
 
+        /* Create nas rule cache. */
+        adapter.createCache(NAS_RULE_CACHE_NAME, 1000);
+
+        /* Create nas search cache. */
+        adapter.createCache(NAS_SARCH_CACHE_NAME, 1000);
+
         /* Create nas cache. */
         adapter.createCache(NAS_MAPPING_CACHE_NAME, 100_000);
+
+        /* Create nas cache. */
+        adapter.createCache(RADIUS_CACHE_NAME, 1000);
 
         /* Create challenge cache. */
         adapter.createCache(CHALLENGE_CACHE_NAME, MAX_CHALLENGE_CACHE_ENTRIES, true,
@@ -144,7 +167,22 @@ public class CachingConfiguration {
     }
 
     @Bean
+    public Ehcache nasRuleCache() {
+        return ehcacheManager().getEhcache(NAS_RULE_CACHE_NAME);
+    }
+
+    @Bean
+    public Ehcache nasSearchCache() {
+        return ehcacheManager().getEhcache(NAS_SARCH_CACHE_NAME);
+    }
+
+    @Bean
     public Ehcache nasMappingCache() {
         return ehcacheManager().getEhcache(NAS_MAPPING_CACHE_NAME);
+    }
+
+    @Bean
+    public Ehcache radiusCache() {
+        return ehcacheManager().getEhcache(RADIUS_CACHE_NAME);
     }
 }

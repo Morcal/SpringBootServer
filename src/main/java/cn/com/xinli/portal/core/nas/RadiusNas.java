@@ -2,9 +2,12 @@ package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.nps.EndPoint;
 import cn.com.xinli.nps.NetPolicyServer;
+import cn.com.xinli.portal.core.radius.Radius;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * NAS/BRAS devices support RADIUS portal protocols.
@@ -29,6 +32,8 @@ import javax.persistence.Entity;
  * @author zhoupeng 2016/1/30.
  */
 @Entity
+@DiscriminatorValue("RADIUS")
+@JsonInclude
 public class RadiusNas extends Nas {
     /** Net policy server type. */
     public enum NPSType {
@@ -39,12 +44,29 @@ public class RadiusNas extends Nas {
     }
 
     /** NPS type. */
-    @Column(name = "nps_type", nullable = false)
+    @Column(name = "nps_type")
+    @JsonProperty("nps_type")
     private NPSType npsType;
 
     /** Portal server shared secret. */
-    @Column(name = "shared_secret", nullable = false)
+    @Column(name = "nps_shared_secret")
+    @JsonProperty("nps_shared_secret")
     private String sharedSecret;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(schema = "PWS", name="nas_radius",
+            joinColumns = @JoinColumn(name = "nas_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "radius_id", referencedColumnName = "id"))
+    @JsonProperty
+    private List<Radius> radiusServers;
+
+    public List<Radius> getRadiusServers() {
+        return radiusServers;
+    }
+
+    public void setRadiusServers(List<Radius> radiusServers) {
+        this.radiusServers = radiusServers;
+    }
 
     public String getSharedSecret() {
         return sharedSecret;

@@ -30,7 +30,7 @@ public class ApiController {
     @RequestMapping
     public Provider api(HttpServletRequest request) {
         if (logger.isDebugEnabled()) {
-            logger.debug("{} ==> http://{}", request.getMethod(), request.getRequestURI());
+            logger.debug("{} ==> http://localhost{}", request.getMethod(), request.getRequestURI());
         }
 
         return restApiProvider;

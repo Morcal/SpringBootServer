@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
+import com.fasterxml.jackson.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
@@ -15,6 +16,10 @@ import java.util.Objects;
  * Portal clients need specific NAS configuration before it can create concrete
  * portal requests.
  *
+ * <p>To make jackson-json be able to deserialize to an abstract class (like this class),
+ * this class was annotated with {@link JsonTypeInfo} to add additional subclass
+ * information in JSON, and with {@link JsonSubTypes} to support mapper serializer.
+ *
  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/2.
@@ -24,27 +29,39 @@ import java.util.Objects;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @Table(schema = "PWS", name = "nas")
+@JsonInclude
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "nas_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = HuaweiNas.class, name = "HUAWEI"),
+        @JsonSubTypes.Type(value = CmccNas.class, name = "CMCC"),
+        @JsonSubTypes.Type(value = RadiusNas.class, name = "RADIUS"),
+})
 public abstract class Nas {
     /** Auto generated internal id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     private long id;
 
     /** Nas name. */
     @Column(unique = true, nullable = false)
+    @JsonProperty
     private String name;
 
     /** IPv4 Address. */
     @Column(name = "ipv4_address")
+    @JsonProperty("ipv4_address")
     private String ipv4Address;
 
     /** IPv6 Address. */
     @Column(name = "ipv6_address")
+    @JsonProperty("ipv6_address")
     private String ipv6Address;
 
     /** Associated translation. */
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "translation_id", referencedColumnName = "id")
+    @JsonProperty
     private CredentialsTranslation translation;
 
     /**
@@ -118,6 +135,7 @@ public abstract class Nas {
      * if not presented, then check ipv6 address.
      * @return ipv4 address if present, or ipv6 address, could be null.
      */
+    @JsonIgnore
     public String getIp() {
         return StringUtils.isEmpty(getIpv4Address()) ? getIpv6Address() : getIpv4Address();
     }
@@ -127,6 +145,7 @@ public abstract class Nas {
      * @return nas' {@link InetAddress}.
      * @throws UnknownHostException
      */
+    @JsonIgnore
     public InetAddress getNetworkAddress() throws UnknownHostException {
         Objects.requireNonNull(getIp(), "NAS ip can not be empty.");
         return InetAddress.getByName(getIp());

@@ -6,6 +6,7 @@ import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.support.configuration.ClusterConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,9 +74,22 @@ public class RedisNasStore implements NasStore {
         return keyFor(nas.getName());
     }
 
+    String keyFor(String ip, String mac) {
+        return "nas:" + ip + ":" + mac;
+    }
+    String keyFor(Credentials credentials) {
+        return keyFor(credentials.getIp(), credentials.getMac());
+    }
+
     void ensureId(Nas nas) {
         long id = redisIdTemplate.opsForValue().increment(ID, 1);
         nas.setId(id);
+    }
+
+    @Override
+    public void reload() {
+        /* Since data stored in REDIS, sync them here. */
+        //TODO sync data with REDIS
     }
 
     @Override
@@ -102,15 +116,15 @@ public class RedisNasStore implements NasStore {
     @Override
     public NasRule put(NasRule rule) {
         Objects.requireNonNull(rule);
-        redisNasRuleTemplate.opsForList().rightPush(RULE_LIST_KEY, rule);
+        redisNasRuleTemplate.opsForSet().add(RULE_LIST_KEY, rule);
         return rule;
     }
 
     @Override
     public Stream<NasRule> rules() {
-        long size = redisNasRuleTemplate.opsForList().size(RULE_LIST_KEY);
+        //long size = redisNasRuleTemplate.opsForSet().size(RULE_LIST_KEY);
         /* We assume that nas rule list will not be long (for example thousands). */
-        return redisNasRuleTemplate.opsForList().range(RULE_LIST_KEY, 0, size -  1).stream();
+        return redisNasRuleTemplate.opsForSet().members(RULE_LIST_KEY).stream();
     }
 
     @Override
@@ -181,11 +195,23 @@ public class RedisNasStore implements NasStore {
 
     @Override
     public Nas locate(Credentials credentials) throws NasNotFoundException {
-        return null;
+        Objects.requireNonNull(credentials);
+        Nas nas = redisNasTemplate.opsForValue().get(keyFor(credentials));
+        if (nas == null) {
+            throw new NasNotFoundException(credentials.toString());
+        }
+        return nas;
     }
 
     @Override
     public void map(String ip, String mac, String nasIp) throws NasNotFoundException {
+        if (StringUtils.isEmpty(ip) ||
+                StringUtils.isEmpty(mac) ||
+                StringUtils.isEmpty(nasIp)) {
+            throw new IllegalArgumentException("ip, mac and nasIp can not be blank.");
+        }
 
+        Nas nas = find(nasIp);
+        redisNasTemplate.opsForValue().set(keyFor(ip, mac), nas);
     }
 }

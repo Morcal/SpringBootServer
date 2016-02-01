@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.credentials;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,26 +23,32 @@ import java.net.UnknownHostException;
 @Entity
 @PersistenceUnit(unitName = "bra")
 @Table(schema = "PWS", name="credentials")
+@JsonInclude
 public class Credentials {
     /** Id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     private long id;
 
     /** user name. */
     @Column(nullable = false)
+    @JsonProperty
     private String username;
 
     /** user password. */
     @Column
+    @JsonProperty
     private String password;
 
     /** User ip address. */
     @Column(nullable = false)
+    @JsonProperty
     private String ip;
 
     /** User mac address. */
     @Column
+    @JsonProperty
     private String mac;
 
     /**

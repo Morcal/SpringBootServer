@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.certificate;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 
 /**
@@ -16,30 +19,38 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="certificate")
+@JsonInclude
 public class Certificate {
     /** Internal id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     private long id;
 
     /** Client application id. */
     @Column(name = "app_id")
+    @JsonProperty
     private String appId;
 
     /** Shared secret. */
     @Column(name = "shared_secret")
+    @JsonProperty
     private String sharedSecret;
 
     @Column
+    @JsonProperty
     private String vendor;
 
     @Column
+    @JsonProperty
     private String os;
 
     @Column
+    @JsonProperty
     private String version;
 
     @Column
+    @JsonProperty
     private boolean disabled;
 
     /**

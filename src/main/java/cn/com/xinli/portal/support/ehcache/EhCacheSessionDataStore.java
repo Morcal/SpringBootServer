@@ -5,7 +5,7 @@ import cn.com.xinli.portal.core.configuration.SessionConfiguration;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionStore;
-import cn.com.xinli.portal.support.repository.SessionRepository;
+import cn.com.xinli.portal.support.persist.SessionPersistence;
 import cn.com.xinli.portal.util.Serializer;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -55,12 +54,11 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(EhcacheSessionDataStore.class);
 
-    @Qualifier("sessionRepository")
-    @Autowired
-    private SessionRepository sessionRepository;
-
     @Autowired
     private Ehcache sessionCache;
+
+    @Autowired
+    private SessionPersistence sessionPersistence;
 
     @Autowired
     private Serializer<Session> sessionSerializer;
@@ -78,16 +76,14 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
         logger.info("register event listener on session cache: {}.", registered);
 
-        for (Session session : sessionRepository.findAll()) {
-            put(session);
-        }
+        sessionPersistence.all(this::put);
 
         logger.info("EhCache sync with database done.");
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(sessionRepository);
+        Assert.notNull(sessionPersistence);
     }
 
     @Scheduled(fixedDelay = 300_000L)
@@ -162,7 +158,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     public void put(Session session) {
         Objects.requireNonNull(session);
         /* Save to database, id will be generated. */
-        sessionRepository.save(session);
+        sessionPersistence.save(session);
 
         Element element = toElement(session);
         if (element != null) {
@@ -208,7 +204,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Override
     public boolean delete(Long id) {
         logger.trace("ehcache session data store deleting session {}.", id);
-        sessionRepository.delete(id);
+        sessionPersistence.delete(id);
         return sessionCache.remove(id);
     }
 

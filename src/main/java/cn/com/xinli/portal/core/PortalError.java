@@ -38,6 +38,7 @@ public enum PortalError {
     ACTIVITY_ACTION_ERROR(16, "activity action error"),
     CACHING_ERROR(17, "caching error"),
     SESSION_PROVIDER_NOT_FOUND(18, "session provider not found"),
+    RADIUS_NOT_FOUND(19, "radius server not found"),
     MISSING_PWS_CONFIGURATION(21, "missing configuration pws.properties"),
     PWS_CONFIGURATION_TYPE_ERROR(22, "invalid pws configuration value type"),
     PWS_CONFIGURATION_BLANK(22, "pws configuration is blank"),

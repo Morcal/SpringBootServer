@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.nas;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 /**
@@ -10,6 +13,8 @@ import javax.persistence.Entity;
  * @author zhoupeng 2016/1/30.
  */
 @Entity
+@JsonInclude
+@DiscriminatorValue("CMCC")
 public class CmccNas extends Nas {
 
     @Override

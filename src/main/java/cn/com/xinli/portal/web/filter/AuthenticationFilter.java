@@ -174,7 +174,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                                     FilterChain filterChain) throws ServletException, IOException {
         if (requiresFilter(request)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("{} ==> http://{} Authentication filter checking...",
+                logger.debug("{} ==> http://localhost{} Authentication filter checking...",
                         request.getMethod(), request.getRequestURI());
             }
 
