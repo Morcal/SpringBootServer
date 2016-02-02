@@ -46,7 +46,7 @@ import java.util.Collections;
  * @author zhoupeng 2016/1/31.
  */
 @Configuration
-@Order(Stage.SERVE)
+@Order(Stage.INITIALIZE)
 public class Environment implements ApplicationEventPublisherAware {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(Environment.class);

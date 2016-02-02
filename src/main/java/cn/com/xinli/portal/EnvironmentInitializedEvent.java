@@ -3,7 +3,9 @@ package cn.com.xinli.portal;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Project: xpws
+ * Portal web server initialized event.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/2/1.
  */

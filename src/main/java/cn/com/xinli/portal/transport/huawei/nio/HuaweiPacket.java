@@ -7,8 +7,6 @@ import cn.com.xinli.portal.transport.huawei.RequestType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Packet supports HUAWEI Portal protocol.
@@ -68,27 +66,8 @@ final class HuaweiPacket implements Packet {
     /** Attributes. */
     private Collection<Attribute> attributes = new ArrayList<>();
 
-    /** Max serial number. */
-    private static final int MAX_SERIAL = Short.MAX_VALUE * 2 + 1;
-
-    /** Serial number random generator. */
-    private static final Random random = new Random(System.currentTimeMillis());
-
     /** Maximum packet length. */
     static final int MAX_LENGTH = 1024;
-
-    /** Serial number generator. */
-    private static final AtomicInteger serial
-            = new AtomicInteger((random.nextInt() & 0xFFFF) % MAX_SERIAL);
-
-    /**
-     * Generate a serial number.
-     * <p>Serial numbers are unique in-a-time-range.</p>
-     * @return serial number.
-     */
-    public static int nextSerialNum() {
-        return serial.updateAndGet(i -> (i >= MAX_SERIAL + 1 ? 0 : i + 1));
-    }
 
     /**
      * Add an attribute to a {@link HuaweiPacket}.

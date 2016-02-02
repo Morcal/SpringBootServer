@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Project: xpws
+ * Portal web server startup stage.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/28.
  */

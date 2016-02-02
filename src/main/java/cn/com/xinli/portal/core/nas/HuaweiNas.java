@@ -38,7 +38,7 @@ public class HuaweiNas extends Nas {
     private String version;
 
     @Override
-    protected NasType getType() {
+    public NasType getType() {
         return NasType.HUAWEI;
     }
 

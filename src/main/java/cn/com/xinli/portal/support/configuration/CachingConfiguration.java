@@ -5,7 +5,7 @@ import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
-import cn.com.xinli.portal.support.ehcache.SerializerAdapter;
+import cn.com.xinli.portal.util.SerializerAdapter;
 import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
 import cn.com.xinli.portal.util.Serializer;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
@@ -50,7 +50,7 @@ public class CachingConfiguration {
     public static final String NAS_CACHE_NAME = "nas-cache";
 
     /** NAS search cache name. */
-    public static final String NAS_SARCH_CACHE_NAME = "nas-search-cache";
+    public static final String NAS_SEARCH_CACHE_NAME = "nas-search-cache";
 
     /** NAS rule cache name. */
     public static final String NAS_RULE_CACHE_NAME = "nas-rule-cache";
@@ -61,14 +61,26 @@ public class CachingConfiguration {
     /** Radius server cache name. */
     public static final String RADIUS_CACHE_NAME = "radius-cache";
 
-    /** Max cache MESSAGE_TRANSLATE_TABLE. */
-    private static final int MAX_SESSION_CACHE_ENTRIES = 10_000;
+//    /** Credentials cache name. */
+//    public static final String CREDENTIALS_CACHE_NAME = "credentials-cache";
 
-    /** Max challenge MESSAGE_TRANSLATE_TABLE. */
+    /** Max supported NAS/BRAS devices, rules, certificates. */
+    private static final int DEFAULT_MAX_SUPPORTED = 1000;
+
+    /** Max session cache entries. */
+    private static final int MAX_SESSION_CACHE_ENTRIES = 50_000;
+
+    /** Max challenge  cache entries. */
     private static final int MAX_CHALLENGE_CACHE_ENTRIES = 10_000;
 
-    /** Max limiting MESSAGE_TRANSLATE_TABLE. */
+    /** Max limiting  cache entries. */
     private static final int MAX_RATE_LIMITING_CACHE_ENTRIES = 200;
+
+//    /** Max session cache entries. */
+//    private static final int MAX_CREDENTIALS_CACHE_ENTRIES = 50_000;
+
+    /** Max NAS/BRAS-user mapping cache entries. */
+    private static final int MAX_NAS_MAPPING_ENTRIES = 100_000;
 
     /** {@link Ehcache} element version. */
     public static final long EHCACHE_VERSION = 1L;
@@ -95,35 +107,39 @@ public class CachingConfiguration {
     public EhcacheManagerAdapter ehcacheManagerAdapter() {
         EhcacheManagerAdapter adapter = new EhcacheManagerAdapter(PWS_CACHE_NAME);
 
-        List<EhcacheManagerAdapter.CacheSearchAttribute> attributes = new ArrayList<>();
-        attributes.add(EhcacheManagerAdapter.search("ip", String.class, "value.getIp()"));
-        attributes.add(EhcacheManagerAdapter.search("mac", String.class, "value.getMac()"));
-        attributes.add(EhcacheManagerAdapter.search("nas", String.class, "value.getNas()"));
-        attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
+//        List<EhcacheManagerAdapter.CacheSearchAttribute> attributes = new ArrayList<>();
+//        attributes.add(EhcacheManagerAdapter.search("ip", String.class, "value.getIp()"));
+//        attributes.add(EhcacheManagerAdapter.search("mac", String.class, "value.getMac()"));
+//        attributes.add(EhcacheManagerAdapter.search("nas", String.class, "value.getNas()"));
+//        attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
 
         /* Create session cache. */
-        adapter.createCache(SESSION_CACHE_NAME,
-                MAX_SESSION_CACHE_ENTRIES, attributes,
-                serverConfiguration.getSessionConfiguration().isEnableTtl(),
-                serverConfiguration.getSessionConfiguration().getTtl());
+        adapter.createCache(SESSION_CACHE_NAME, MAX_SESSION_CACHE_ENTRIES);
+//        adapter.createCache(SESSION_CACHE_NAME,
+//                MAX_SESSION_CACHE_ENTRIES, attributes,
+//                serverConfiguration.getSessionConfiguration().isEnableTtl(),
+//                serverConfiguration.getSessionConfiguration().getTtl());
 
         /* Create certificate cache. */
-        adapter.createCache(CERTIFICATE_CACHE_NAME, 1000);
+        adapter.createCache(CERTIFICATE_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
 
         /* Create nas cache. */
-        adapter.createCache(NAS_CACHE_NAME, 1000);
+        adapter.createCache(NAS_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
 
         /* Create nas rule cache. */
-        adapter.createCache(NAS_RULE_CACHE_NAME, 1000);
+        adapter.createCache(NAS_RULE_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
 
         /* Create nas search cache. */
-        adapter.createCache(NAS_SARCH_CACHE_NAME, 1000);
+        adapter.createCache(NAS_SEARCH_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
 
-        /* Create nas cache. */
-        adapter.createCache(NAS_MAPPING_CACHE_NAME, 100_000);
+        /* Create nas mapping cache. */
+        adapter.createCache(NAS_MAPPING_CACHE_NAME, MAX_NAS_MAPPING_ENTRIES);
 
-        /* Create nas cache. */
-        adapter.createCache(RADIUS_CACHE_NAME, 1000);
+        /* Create radius cache. */
+        adapter.createCache(RADIUS_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
+
+//        /* Create credentials cache. */
+//        adapter.createCache(CREDENTIALS_CACHE_NAME, MAX_CREDENTIALS_CACHE_ENTRIES);
 
         /* Create challenge cache. */
         adapter.createCache(CHALLENGE_CACHE_NAME, MAX_CHALLENGE_CACHE_ENTRIES, true,
@@ -173,7 +189,7 @@ public class CachingConfiguration {
 
     @Bean
     public Ehcache nasSearchCache() {
-        return ehcacheManager().getEhcache(NAS_SARCH_CACHE_NAME);
+        return ehcacheManager().getEhcache(NAS_SEARCH_CACHE_NAME);
     }
 
     @Bean
@@ -185,4 +201,9 @@ public class CachingConfiguration {
     public Ehcache radiusCache() {
         return ehcacheManager().getEhcache(RADIUS_CACHE_NAME);
     }
+
+//    @Bean
+//    public Ehcache credentialsCache() {
+//        return ehcacheManager().getEhcache(CREDENTIALS_CACHE_NAME);
+//    }
 }

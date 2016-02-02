@@ -93,7 +93,11 @@ public class PortalErrorTranslator {
     }
 
     /**
-     * Translate portal protocol exception to portal error.
+     * Translate {@link ProtocolError}s to {@link PortalError}s.
+     *
+     * <p>If Protocol error is an authentication error, server should
+     * look up the authentication message table to translate error to
+     * a vendor specified error.
      *
      * @param ex portal protocol exception.
      * @return portal error.
@@ -104,20 +108,16 @@ public class PortalErrorTranslator {
         ProtocolError error = ex.getProtocolError();
 
         if (error.isAuthenticationError()) {
-            return translateAuthenticationError(ex.getMessage());
-        } else {
-            return translate(error);
+            // Translate portal authentication error.
+            Optional<MessageEntry> entry = Stream.of(messageTable)
+                    .filter(e -> contains(ex.getMessage(), e.identifiers))
+                    .findAny();
+            if (entry.isPresent()) {
+                return PortalError.of(entry.get().error);
+            }
         }
-    }
 
-    /**
-     * Translate {@link ProtocolError}s to {@link PortalError}s.
-     *
-     * @param error protocol error.
-     * @return portal error.
-     * @throws ServerException If no portal error defined for protocol error.
-     */
-    private PortalError translate(ProtocolError error) throws ServerException {
+        // fall back to translate table.
         Optional<ProtocolEntry> entry = Stream.of(protocolTable)
                 .filter(e -> e.protocolError == error.getValue())
                 .findAny();
@@ -127,6 +127,24 @@ public class PortalErrorTranslator {
 
         return PortalError.of(entry.get().portalError);
     }
+//
+//    /**
+//     * Translate {@link ProtocolError}s to {@link PortalError}s.
+//     *
+//     * @param error protocol error.
+//     * @return portal error.
+//     * @throws ServerException If no portal error defined for protocol error.
+//     */
+//    private PortalError translate(ProtocolError error) throws ServerException {
+//        Optional<ProtocolEntry> entry = Stream.of(protocolTable)
+//                .filter(e -> e.protocolError == error.getValue())
+//                .findAny();
+//
+//        entry.orElseThrow(() -> new ServerException(
+//                PortalError.UNKNOWN_PROTOCOL_ERROR, String.valueOf(error)));
+//
+//        return PortalError.of(entry.get().portalError);
+//    }
 
     /**
      * Check if text contains any one of given string array.
@@ -143,23 +161,23 @@ public class PortalErrorTranslator {
         return false;
     }
 
-    /**
-     * Translate portal authentication error.
-     *
-     * @param text error text.
-     * @return portal error.
-     * @throws ServerException If no portal error defined for portal message text.
-     */
-    private PortalError translateAuthenticationError(String text) throws ServerException {
-        Optional<MessageEntry> entry = Stream.of(messageTable)
-                .filter(e -> contains(text, e.identifiers))
-                .findAny();
-
-        entry.orElseThrow(() ->
-                new ServerException(PortalError.UNKNOWN_PROTOCOL_ERROR, text));
-
-        return PortalError.of(entry.get().error);
-    }
+//    /**
+//     * Translate portal authentication error.
+//     *
+//     * @param text error text.
+//     * @return portal error.
+//     * @throws ServerException If no portal error defined for portal message text.
+//     */
+//    private PortalError translateAuthenticationError(String text) throws ServerException {
+//        Optional<MessageEntry> entry = Stream.of(messageTable)
+//                .filter(e -> contains(text, e.identifiers))
+//                .findAny();
+//
+//        entry.orElseThrow(() ->
+//                new ServerException(PortalError.UNKNOWN_PROTOCOL_ERROR, text));
+//
+//        return PortalError.of(entry.get().error);
+//    }
 
     /**
      * Translator internal entry.

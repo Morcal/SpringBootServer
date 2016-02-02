@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.transport.PortalProtocolException;
 import cn.com.xinli.portal.transport.huawei.*;
 import org.junit.Assert;
@@ -27,13 +27,13 @@ public class HuaweiPacketTest {
     private final Logger logger = LoggerFactory.getLogger(HuaweiPacketTest.class);
 
     Endpoint endpoint;
-    Credentials credentials;
+    HuaweiCredentials credentials;
     HuaweiCodecFactory codecFactory;
 
     @Before
     public void setup() throws UnknownHostException {
-        credentials = Credentials.of("zhoup", "123456", "192.168.3.26", "20cf-30bb-e9af");
-        endpoint.setAuthType(AuthType.CHAP);
+        credentials = HuaweiCredentials.of("zhoup", "123456", "192.168.3.26", "20cf-30bb-e9af", 0);
+        endpoint = new Endpoint();
         endpoint.setVersion(Version.V2);
         endpoint.setAddress(InetAddress.getByName("127.0.0.1"));
         endpoint.setPort(2000);
@@ -44,9 +44,10 @@ public class HuaweiPacketTest {
 
     @Test
     public void testPapAuth() throws IOException, PortalProtocolException {
+        endpoint.setAuthType(AuthType.PAP);
         DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
         //HuaweiPacket papAuth = client.createPapAuthPacket(credentials);
-        HuaweiPacket papAuth = client.createRequest(RequestType.REQ_AUTH, credentials);
+        HuaweiPacket papAuth = client.createRequest(RequestType.REQ_AUTH, credentials, 1);
         ByteBuffer buffer = codecFactory.getEncoder().encode(papAuth, endpoint.getSharedSecret());
         buffer.rewind();
         HuaweiPacket decoded = codecFactory.getDecoder().decode(buffer, endpoint.getSharedSecret());
@@ -60,11 +61,12 @@ public class HuaweiPacketTest {
 
     @Test
     public void testChapAuth() throws IOException, PortalProtocolException {
+        endpoint.setAuthType(AuthType.CHAP);
         DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
-        HuaweiPacket chapReq = Packets.newChapReq(Version.V2, credentials);
+        HuaweiPacket chapReq = Packets.newChapReq(Version.V2, credentials, 1);
         HuaweiPacket chapAck = Packets.newChallengeAck(
                 InetAddress.getLocalHost(), "challenge-value", 1, ChallengeError.OK, chapReq);
-        HuaweiPacket chapAuth = client.createRequest(RequestType.REQ_AUTH, credentials, chapAck);
+        HuaweiPacket chapAuth = client.createRequest(RequestType.REQ_AUTH, credentials, chapAck, 1);
         ByteBuffer buffer = codecFactory.getEncoder().encode(chapAuth, endpoint.getSharedSecret());
         buffer.rewind();
         HuaweiPacket decoded = codecFactory.getDecoder().decode(buffer, endpoint.getSharedSecret());

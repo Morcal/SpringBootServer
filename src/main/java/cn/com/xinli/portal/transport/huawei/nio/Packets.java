@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.transport.huawei.*;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,12 +60,12 @@ final class Packets {
      * @param challenge challenge.
      * @return CHAP password in bytes.
      */
-    static byte[] newChapPassword(int reqId, String password, byte[] challenge) {
+    static byte[] newChapPassword(int reqId, byte[] password, byte[] challenge) {
+        Objects.requireNonNull(password);
+        Objects.requireNonNull(challenge);
         ByteBuffer buffer = ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
         buffer.put((byte) (reqId & 0xFF));
-        if (!StringUtils.isEmpty(password)) {
-            buffer.put(password.getBytes());
-        }
+        buffer.put(password);
         buffer.put(challenge);
         buffer.flip();
         return md5sum(buffer.array());
@@ -96,19 +97,21 @@ final class Packets {
      * @param version    protocol version.
      * @param ack         challenge acknowledge packet.
      * @param credentials user credentials.
+     * @param serialNum serial number.
      * @return HUAWEI portal packet.
      * @throws IOException
      */
     static HuaweiPacket newChapAuth(Version version,
                                     HuaweiPacket ack,
-                                    Credentials credentials) throws IOException {
+                                    HuaweiCredentials credentials,
+                                    int serialNum) throws IOException {
         Objects.requireNonNull(ack);
         int attrs = 0;
         HuaweiPacket packet = new HuaweiPacket();
         packet.setVersion(version.value());
         packet.setType(RequestType.REQ_AUTH.code());
         packet.setAuthType(AuthType.CHAP.code());
-        packet.setSerialNum(ack.getSerialNum());
+        packet.setSerialNum(serialNum);
         packet.setReqId(ack.getReqId());
         packet.setIp(getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
@@ -122,7 +125,7 @@ final class Packets {
         packet.addAttribute(AttributeType.CHALLENGE_PASSWORD,
                 newChapPassword(
                         ack.getReqId(),
-                        credentials.getPassword(),
+                        credentials.getPassword().getBytes(),
                         ack.getAttribute(AttributeType.CHALLENGE)));
         attrs++;
         packet.setAttrs(attrs);
@@ -135,16 +138,17 @@ final class Packets {
      *
      * @param version    protocol version.
      * @param credentials user credentials.
+     * @param serialNum serial number.
      * @return challenge request packet.
      * @throws IOException
      */
-    static HuaweiPacket newChapReq(Version version, Credentials credentials) throws IOException {
+    static HuaweiPacket newChapReq(Version version, HuaweiCredentials credentials, int serialNum) throws IOException {
         try {
             int attrs = 0;
             HuaweiPacket packet = new HuaweiPacket();
             packet.setVersion(version.value());
             packet.setType(RequestType.REQ_CHALLENGE.code());
-            packet.setSerialNum(HuaweiPacket.nextSerialNum());
+            packet.setSerialNum(serialNum);
             packet.setAuthType(AuthType.CHAP.code());
             packet.setIp(getIp4Address(credentials.getIp()));
             if (!StringUtils.isEmpty(credentials.getMac())) {
@@ -164,15 +168,18 @@ final class Packets {
      *
      * @param version    protocol version.
      * @param credentials user credentials.
+     * @param serialNum serial number.
      * @return PAP authentication packet.
      * @throws IOException
      */
-    static HuaweiPacket newPapAuth(Version version, Credentials credentials) throws IOException {
+    static HuaweiPacket newPapAuth(Version version, HuaweiCredentials credentials, int serialNum) throws IOException {
         int attrs = 0;
         HuaweiPacket packet = new HuaweiPacket();
         packet.setVersion(version.value());
         packet.setType(RequestType.REQ_AUTH.code());
-        packet.setSerialNum(HuaweiPacket.nextSerialNum());
+        packet.setSerialNum(serialNum);
+        packet.setReserved(0);
+        packet.setReqId(0);
         packet.setAuthType(AuthType.PAP.code());
         packet.setIp(getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
@@ -191,22 +198,31 @@ final class Packets {
     /**
      * Create logout request packet.
      *
+     * <p>According to HUAWEI portal protocol,
+     * When performing a PAP authentication, REQ_LOGOUT request id should
+     * be the same as ACK_AUTH response. When performing a CHAP authentication
+     * REQ_LOGOUT request id should be the same as ACK_CHALLENGE response.
+     * The <code>request id</code> must be already save in credentials and
+     * can be retrieved by {@link HuaweiCredentials#getRequestId()}.
+     *
      * @param version    protocol version.
      * @param authType    authentication type.
      * @param credentials user credentials.
+     * @param serialNum serial number.
      * @return logout request packet,
      * or null if ip address in credentials is unknown.
      * @throws IOException
      */
     static HuaweiPacket newLogout(Version version,
                                   AuthType authType,
-                                  Credentials credentials) throws IOException {
+                                  HuaweiCredentials credentials,
+                                  int serialNum) throws IOException {
         HuaweiPacket packet = new HuaweiPacket();
         packet.setVersion(version.value());
         packet.setType(RequestType.REQ_LOGOUT.code());
         packet.setAuthType(authType.code());
-        packet.setSerialNum(HuaweiPacket.nextSerialNum());
-        packet.setReqId(0);
+        packet.setSerialNum(serialNum);
+        packet.setReqId(credentials.getRequestId());
         packet.setIp(getIp4Address(credentials.getIp()));
         packet.setPort(0);
         packet.setError(LogoutRequestError.REQUEST.code());
@@ -240,7 +256,8 @@ final class Packets {
      * Create request timeout packet.
      *
      * <p>NAK packet use {@link RequestType#REQ_LOGOUT} as packet type.
-     * NAK (TIMEOUT) packet error code must be 1.
+     * NAK (TIMEOUT) packet error code must be 1. Serial number of a timeout
+     * notify packet is same number as originate request. Request id is 0.
      *
      * @param version    protocol version.
      * @param request  original request.
@@ -254,7 +271,7 @@ final class Packets {
         nak.setAuthType(request.getAuthType());
         nak.setReserved(0);
         nak.setSerialNum(request.getSerialNum());
-        nak.setReqId(request.getReqId());
+        nak.setReqId(0);
         nak.setIp(request.getIp());
         nak.setError(LogoutRequestError.REQUEST_TIMEOUT.code());
         nak.setAttrs(0);
@@ -374,7 +391,7 @@ final class Packets {
         //LogoutRequestError
         HuaweiPacket ntf = new HuaweiPacket();
         ntf.setVersion(version.value());
-        ntf.setType(RequestType.ACK_LOGOUT.code());
+        ntf.setType(RequestType.NTF_LOGOUT.code());
         ntf.setAuthType(authType.code());
         ntf.setSerialNum(0);
         ntf.setReqId(reqId);

@@ -2,20 +2,46 @@ package cn.com.xinli.portal.core.session;
 
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.core.nas.Nas;
-
-import java.net.UnknownHostException;
 
 /**
  * Session Provider.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
 public interface SessionProvider {
-    Session createSession(Nas nas, Credentials credentials) throws UnknownHostException;
-    Session authenticate(Session session) throws PortalException;
-    Session hangup(Session session) throws PortalException;
+
+    /**
+     * Create portal session on remote {@link Nas} using given {@link Credentials}.
+     *
+     * <p>Given session is normally filled by default, credentials in that session
+     * is also the default. Implementation classes
+     * should return a session with full populated credentials associated with
+     * nas type. For example, a provider implements HUAWEI portal session service
+     * provider should return a session with populated {@link HuaweiCredentials}.
+     *
+     * @param nas NAS/BRAS device.
+     * @param credentials user credentials.
+     * @return full populated session.
+     * @throws PortalException
+     */
+    Session authenticate(Nas nas, Credentials credentials) throws PortalException;
+
+    /**
+     * Disconnect an existed portal connection.
+     * @param session session to disconnect.
+     * @return session.
+     * @throws PortalException
+     */
+    Session disconnect(Session session) throws PortalException;
+
+    /**
+     * Check if this provider supports given nas.
+     * @param nas NAS/BRAS device.
+     * @return true if this provider supports given nas.
+     */
     boolean supports(Nas nas);
 }

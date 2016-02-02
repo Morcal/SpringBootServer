@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.core.configuration;
 
 /**
- * Project: xpws
+ * Server configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
@@ -11,7 +13,6 @@ public class ServerConfiguration {
     private boolean allowNat;
     private boolean enableCluster;
     private boolean enableRateLimiting;
-    private boolean enableMockedHuaweiNas;
 
     private ActivityConfiguration activityConfiguration;
     private ClusterConfiguration clusterConfiguration;
@@ -58,14 +59,6 @@ public class ServerConfiguration {
 
     public void setAllowNat(boolean allowNat) {
         this.allowNat = allowNat;
-    }
-
-    public boolean isEnableMockedHuaweiNas() {
-        return enableMockedHuaweiNas;
-    }
-
-    public void setEnableMockedHuaweiNas(boolean enableMockedHuaweiNas) {
-        this.enableMockedHuaweiNas = enableMockedHuaweiNas;
     }
 
     public ActivityConfiguration getActivityConfiguration() {
@@ -124,7 +117,6 @@ public class ServerConfiguration {
                 ", allowNat=" + allowNat +
                 ", enableCluster=" + enableCluster +
                 ", enableRateLimiting=" + enableRateLimiting +
-                ", enableMockedHuaweiNas=" + enableMockedHuaweiNas +
                 ", activityConfiguration=" + activityConfiguration +
                 ", clusterConfiguration=" + clusterConfiguration +
                 ", portalServerConfiguration=" + portalServerConfiguration +

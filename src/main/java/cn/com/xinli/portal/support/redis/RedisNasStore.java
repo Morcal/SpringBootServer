@@ -88,8 +88,8 @@ public class RedisNasStore implements NasStore {
 
     @Override
     public void reload() {
-        /* Since data stored in REDIS, sync them here. */
-        //TODO sync data with REDIS
+        /* Since data stored in REDIS, nothing to do. */
+        logger.info("nas reload, no-op");
     }
 
     @Override

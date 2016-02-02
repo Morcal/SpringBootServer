@@ -33,4 +33,8 @@ public class SessionPersistence {
     public void delete(Long id) {
         sessionRepository.delete(id);
     }
+
+    public void delete(Session session) {
+        sessionRepository.delete(session);
+    }
 }

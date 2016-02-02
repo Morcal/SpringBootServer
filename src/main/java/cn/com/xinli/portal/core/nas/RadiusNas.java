@@ -85,7 +85,7 @@ public class RadiusNas extends Nas {
     }
 
     @Override
-    protected NasType getType() {
+    public NasType getType() {
         return NasType.RADIUS;
     }
 

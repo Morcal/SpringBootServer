@@ -5,6 +5,7 @@ import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateService;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.DefaultCredentials;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionManager;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
@@ -77,7 +78,7 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
-        Credentials credentials = Credentials.of(username, password, ip, mac);
+        Credentials credentials = DefaultCredentials.of(username, password, ip, mac);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
@@ -98,7 +99,7 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("session created id: {}", session.getId());
 
-        return buildResponse(session, authentication, false);
+        return buildResponse(session, authentication, true);
     }
 
     @Override

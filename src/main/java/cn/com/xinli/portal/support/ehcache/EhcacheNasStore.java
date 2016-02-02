@@ -198,7 +198,7 @@ public class EhcacheNasStore implements NasStore {
         if (!exists(name)) {
             throw new NasNotFoundException(name);
         }
-
+        nasPersistence.delete(name);
         return nasCache.remove(name);
     }
 

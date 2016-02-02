@@ -1,16 +1,14 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.nps.NetPolicyServer;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.RadiusNas;
-import cn.com.xinli.nps.NetPolicyServer;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.net.UnknownHostException;
 
 /**
  * Inter process NPS based session provider.
@@ -28,17 +26,12 @@ public class InterProcessNpsSessionProvider implements SessionProvider {
     private NetPolicyServer netPolicyServer;
 
     @Override
-    public Session createSession(Nas nas, Credentials credentials) throws UnknownHostException {
+    public Session authenticate(Nas nas, Credentials credentials) throws PortalException {
         return null;
     }
 
     @Override
-    public Session authenticate(Session session) throws PortalException {
-        return null;
-    }
-
-    @Override
-    public Session hangup(Session session) throws PortalException {
+    public Session disconnect(Session session) throws PortalException {
         return null;
     }
 

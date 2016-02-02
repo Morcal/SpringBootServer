@@ -29,7 +29,7 @@ public class EhcacheManagerAdapter {
     /** Ehcache configuration. */
     private final Configuration ehcacheConfig;
 
-    /** Default max MESSAGE_TRANSLATE_TABLE local heap. */
+    /** Default max cache entries local heap. */
     private static final int DEFAULT_MAX_ENTRIES_LOCAL_HEAP = 1000;
 
     /** Default persistence strategy: not repository in disk (memory only). */
@@ -92,7 +92,7 @@ public class EhcacheManagerAdapter {
      * Create Ehcache.
      *
      * <p>The created cache is not searchable.
-     * The created cache has max {@value #DEFAULT_MAX_ENTRIES_LOCAL_HEAP} MESSAGE_TRANSLATE_TABLE local heap.
+     * The created cache has max {@value #DEFAULT_MAX_ENTRIES_LOCAL_HEAP}  cache entries local heap.
      * Items in created cache does not expire.
      *
      * @param name cache name.
@@ -108,7 +108,7 @@ public class EhcacheManagerAdapter {
      * Items in created cache does not expire.
      *
      * @param name cache name.
-     * @param maxEntries max MESSAGE_TRANSLATE_TABLE local heap.
+     * @param maxEntries max cache entries local heap.
      */
     public void createCache(String name, int maxEntries) {
         createCache(name, maxEntries, false, 0);
@@ -120,7 +120,7 @@ public class EhcacheManagerAdapter {
      * <p>The created cache is not searchable.
      *
      * @param name cache name.
-     * @param maxEntries max MESSAGE_TRANSLATE_TABLE local heap.
+     * @param maxEntries max cache entries local heap.
      * @param ttlEnabled if ttl enabled.
      * @param ttl ttl in seconds.
      */
@@ -131,13 +131,13 @@ public class EhcacheManagerAdapter {
     /**
      * Create Ehcache.
      *
-     * <p>The created cache has give name, max MESSAGE_TRANSLATE_TABLE local heap.
+     * <p>The created cache has give name, max cache entries local heap.
      * and it's searchable if given search attributes is not empty.
      * Items in created cache expires in ttl seconds if tllEnabled
      * is set to true.
      *
      * @param name cache name.
-     * @param maxEntries max MESSAGE_TRANSLATE_TABLE local heap.
+     * @param maxEntries max cache entries local heap.
      * @param searchAttributes search attributes.
      * @param ttlEnabled if ttl enabled.
      * @param ttl ttl in seconds.
@@ -166,7 +166,7 @@ public class EhcacheManagerAdapter {
         ehcacheConfig.addCache(cache);
 
         if (logger.isTraceEnabled()) {
-            logger.trace("cache {} configured, max MESSAGE_TRANSLATE_TABLE: {}, ttl enabled: {}, ttl: {}",
+            logger.trace("cache {} configured, max cache entries: {}, ttl enabled: {}, ttl: {}",
                     name, maxEntries, ttlEnabled, ttl);
         }
     }

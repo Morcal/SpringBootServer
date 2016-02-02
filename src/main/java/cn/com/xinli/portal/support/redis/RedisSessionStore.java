@@ -72,6 +72,12 @@ public class RedisSessionStore implements SessionStore {
     }
 
     @Override
+    public void init() {
+        /* Sessions only saved in REDIS, nothing to do. */
+        logger.info("init, no-op");
+    }
+
+    @Override
     public long getLastUpdateTime(Long id) throws SessionNotFoundException {
         Session session = get(id);
         return session.getLastModified();
@@ -163,5 +169,10 @@ public class RedisSessionStore implements SessionStore {
         }
 
         return removed;
+    }
+
+    @Override
+    public boolean delete(Session session) throws SessionNotFoundException {
+        return delete(session.getId());
     }
 }

@@ -15,6 +15,8 @@ import java.util.List;
  * @author zhoupeng 2015/12/29.
  */
 public interface SessionStore extends DataStore<Session, Long> {
+    void init();
+
     /**
      * {@inheritDoc}
      *
@@ -74,4 +76,6 @@ public interface SessionStore extends DataStore<Session, Long> {
      */
     @Override
     boolean delete(Long id) throws SessionNotFoundException;
+
+    boolean delete(Session session) throws SessionNotFoundException;
 }

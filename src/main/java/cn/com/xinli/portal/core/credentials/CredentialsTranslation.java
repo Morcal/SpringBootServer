@@ -103,6 +103,21 @@ public class CredentialsTranslation {
         return modifiers.isEmpty();
     }
 
+    boolean trimDomainIfPresent(Credentials credentials) {
+        String username = credentials.getUsername();
+        int index = username.lastIndexOf("@");
+        if (index > -1) {
+            /* Potential security issue here.
+             * We should truncate username only when truncating is
+             * safe to perform.
+             */
+            username = username.substring(0, index);
+            credentials.setUsername(username);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Translate credentials.
      * @param credentials credentials.
@@ -113,19 +128,12 @@ public class CredentialsTranslation {
             throw new IllegalArgumentException("Credentials can not be empty.");
         }
 
-        String username = credentials.getUsername();
         if (!authenticateWithDomain) {
-            int index = username.lastIndexOf("@");
-            if (index > -1) {
-                /* Potential security issue here.
-                 * We should truncate username only when truncating is
-                 * safe to perform.
-                 */
-                username = username.substring(0, index - 1);
-            }
+            trimDomainIfPresent(credentials);
         }
 
-        Credentials result = Credentials.of(username, credentials.getPassword(),
+        Credentials result = DefaultCredentials.of(
+                credentials.getUsername(), credentials.getPassword(),
                 credentials.getIp(), credentials.getMac());
 
         if (isEmpty()) {
@@ -138,10 +146,25 @@ public class CredentialsTranslation {
             }
         }
 
+        if (!authenticateWithDomain) {
+            trimDomainIfPresent(result);
+        }
+
         if (this.encoder != null) {
             result = this.encoder.encode(result, encoderAdditional);
         }
 
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CredentialsTranslation{" +
+                "id=" + id +
+                ", modifiers=" + modifiers +
+                ", encoder=" + encoder +
+                ", encoderAdditional='" + encoderAdditional + '\'' +
+                ", authenticateWithDomain=" + authenticateWithDomain +
+                '}';
     }
 }

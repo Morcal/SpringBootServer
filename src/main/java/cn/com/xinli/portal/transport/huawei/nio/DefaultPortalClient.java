@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.nio.CodecFactory;
+import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.transport.*;
 import cn.com.xinli.portal.transport.huawei.ClientHandler;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
@@ -17,6 +18,8 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Default portal client.
@@ -38,6 +41,25 @@ final class DefaultPortalClient implements PortalClient {
     /** Handler. */
     private final ClientHandler<HuaweiPacket> handler;
 
+    /** Max serial number. */
+    private static final int MAX_SERIAL = Short.MAX_VALUE * 2 + 1;
+
+    /** Serial number random generator. */
+    private static final Random random = new Random(System.currentTimeMillis());
+
+    /** Serial number generator. */
+    private static final AtomicInteger serial
+            = new AtomicInteger((random.nextInt() & 0xFFFF) % MAX_SERIAL);
+
+    /**
+     * Generate a serial number.
+     * <p>Serial numbers are unique in-a-time-range.</p>
+     * @return serial number.
+     */
+    public static int nextSerialNum() {
+        return serial.updateAndGet(i -> (i >= MAX_SERIAL + 1 ? 0 : i + 1));
+    }
+
     public DefaultPortalClient(Endpoint endpoint,
                                CodecFactory<HuaweiPacket> codecFactory,
                                ClientHandler<HuaweiPacket> handler)
@@ -57,13 +79,14 @@ final class DefaultPortalClient implements PortalClient {
      *
      * @param type request type.
      * @param credentials user credentials.
+     * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
      * @throws PortalProtocolException
      */
-    HuaweiPacket createRequest(RequestType type, Credentials credentials)
+    HuaweiPacket createRequest(RequestType type, Credentials credentials, int serialNum)
             throws IOException, PortalProtocolException {
-        return createRequest(type, credentials, null);
+        return createRequest(type, credentials, null, serialNum);
     }
 
     /**
@@ -77,21 +100,24 @@ final class DefaultPortalClient implements PortalClient {
      * @param type request type.
      * @param credentials user credentials.
      * @param response previous response.
+     * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
      * @throws PortalProtocolException
      */
     HuaweiPacket createRequest(RequestType type,
                                Credentials credentials,
-                               HuaweiPacket response)
+                               HuaweiPacket response,
+                               int serialNum)
             throws IOException, PortalProtocolException {
+        HuaweiCredentials cred = HuaweiCredentials.class.cast(credentials);
         Version version = endpoint.getVersion();
         switch (type) {
             case REQ_CHALLENGE:
-                return Packets.newChapReq(version, credentials);
+                return Packets.newChapReq(version, cred, serialNum);
 
             case REQ_LOGOUT:
-                return Packets.newLogout(version, endpoint.getAuthType(), credentials);
+                return Packets.newLogout(version, endpoint.getAuthType(), cred, serialNum);
 
             case AFF_ACK_AUTH:
                 return Packets.newAffAck(version, response);
@@ -102,9 +128,9 @@ final class DefaultPortalClient implements PortalClient {
             case REQ_AUTH:
                 switch (endpoint.getAuthType()) {
                     case CHAP:
-                        return Packets.newChapAuth(version, response, credentials);
+                        return Packets.newChapAuth(version, response, cred, serialNum);
                     case PAP:
-                        return Packets.newPapAuth(version, credentials);
+                        return Packets.newPapAuth(version, cred, serialNum);
                 }
             case REQ_INFO:
             case NTF_USERDISCOVERY:
@@ -121,7 +147,8 @@ final class DefaultPortalClient implements PortalClient {
      * Create request timeout packet.
      *
      * <p>NAK packet use {@link RequestType#REQ_LOGOUT} as packet type.
-     * NAK (TIMEOUT) packet error code must be 1.
+     * NAK (TIMEOUT) packet error code must be 1. Serial number of a timeout
+     * notify packet is same number as originate request.
      *
      * @param request original request.
      * @return request timeout packet.
@@ -164,7 +191,7 @@ final class DefaultPortalClient implements PortalClient {
                     .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from endpoint timeout, endpoint: ", endpoint);
+            logger.warn("* Receive from endpoint timeout, endpoint: {}", endpoint);
             return Optional.empty();
         } finally {
             if (socket != null) {
@@ -201,6 +228,22 @@ final class DefaultPortalClient implements PortalClient {
         sendAffAck(nak);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>According to HUAWEI portal protocol, serial number should be unique
+     * in a range of time. All serial numbers in a single authentication process.
+     * and serial numbers differ from other authentication process.
+     *
+     * <p>SerialNo字段为报文的序列号，长度为 2 字节，由Portal Server随机生成，
+     * Portal Server必须尽量保证不同认证流程的SerialNo在一定时间内不得重复，
+     * 在同一个认证流程中所有报文的SerialNo相同。
+     *
+     * @param credentials user credentials.
+     * @return result.
+     * @throws IOException
+     * @throws PortalProtocolException
+     */
     @Override
     public Result login(Credentials credentials) throws IOException, PortalProtocolException {
         Objects.requireNonNull(credentials);
@@ -208,47 +251,52 @@ final class DefaultPortalClient implements PortalClient {
         Optional<HuaweiPacket> response;
         HuaweiPacket request;
 
+        int serialNum = nextSerialNum(); /* Ensure same serial number in chap login. */
         switch (endpoint.getAuthType()) {
             case CHAP:
-                HuaweiPacket challenge = createRequest(RequestType.REQ_CHALLENGE, credentials);
+                HuaweiPacket challenge = createRequest(RequestType.REQ_CHALLENGE, credentials, serialNum);
                 response = request(challenge);
                 if (!response.isPresent()) {
                     /* Not respond, send timeout NAK, reqId = 0. */
                     sendTimeout(createRequestTimeoutPacket(challenge));
-                    //return onChapRequestNotRespond(challenge);
                     return handler.handleChapNotRespond(endpoint);
                 }
 
                 HuaweiPacket chapAck = response.get();
-                Result chapResponse = handler.handleChapResponse(chapAck);// onChapRespond(chapAck);
+                /* Populate 'request id' issued by NAS/BRAS. */
+                HuaweiCredentials.class.cast(credentials).setRequestId(chapAck.getReqId());
+
+                Result chapResponse = handler.handleChapResponse(chapAck);
                 if (logger.isTraceEnabled()) {
                     logger.trace("CHAP response: {}", chapResponse);
                 }
 
-                request = createRequest(RequestType.REQ_AUTH, credentials, chapAck);
-                //request = createChapAuthPacket(chapAck, credentials);
+                request = createRequest(RequestType.REQ_AUTH, credentials, chapAck, serialNum);
                 response = request(request);
                 break;
 
             case PAP:
-                request = createRequest(RequestType.REQ_AUTH, credentials);
+                request = createRequest(RequestType.REQ_AUTH, credentials, serialNum);
                 response = request(request);
+
+                if (response.isPresent()) {
+                    /* Populate 'request id' issued by NAS/BRAS. */
+                    HuaweiCredentials.class.cast(credentials).setRequestId(response.get().getReqId());
+                }
                 break;
 
             default:
-                throw new UnsupportedAuthenticationTypeExceptionPortal(endpoint.getAuthType());
+                throw new UnsupportedAuthenticationTypeException(endpoint.getAuthType());
         }
 
         /* Check authentication response. */
         if (response.isPresent()) {
             logger.debug("Handle authentication response.");
-            sendAffAck(createRequest(RequestType.AFF_ACK_AUTH, credentials, response.get()));
-            //return onAuthenticationResponse(response.get());
+            sendAffAck(createRequest(RequestType.AFF_ACK_AUTH, credentials, response.get(), serialNum));
             return handler.handleAuthenticationResponse(response.get());
         } else {
             logger.debug("Handle authentication timeout.");
             sendTimeout(createRequestTimeoutPacket(request));
-            //return onAuthenticationNotRespond(request);
             return handler.handleAuthenticationNotRespond(endpoint);
         }
     }
@@ -257,18 +305,17 @@ final class DefaultPortalClient implements PortalClient {
     public Result logout(Credentials credentials) throws IOException, PortalProtocolException {
         Objects.requireNonNull(credentials);
 
+        int serialNum = nextSerialNum();
         /* Create portal request to logout. */
-        HuaweiPacket logout = createRequest(RequestType.REQ_LOGOUT, credentials);
+        HuaweiPacket logout = createRequest(RequestType.REQ_LOGOUT, credentials, serialNum);
         Optional<HuaweiPacket> response = request(logout);
 
         if (!response.isPresent()) {
             logger.debug("Handle logout timeout.");
             sendTimeout(createRequestTimeoutPacket(logout));
-            //return onLogoutNotRespond(logout);
             return handler.handleLogoutNotRespond(endpoint);
         } else {
             logger.debug("Handle logout response.");
-            //return onLogoutResponse(response.get());
             return handler.handleLogoutResponse(response.get());
         }
     }

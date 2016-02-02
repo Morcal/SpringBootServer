@@ -1,6 +1,5 @@
-package cn.com.xinli.portal.support.ehcache;
+package cn.com.xinli.portal.util;
 
-import cn.com.xinli.portal.util.Serializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;

@@ -68,6 +68,26 @@ public class Endpoint {
         this.version = version;
     }
 
+    /**
+     * Create HUAWEI portal protocol endpoint.
+     * @param version version.
+     * @param address address.
+     * @param port port.
+     * @param authType authentication type.
+     * @param sharedSecret shared secret.
+     * @return endpoint.
+     */
+    public static Endpoint of(Version version, InetAddress address, int port,
+                              AuthType authType, String sharedSecret) {
+        Endpoint endpoint = new Endpoint();
+        endpoint.setVersion(version);
+        endpoint.setAuthType(authType);
+        endpoint.setAddress(address);
+        endpoint.setPort(port);
+        endpoint.setSharedSecret(sharedSecret);
+        return endpoint;
+    }
+
     @Override
     public String toString() {
         return "Endpoint{" +

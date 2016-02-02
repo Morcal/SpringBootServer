@@ -17,7 +17,7 @@ public class SerialNumTest {
 
     public void inc() {
         for (int i = 0; i < 10000; i++) {
-            int num = HuaweiPacket.nextSerialNum();
+            int num = DefaultPortalClient.nextSerialNum();
             if (!results.add(num)) {
                 throw new RuntimeException("found redundant number.");
             }

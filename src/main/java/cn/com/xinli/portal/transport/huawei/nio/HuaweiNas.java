@@ -3,6 +3,7 @@ package cn.com.xinli.portal.transport.huawei.nio;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.huawei.*;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ final class HuaweiNas implements PortalServer {
 
     private final Object challengeSignal = new Object();
 
+    private static final String EMPTY_PASSWORD_SUBSTITUTION = "***";
+
     public HuaweiNas(Endpoint endpoint) {
         this.endpoint = endpoint;
         this.sessionService = new InMemorySessionService();
@@ -64,16 +67,17 @@ final class HuaweiNas implements PortalServer {
 
     /**
      * Perform authentication.
-     * @param requestId incoming request id.
+     *
+     * @param requestId   incoming request id.
      * @param credentials credentials.
-     * @param authType authentication type.
+     * @param authType    authentication type.
      * @return authentication error.
      * @throws IOException
      */
     private AuthError authenticate(int requestId, Credentials credentials, AuthType authType) throws IOException {
-        String user = credentials.getUsername(),
-                password = credentials.getPassword(),
-                passwd = userCredentials.get(user);
+        final String user = credentials.getUsername(),
+                localPassword = userCredentials.get(user);
+        String password = StringUtils.defaultString(credentials.getPassword(), EMPTY_PASSWORD_SUBSTITUTION);
 
         boolean authenticated = false;
         switch (authType) {
@@ -85,14 +89,17 @@ final class HuaweiNas implements PortalServer {
                 }
 
                 authenticated =
-                        Arrays.equals(Packets.newChapPassword(
+                        StringUtils.equals(Hex.encodeHexString(Packets.newChapPassword(
                                 requestId,
-                                userCredentials.get(user),
-                                challenge.getValue().getBytes()), password.getBytes());
+                                StringUtils.defaultString(
+                                        userCredentials.get(user), EMPTY_PASSWORD_SUBSTITUTION).getBytes(),
+                                challenge.getValue().getBytes())),
+                                password);
                 break;
 
             case PAP:
-                authenticated = StringUtils.equals(password, passwd);
+                //TODO make sure UTF-8 encoding works.
+                authenticated = StringUtils.equals(password, localPassword);
                 break;
 
             default:
@@ -112,7 +119,7 @@ final class HuaweiNas implements PortalServer {
     /**
      * Evict challenges.
      */
-    private void evictChallenges()  {
+    private void evictChallenges() {
         while (!shutdown) {
             try {
                 Challenge challenge = challenges.take();
@@ -125,6 +132,8 @@ final class HuaweiNas implements PortalServer {
                     /* Remove challenge mapping. */
                     logger.info("[NAS] challenge expired: {}.", challenge.getReqId());
                     challengeMapping.remove(challenge.getReqId());
+                    /* Remove requests mapping as well. */
+                    portalServer.release(challenge.getReqId());
                 } else {
                     /*
                      * Put challenge back to queue.
@@ -244,7 +253,7 @@ final class HuaweiNas implements PortalServer {
                     logger.debug("[NAS] CHAP mapped, ip: {}.", ip);
                 }
 
-            /* Create challenge. */
+                /* Create challenge. */
                 Challenge challenge = createChallenge(requestId);
                 results.add(challenge.getValue());
                 return ChallengeError.OK;
@@ -281,12 +290,16 @@ final class HuaweiNas implements PortalServer {
 
             AuthError error = HuaweiNas.this.authenticate(requestId, credentials, authType);
             if (authType == AuthType.CHAP) {
-            /* CHAP finished, clean mapping. */
+                /* CHAP finished, clean mapping. */
                 requestMapping.remove(ip);
             }
 
             if (error == AuthError.OK) {
                 sessionService.createSession(ip);
+            } else {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("authentication failed, credentials: {}", credentials);
+                }
             }
 
             return error;

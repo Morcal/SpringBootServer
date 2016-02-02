@@ -7,6 +7,7 @@ import cn.com.xinli.portal.core.configuration.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,8 @@ import java.util.Properties;
  *
  * @author zhoupeng 2016/1/29.
  */
-public class PropertiesServerConfiguration {
+//@Component
+public class PropertiesServerConfiguration extends ServerConfiguration {
     /** Server private key. */
     public static final String SERVER_PRIVATE_KEY = "private-key";
     /** Main page redirect url. */
@@ -63,20 +65,28 @@ public class PropertiesServerConfiguration {
     public static final String PORTAL_SERVER_CORE_THREADS = "portal-server.core-threads";
     public static final String PORTAL_SERVER_SHARED_SECRET = "portal-server.shared-secret";
 
-    @Autowired
-    private ResourceLoader resourceLoader;
+    private static final String PROPERTIES_RESOURCE = "pws.properties";
 
-    public ServerConfiguration loadFromProperties(String resource) throws ServerException {
-        ServerConfiguration configuration = new ServerConfiguration();
+//    @Autowired
+//    private ResourceLoader resourceLoader;
 
+    public PropertiesServerConfiguration() throws ServerException {
+        loadFromProperties();
+    }
+
+    private void loadFromProperties() throws ServerException {
         Configuration config = new Configuration();
-        config.load(resource);
+        config.load(PROPERTIES_RESOURCE);
+
+        setPrivateKey(config.valueOf(SERVER_PRIVATE_KEY));
+        setMainPageRedirectUrl(config.valueOf(MAIN_PAGE_REDIRECT_URL));
+        setAllowNat(config.valueOf(NAT_ALLOWED));
 
         /* Create activity configuration. */
         ActivityConfiguration activity = new ActivityConfiguration();
         activity.setMostRecent(config.valueOf(ACTIVITY_MOST_RECENT));
         activity.setSeverity(config.valueOf(ACTIVITY_LOGGING_MIN_SEVERITY));
-        configuration.setActivityConfiguration(activity);
+        setActivityConfiguration(activity);
 
         /* Create session configuration. */
         SessionConfiguration session = new SessionConfiguration();
@@ -88,7 +98,7 @@ public class PropertiesServerConfiguration {
         if (session.isEnableTtl()) {
             session.setTtl(config.valueOf(SESSION_TTL_VALUE));
         }
-        configuration.setSessionConfiguration(session);
+        setSessionConfiguration(session);
 
         /* Create portal server configuration(s). */
         PortalServerConfiguration internal = new PortalServerConfiguration();
@@ -97,15 +107,15 @@ public class PropertiesServerConfiguration {
         internal.setPort(config.valueOf(PORTAL_SERVER_LISTEN_PORT));
         internal.setVersion(config.valueOf(PORTAL_SERVER_PROTOCOL_VERSION));
         internal.setSharedSecret(config.valueOf(PORTAL_SERVER_SHARED_SECRET));
-        configuration.setPortalServerConfiguration(internal);
+        setPortalServerConfiguration(internal);
 
         /* Create rate limiting configuration. */
-        configuration.setEnableRateLimiting(config.valueOf(RATE_LIMITING_ENABLED));
-        if (configuration.isEnableRateLimiting()) {
+        setEnableRateLimiting(config.valueOf(RATE_LIMITING_ENABLED));
+        if (isEnableRateLimiting()) {
             RateLimitingConfiguration rate = new RateLimitingConfiguration();
             rate.setRate(config.valueOf(RATE_LIMITING_RATE));
             rate.setTtl(config.valueOf(RATE_LIMITING_TTL));
-            configuration.setRateLimitingConfiguration(rate);
+            setRateLimitingConfiguration(rate);
         }
 
         /* Create rest configuration. */
@@ -116,19 +126,17 @@ public class PropertiesServerConfiguration {
         rest.setServer(config.valueOf(REST_SERVER));
         rest.setMeta(config.valueOf(REST_META));
         rest.setScheme(config.valueOf(REST_SCHEME));
-        configuration.setRestConfiguration(rest);
+        setRestConfiguration(rest);
 
         /* Create cluster configuration. */
-        configuration.setEnableCluster(config.valueOf(CLUSTER_ENABLED));
-        if (configuration.isEnableCluster()) {
+        setEnableCluster(config.valueOf(CLUSTER_ENABLED));
+        if (isEnableCluster()) {
             ClusterConfiguration cluster = new ClusterConfiguration();
             cluster.setRedisMaster(config.valueOf(CLUSTER_REDIS_MASTER));
             String sentinels = config.valueOf(CLUSTER_REDIS_SENTINELS);
             cluster.setRedisSentinels(sentinels.split(","));
-            configuration.setClusterConfiguration(cluster);
+            setClusterConfiguration(cluster);
         }
-
-        return configuration;
     }
 
     class Configuration {
@@ -189,12 +197,14 @@ public class PropertiesServerConfiguration {
             Properties properties;
             try {
                 /* Load defaults. */
-                InputStream in = resourceLoader.getResource("classpath:defaults.properties").getInputStream();
+//                InputStream in = resourceLoader.getResource("classpath:defaults.properties").getInputStream();
+                InputStream in = getClass().getClassLoader().getResourceAsStream("defaults.properties");
                 Properties defaults = new Properties();
                 defaults.load(in);
                 in.close();
 
-                in = resourceLoader.getResource(resource).getInputStream();
+                //in = resourceLoader.getResource(resource).getInputStream();
+                in = getClass().getClassLoader().getResourceAsStream(resource);
                 properties = new Properties(defaults);
                 properties.load(in);
                 in.close();

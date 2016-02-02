@@ -5,7 +5,9 @@ import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.nas.NasType;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionProvider;
 import cn.com.xinli.portal.transport.PortalClient;
@@ -15,7 +17,6 @@ import cn.com.xinli.portal.transport.Result;
 import cn.com.xinli.portal.core.nas.HuaweiNas;
 import cn.com.xinli.portal.transport.huawei.AuthType;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
-import cn.com.xinli.portal.transport.huawei.HuaweiSession;
 import cn.com.xinli.portal.transport.huawei.Version;
 import cn.com.xinli.portal.transport.huawei.nio.HuaweiPortal;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Objects;
 
 /**
  * Huawei portal protocol session provider.
@@ -54,61 +56,78 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
 
     @Override
     public boolean supports(Nas nas) {
-        return nas != null && HuaweiNas.class.isInstance(nas);
+        return nas != null && nas.getType() != null && nas.getType() == NasType.HUAWEI;
     }
 
-    @Override
-    public Session createSession(Nas nas, Credentials credentials) throws UnknownHostException {
-        HuaweiNas huaweiNas = HuaweiNas.class.cast(nas);
-        HuaweiSession session = new HuaweiSession();
-        Endpoint endpoint = new Endpoint();
-        endpoint.setVersion(Version.valueOf(huaweiNas.getVersion()));
-        endpoint.setAddress(huaweiNas.getNetworkAddress());
-        endpoint.setSharedSecret(huaweiNas.getSharedSecret());
-        endpoint.setPort(huaweiNas.getListenPort());
-        endpoint.setAuthType(AuthType.valueOf(huaweiNas.getAuthType()));
-
-        //FIXME complete session content.
-        session.setCredentials(credentials);
-        session.setEndpoint(endpoint);
+    /**
+     * Create a session.
+     * @param nas nas.
+     * @param credentials user credentials.
+     * @return session.
+     * @throws UnknownHostException
+     */
+    Session createSession(Nas nas, Credentials credentials) throws UnknownHostException {
+        Session session = new Session();
+        session.setNas(nas);
+        session.setCredentials(from(credentials));
         return session;
     }
 
+    /**
+     * Create huawei credentials from other credentials.
+     * @param credentials other credentials.
+     * @return huawei credentials.
+     */
+    static HuaweiCredentials from(Credentials credentials) {
+        return HuaweiCredentials.of(
+                credentials.getUsername(),
+                credentials.getPassword(),
+                credentials.getIp(),
+                credentials.getMac(),
+                0);
+    }
+
+    static Endpoint from(HuaweiNas nas) throws UnknownHostException {
+        return Endpoint.of(
+                Version.valueOf(nas.getVersion()),
+                nas.getNetworkAddress(),
+                nas.getListenPort(),
+                AuthType.valueOf(nas.getAuthType()),
+                nas.getSharedSecret());
+    }
+
     @Override
-    public Session authenticate(Session session) throws PortalException {
-        HuaweiSession huaweiSession = HuaweiSession.class.cast(session);
+    public Session authenticate(Nas nas, Credentials credentials) throws PortalException {
+        Objects.requireNonNull(nas);
+        Objects.requireNonNull(credentials);
+
         try {
-            PortalClient client = HuaweiPortal.createClient(huaweiSession.getEndpoint());
+            HuaweiNas huaweiNas = HuaweiNas.class.cast(nas);
+            Session session = createSession(nas, credentials);
+            PortalClient client = HuaweiPortal.createClient(from(huaweiNas));
             Result result = client.login(session.getCredentials());
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Portal login result: {}", result);
             }
+
+            return session;
         } catch (IOException e) {
             logger.error("Portal login error", e);
             throw new ServerException(PortalError.IO_ERROR, "Failed to login", e);
         } catch (PortalProtocolException e) {
-            /*
-             * Wrap protocol exception into a new platform exception,
-             * unless, 1. login CHAP-challenge when already online,
-             * 2. login CHAP-authenticate when already online.
-             */
-            ProtocolError error = e.getProtocolError();
-            if (error != ProtocolError.CHALLENGE_ALREADY_ONLINE &&
-                    error != ProtocolError.AUTHENTICATION_ALREADY_ONLINE) {
-                PortalError err = errorTranslator.translate(e);
-                throw new PlatformException(err, e.getMessage(), e);
-            }
+            PortalError err = errorTranslator.translate(e);
+            throw new PlatformException(err, e.getMessage(), e);
         }
-
-        return session;
     }
 
     @Override
-    public Session hangup(Session session) throws PortalException {
-        HuaweiSession huaweiSession = HuaweiSession.class.cast(session);
+    public Session disconnect(Session session) throws PortalException {
+        Objects.requireNonNull(session);
+        HuaweiNas huaweiNas = HuaweiNas.class.cast(session.getNas());
+
         try {
-            PortalClient client = HuaweiPortal.createClient(huaweiSession.getEndpoint());
+            PortalClient client = HuaweiPortal.createClient(from(huaweiNas));
             Result result = client.logout(session.getCredentials());
 
             if (logger.isDebugEnabled()) {

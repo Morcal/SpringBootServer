@@ -21,13 +21,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,14 +67,13 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
-    @PostConstruct
     public void init() {
         boolean registered = sessionCache.getCacheEventNotificationService()
                 .registerListener(sessionCacheEventListener, NotificationScope.LOCAL);
 
         logger.info("register event listener on session cache: {}.", registered);
 
-        sessionPersistence.all(this::put);
+        sessionPersistence.all(this::addSession);
 
         logger.info("EhCache sync with database done.");
     }
@@ -96,6 +93,10 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
         }
     }
 
+    private void addSession(Session session) {
+        sessionCache.put(toElement(session));
+    }
+
     Session fromValue(Object value) {
         return sessionSerializer.deserialize((byte[]) value);
     }
@@ -107,27 +108,22 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     Element toElement(Session session) {
         Objects.requireNonNull(session);
-        try {
-            final String key = String.valueOf(session.getId());
-            final byte[] value = sessionSerializer.serialize(session);
-            Element element;
+        final String key = String.valueOf(session.getId());
+        final byte[] value = sessionSerializer.serialize(session);
+        Element element;
 
-            SessionConfiguration config = serverConfiguration.getSessionConfiguration();
-            if (config.isEnableTtl()) {
-                element = new Element(
-                        key,
-                        value,
-                        config.getTtl(),
-                        config.getTtl());
-            } else {
-                /* Create cache element without time to idle and time to live. */
-                element = new Element(key, value);
-            }
-            return element;
-        } catch (SerializationException e) {
-            logger.error("Failed to serialize session", e);
-            return null;
+        SessionConfiguration config = serverConfiguration.getSessionConfiguration();
+        if (config.isEnableTtl()) {
+            element = new Element(
+                    key,
+                    value,
+                    config.getTtl(),
+                    config.getTtl());
+        } else {
+            /* Create cache element without time to idle and time to live. */
+            element = new Element(key, value);
         }
+        return element;
     }
 
     /**
@@ -157,16 +153,11 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Override
     public void put(Session session) {
         Objects.requireNonNull(session);
+
         /* Save to database, id will be generated. */
         sessionPersistence.save(session);
 
-        Element element = toElement(session);
-        if (element != null) {
-            element.updateUpdateStatistics();
-            sessionCache.put(element);
-        } else {
-            logger.error("Failed to save session in cache, {}", session);
-        }
+        addSession(session);
     }
 
     @Override
@@ -199,6 +190,13 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
             session.setLastModified(lastModified);
             put(session);
         }
+    }
+
+    @Override
+    public boolean delete(Session session) {
+        Objects.requireNonNull(session);
+        sessionPersistence.delete(session);
+        return sessionCache.remove(session.getId());
     }
 
     @Override

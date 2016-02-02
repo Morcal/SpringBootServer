@@ -68,7 +68,8 @@ public abstract class Nas {
      * Get nas type string.
      * @return nas type string.
      */
-    protected abstract NasType getType();
+    @JsonIgnore
+    public abstract NasType getType();
 
     /**
      * Get id.
@@ -158,7 +159,7 @@ public abstract class Nas {
                 ", name='" + name + '\'' +
                 ", ipv4Address='" + ipv4Address + '\'' +
                 ", ipv6Address='" + ipv6Address + '\'' +
-                ", type=" + getType() +
+                ", type=" + getType().name() +
                 ", translation=" + translation +
                 '}';
     }

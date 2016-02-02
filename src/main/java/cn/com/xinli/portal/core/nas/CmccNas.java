@@ -18,7 +18,7 @@ import javax.persistence.Entity;
 public class CmccNas extends Nas {
 
     @Override
-    protected NasType getType() {
+    public NasType getType() {
         return NasType.CMCC;
     }
 }

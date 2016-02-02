@@ -9,8 +9,8 @@ import cn.com.xinli.portal.core.nas.NasType;
  *
  * @author zhoupeng 2015/12/27.
  */
-public class UnsupportedNasExceptionPortal extends PortalProtocolException {
-    public UnsupportedNasExceptionPortal(NasType nasType) {
+public class UnsupportedNasException extends PortalProtocolException {
+    public UnsupportedNasException(NasType nasType) {
         super(ProtocolError.UNSUPPORTED_NAS, nasType.name());
     }
 }

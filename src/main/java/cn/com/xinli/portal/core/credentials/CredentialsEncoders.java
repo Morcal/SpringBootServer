@@ -1,8 +1,6 @@
 package cn.com.xinli.portal.core.credentials;
 
 import cn.com.xinli.portal.util.CodecUtils;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
@@ -28,7 +26,7 @@ public class CredentialsEncoders {
     public static class NoOpEncoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {
-            Credentials populate = new Credentials();
+            Credentials populate = new DefaultCredentials();
             populate.setUsername(credentials.getUsername());
             populate.setPassword(credentials.getPassword());
             populate.setIp(credentials.getIp());
@@ -46,7 +44,7 @@ public class CredentialsEncoders {
     public static class Md5Encoder extends CredentialsEncoder {
         @Override
         public Credentials encode(Credentials credentials, String additional) {
-            Credentials populate = new Credentials();
+            Credentials populate = new DefaultCredentials();
             populate.setUsername(credentials.getUsername());
             populate.setPassword(Hex.encodeHexString(CodecUtils.md5sum(credentials.getPassword().getBytes())));
             populate.setIp(credentials.getIp());
@@ -69,7 +67,7 @@ public class CredentialsEncoders {
                 throw new RuntimeException("Failed to encode credentials with HMAC-SHA1.");
             }
 
-            Credentials populate = new Credentials();
+            Credentials populate = new DefaultCredentials();
             populate.setUsername(credentials.getUsername());
             populate.setPassword(Hex.encodeHexString(digest));
             populate.setIp(credentials.getIp());
@@ -92,7 +90,7 @@ public class CredentialsEncoders {
                 throw new RuntimeException("Failed to encode credentials with HMAC-SHA1.");
             }
 
-            Credentials populate = new Credentials();
+            Credentials populate = new DefaultCredentials();
             populate.setUsername(credentials.getUsername());
             populate.setPassword(Base64.encodeBase64String(digest));
             populate.setIp(credentials.getIp());

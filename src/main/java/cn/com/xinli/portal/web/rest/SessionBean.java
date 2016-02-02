@@ -13,9 +13,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionBean {
     /** Session id. */
+    @JsonProperty
     private String id;
 
     /** Session token. */
+    @JsonProperty
     private String token;
 
     /** Token expires in seconds. */
@@ -23,6 +25,7 @@ public class SessionBean {
     private long tokenExpiresIn;
 
     /** If server requires client to keep alive. */
+    @JsonProperty
     private boolean keepAlive;
 
     /** UNIX epoch time this session started at. */

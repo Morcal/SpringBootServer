@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -93,6 +93,11 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         return executor.submit(() -> doRemoveSession(id));
     }
 
+    public void init() {
+        logger.info("Initializing session service.");
+        sessionStore.init();
+    }
+
     /**
      * Session service queued session remover.
      */
@@ -156,22 +161,20 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             }
         }
 
-        try {
-            Nas nas = nasLocator.locate(credentials);
-            CredentialsTranslation translation = nas.getTranslation();
-            if (translation != null) {
-                credentials = translation.translate(credentials);
-            }
-            SessionProvider provider = find(nas);
-            Session session = provider.createSession(nas, credentials);
-            session = provider.authenticate(session);
-
-            /* Only put to cache if no exceptions or rollback occurred. */
-            sessionStore.put(session);
-            return session;
-        } catch (UnknownHostException e) {
-            throw new ServerException(PortalError.SERVER_INTERNAL_ERROR, e.getMessage());
+        Nas nas = nasLocator.locate(credentials);
+        CredentialsTranslation translation = nas.getTranslation();
+        if (translation != null) {
+            credentials = translation.translate(credentials);
         }
+        SessionProvider provider = find(nas);
+        Session session = provider.authenticate(nas, credentials);
+
+        /* Populate certificate. */
+        session.setStartTime(Calendar.getInstance().getTime());
+        session.setCertificate(certificate);
+        /* Only put to cache if no exceptions or rollback occurred. */
+        sessionStore.put(session);
+        return session;
     }
 
     /**
@@ -202,7 +205,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         long id = session.getId();
 
         SessionProvider provider = find(nas);
-        provider.hangup(session);
+        provider.disconnect(session);
 
         /* Only put to cache if no exceptions or rollback occurred. */
         sessionStore.delete(id);

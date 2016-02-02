@@ -29,13 +29,8 @@ public class Bootstrap {
     private final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
     @Bean
-    public PropertiesServerConfiguration propertiesServerConfiguration() {
-        return new PropertiesServerConfiguration();
-    }
-
-    @Bean
     public ServerConfiguration serverConfiguration() throws ServerException {
-        return propertiesServerConfiguration().loadFromProperties("classpath:pws.properties");
+        return new PropertiesServerConfiguration();
     }
 
     @Bean

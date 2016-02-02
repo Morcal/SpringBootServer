@@ -3,6 +3,7 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
 import cn.com.xinli.portal.core.credentials.CredentialsEncoders;
+import cn.com.xinli.portal.core.credentials.DefaultCredentials;
 import cn.com.xinli.portal.util.CodecUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -32,7 +33,7 @@ public class CredentialsEncodersTest {
 
     @Before
     public void setup() {
-        credentials = Credentials.of(USERNAME, PASSWORD, IP, MAC);
+        credentials = DefaultCredentials.of(USERNAME, PASSWORD, IP, MAC);
     }
 
     @Test
