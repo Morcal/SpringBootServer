@@ -5,14 +5,11 @@ import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
 import cn.com.xinli.portal.core.ratelimiting.TrackStore;
 import cn.com.xinli.portal.web.rest.EntryPoint;
 import cn.com.xinli.portal.web.rest.Provider;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +23,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -61,7 +59,8 @@ public class RateLimitingFilter extends AbstractRestFilter {
     private static final JsonFactory factory = new JsonFactory();
 
     /** Fallback error string. */
-    private static final String RATE_LIMITING_REACHED_ERROR = "{\"error\": \"request_rate_limited\"}";
+    private static final String RATE_LIMITING_REACHED_ERROR =
+            "{\"error\": 151, \"description\":\"request_rate_limited\"}";
 
     @Autowired
     private Provider restApiProvider;

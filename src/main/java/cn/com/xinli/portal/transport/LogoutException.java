@@ -10,8 +10,8 @@ package cn.com.xinli.portal.transport;
  *
  * @author zhoupeng 2016/1/18.
  */
-public class LogoutException extends PortalProtocolException {
-    public LogoutException(ProtocolError error, String message) {
+public class LogoutException extends TransportException {
+    public LogoutException(TransportError error, String message) {
         super(error, message);
     }
 }

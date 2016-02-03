@@ -26,6 +26,7 @@ import org.springframework.util.Assert;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -111,7 +112,13 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         }
     }
 
-    SessionProvider find(Nas nas) throws ServerException {
+    /**
+     * Find session provider for nas.
+     * @param nas nas.
+     * @return session provider.
+     * @throws ServerException
+     */
+    private SessionProvider find(Nas nas) throws ServerException {
         for (SessionProvider provider : sessionProviders) {
             if (provider.supports(nas)) {
                 return provider;
@@ -135,7 +142,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     public Session createSession(Certificate certificate, Credentials credentials) throws PortalException {
         String ip = credentials.getIp(), mac = credentials.getMac();
 
-        List<Session> exists;
+        Set<Session> exists;
         if (StringUtils.isEmpty(mac)) {
             /* MAC is missing, may be authenticating via web page. */
             exists = sessionStore.find(ip);
@@ -143,21 +150,22 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             exists = sessionStore.find(ip, mac);
         }
 
-        if (!exists.isEmpty()) {
+        Optional<Session> existed = exists.stream().findFirst();
+        if (existed.isPresent()) {
             /* Check if already existed session was created by current user.
              * If so, return existed session, or else try to logout existed user
              * and then login with current user.
              */
-            Session existed = exists.get(0);
-
-            logger.info("Session already existed, {}", existed);
+            if (logger.isDebugEnabled()) {
+                logger.info("Session already existed, {}", existed);
+            }
 
             if (!StringUtils.equals(
-                    existed.getCredentials().getUsername(), credentials.getUsername())) {
+                    existed.get().getCredentials().getUsername(), credentials.getUsername())) {
                 logger.warn("+ session already exists with different username.");
-                removeSessionInternal(existed);
+                removeSessionInternal(existed.get());
             } else {
-                return existed;
+                return existed.get();
             }
         }
 
@@ -248,8 +256,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      */
     @Override
     public Optional<Session> find(String ip, String mac) {
-        List<Session> sessions = sessionStore.find(ip, mac);
-        return sessions.isEmpty() ? Optional.empty() : Optional.of(sessions.get(0));
+        Set<Session> sessions = sessionStore.find(ip, mac);
+        return sessions.stream().findFirst();
     }
 
     /**
@@ -285,11 +293,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Override
     public void removeSession(String nasIp, String userIp) throws PortalException {
-        List<Session> found = sessionStore.find(userIp);
-        if (found.isEmpty()) {
-            throw new SessionNotFoundException("ip: " + userIp);
-        }
-
-        removeSessionInternal(found.get(0));
+        Set<Session> found = sessionStore.find(userIp);
+        Optional<Session> session = found.stream().findFirst();
+        session.orElseThrow(() -> new SessionNotFoundException("ip: " + userIp));
+        removeSessionInternal(session.get());
     }
 }

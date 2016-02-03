@@ -9,8 +9,8 @@ import cn.com.xinli.portal.transport.huawei.AuthType;
  *
  * @author zhoupeng 2015/12/27.
  */
-public class UnsupportedAuthenticationTypeException extends PortalProtocolException {
+public class UnsupportedAuthenticationTypeException extends TransportException {
     public UnsupportedAuthenticationTypeException(AuthType authType) {
-        super(ProtocolError.UNSUPPORTED_AUTHENTICATION, authType.name());
+        super(TransportError.UNSUPPORTED_AUTHENTICATION, authType.name());
     }
 }

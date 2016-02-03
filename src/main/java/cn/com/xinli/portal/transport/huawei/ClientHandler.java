@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.transport.huawei;
 
-import cn.com.xinli.portal.transport.PortalProtocolException;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.Result;
 
 import java.io.IOException;
@@ -18,36 +18,36 @@ public interface ClientHandler<T> {
      * @param response response.
      * @return message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
-    Result handleChapResponse(T response) throws IOException, PortalProtocolException;
+    Result handleChapResponse(T response) throws IOException, TransportException;
 
     /**
      * Handle CHAP request not respond.
      * @param endpoint HUAWEI portal endpoint.
      * @return message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
-    Result handleChapNotRespond(Endpoint endpoint) throws IOException, PortalProtocolException;
+    Result handleChapNotRespond(Endpoint endpoint) throws IOException, TransportException;
 
     /**
      * Handle authentication request not respond.
      * @param endpoint HUAWEI portal endpoint.
      * @return message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
-    Result handleAuthenticationNotRespond(Endpoint endpoint) throws IOException, PortalProtocolException;
+    Result handleAuthenticationNotRespond(Endpoint endpoint) throws IOException, TransportException;
 
     /**
      * Handle authentication response.
      * @param response response.
      * @return message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
-    Result handleAuthenticationResponse(T response) throws IOException, PortalProtocolException;
+    Result handleAuthenticationResponse(T response) throws IOException, TransportException;
 
     /**
      * Handle logout response.
@@ -55,14 +55,14 @@ public interface ClientHandler<T> {
      * @return message.
      * @throws IOException
      */
-    Result handleLogoutResponse(T response) throws IOException, PortalProtocolException;
+    Result handleLogoutResponse(T response) throws IOException, TransportException;
 
     /**
      * Handle logout not respond.
      * @param endpoint HUAWEI portal endpoint.
      * @return message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
-    Result handleLogoutNotRespond(Endpoint endpoint) throws IOException, PortalProtocolException;
+    Result handleLogoutNotRespond(Endpoint endpoint) throws IOException, TransportException;
 }

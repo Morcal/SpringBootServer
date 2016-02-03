@@ -8,24 +8,24 @@ import org.junit.Test;
  *
  * @author zhoupeng 2016/1/22.
  */
-public class PortalProtocolErrorTest {
+public class PortalTransportErrorTest {
     @Test
     public void testPortalProtocolError() {
-        PortalProtocolException ex = new AuthenticationException(ProtocolError.AUTHENTICATION_REJECTED, "need pin");
+        TransportException ex = new AuthenticationException(TransportError.AUTHENTICATION_REJECTED, "need pin");
 
-        ProtocolError error = ex.getProtocolError();
+        TransportError error = ex.getProtocolError();
         Assert.assertNotNull(error);
 
-        Assert.assertEquals(ProtocolError.AUTHENTICATION_REJECTED, error);
+        Assert.assertEquals(TransportError.AUTHENTICATION_REJECTED, error);
 
         Assert.assertTrue(error.isAuthenticationError());
         Assert.assertFalse(error.isChallengeError());
         Assert.assertFalse(error.isLogoutError());
 
-        ProtocolError err = ProtocolError.of(0xa0f);
+        TransportError err = TransportError.of(0xa0f);
         Assert.assertNotNull(err);
 
-        Assert.assertEquals(ProtocolError.CHALLENGE_REJECTED, err);
+        Assert.assertEquals(TransportError.CHALLENGE_REJECTED, err);
 
         Assert.assertFalse(err.isAuthenticationError());
         Assert.assertTrue(err.isChallengeError());

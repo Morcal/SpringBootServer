@@ -1,19 +1,21 @@
 package cn.com.xinli.portal.support.ehcache;
 
 import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.*;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.PersistenceConfiguration;
+import net.sf.ehcache.config.Searchable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Ehcache wrapper.
  *
  * <p>This class is a simple wrapper for ehcache. It defines a single central
  * ehcache configuration, and all caches required by calling on {@link #createCache(String)}
- * or {@link #createCache(String, int, Collection, boolean, int)} will create
+ * or {@link #createCache(String, int, EhcacheSearchable, boolean, int)} will create
  * an internal cache upon the central configuration.
  *
  * <p>By default, all created caches do not persist in disk (memory only).
@@ -56,23 +58,8 @@ public class EhcacheManagerAdapter {
      * @param expression object expression.
      * @return cache search attribute.
      */
-    public static CacheSearchAttribute search(String name, Class<?> type, String expression) {
-        return new CacheSearchAttribute(name, type, expression);
-    }
-
-    /**
-     * Ehcache search attribute.
-     */
-    public static class CacheSearchAttribute {
-        final String name;
-        final Class<?> type;
-        final String expression;
-
-        CacheSearchAttribute(String name, Class<?> type, String expression) {
-            this.name = name;
-            this.type = type;
-            this.expression = expression;
-        }
+    public static EhcacheSearchAttribute search(String name, Class<?> type, String expression) {
+        return new EhcacheSearchAttribute(name, type, expression);
     }
 
     /**
@@ -80,11 +67,9 @@ public class EhcacheManagerAdapter {
      * @param attributes search attributes.
      * @return ehcache searchable.
      */
-    private Searchable createSearchable(Collection<CacheSearchAttribute> attributes) {
+    private Searchable createSearchable(Collection<EhcacheSearchAttribute> attributes) {
         final Searchable searchable = new Searchable();
-        attributes.forEach(attr -> searchable.searchAttribute(
-                new SearchAttribute().name(attr.name).type(attr.type).expression(attr.expression)
-        ));
+        attributes.forEach(attr -> searchable.searchAttribute(attr.toEhcacheAttribute()));
         return searchable;
     }
 
@@ -125,7 +110,7 @@ public class EhcacheManagerAdapter {
      * @param ttl ttl in seconds.
      */
     public void createCache(String name, int maxEntries, boolean ttlEnabled, int ttl) {
-        createCache(name, maxEntries, Collections.emptyList(), ttlEnabled, ttl);
+        createCache(name, maxEntries, null, ttlEnabled, ttl);
     }
 
     /**
@@ -138,24 +123,27 @@ public class EhcacheManagerAdapter {
      *
      * @param name cache name.
      * @param maxEntries max cache entries local heap.
-     * @param searchAttributes search attributes.
+     * @param searchable searchable.
      * @param ttlEnabled if ttl enabled.
      * @param ttl ttl in seconds.
      */
     public void createCache(String name, int maxEntries,
-                            Collection<CacheSearchAttribute> searchAttributes,
+                            EhcacheSearchable searchable,
                             boolean ttlEnabled,
                             int ttl) {
         CacheConfiguration cache = new CacheConfiguration();
 
-        if (!searchAttributes.isEmpty()) {
-            cache.name(name)
-                    .timeToIdleSeconds(ttlEnabled ? ttl : 0)
-                    .maxEntriesLocalHeap(maxEntries)
-                    .searchable(createSearchable(searchAttributes))
-                    .diskExpiryThreadIntervalSeconds(10)
-                    .persistence(new PersistenceConfiguration()
-                            .strategy(DEFAULT_STRATEGY));
+        if (searchable != null) {
+            Collection<EhcacheSearchAttribute> attributes = searchable.getSearchAttributes();
+            if (!attributes.isEmpty()) {
+                cache.name(name)
+                        .timeToIdleSeconds(ttlEnabled ? ttl : 0)
+                        .maxEntriesLocalHeap(maxEntries)
+                        .searchable(createSearchable(attributes))
+                        .diskExpiryThreadIntervalSeconds(10)
+                        .persistence(new PersistenceConfiguration()
+                                .strategy(DEFAULT_STRATEGY));
+            }
         } else {
             cache.name(name)
                     .timeToIdleSeconds(ttlEnabled ? ttl : 0)

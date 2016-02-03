@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 /**
  * Rest Authorization Server.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/12.
  */
@@ -48,7 +48,10 @@ public class RestAuthorizationServer implements AuthorizationServer {
                 challenge = secureRandomGenerator.generateUniqueRandomString(32);
 
         Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
-        logger.info("challenge created: {}.", cha);
+        if (logger.isDebugEnabled()) {
+            logger.debug("challenge created: {}.", cha);
+        }
+
         return cha;
     }
 

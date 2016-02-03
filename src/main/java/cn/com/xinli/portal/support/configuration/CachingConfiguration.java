@@ -5,18 +5,16 @@ import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
-import cn.com.xinli.portal.util.SerializerAdapter;
 import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
+import cn.com.xinli.portal.support.ehcache.SessionSearchable;
 import cn.com.xinli.portal.util.Serializer;
+import cn.com.xinli.portal.util.SerializerAdapter;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import net.sf.ehcache.Ehcache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * PWS Caching configurations.
@@ -61,8 +59,8 @@ public class CachingConfiguration {
     /** Radius server cache name. */
     public static final String RADIUS_CACHE_NAME = "radius-cache";
 
-//    /** Credentials cache name. */
-//    public static final String CREDENTIALS_CACHE_NAME = "credentials-cache";
+    /** Session search cache name. */
+    public static final String SESSION_SEARCH_CACHE_NAME = "session-serach-cache";
 
     /** Max supported NAS/BRAS devices, rules, certificates. */
     private static final int DEFAULT_MAX_SUPPORTED = 1000;
@@ -76,8 +74,8 @@ public class CachingConfiguration {
     /** Max limiting  cache entries. */
     private static final int MAX_RATE_LIMITING_CACHE_ENTRIES = 200;
 
-//    /** Max session cache entries. */
-//    private static final int MAX_CREDENTIALS_CACHE_ENTRIES = 50_000;
+    /** Max session search cache entries. */
+    private static final int MAX_SESSION_SEARCH_CACHE_ENTRIES = 50_000;
 
     /** Max NAS/BRAS-user mapping cache entries. */
     private static final int MAX_NAS_MAPPING_ENTRIES = 100_000;
@@ -107,18 +105,14 @@ public class CachingConfiguration {
     public EhcacheManagerAdapter ehcacheManagerAdapter() {
         EhcacheManagerAdapter adapter = new EhcacheManagerAdapter(PWS_CACHE_NAME);
 
-//        List<EhcacheManagerAdapter.CacheSearchAttribute> attributes = new ArrayList<>();
-//        attributes.add(EhcacheManagerAdapter.search("ip", String.class, "value.getIp()"));
-//        attributes.add(EhcacheManagerAdapter.search("mac", String.class, "value.getMac()"));
-//        attributes.add(EhcacheManagerAdapter.search("nas", String.class, "value.getNas()"));
-//        attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
-
         /* Create session cache. */
         adapter.createCache(SESSION_CACHE_NAME, MAX_SESSION_CACHE_ENTRIES);
-//        adapter.createCache(SESSION_CACHE_NAME,
-//                MAX_SESSION_CACHE_ENTRIES, attributes,
-//                serverConfiguration.getSessionConfiguration().isEnableTtl(),
-//                serverConfiguration.getSessionConfiguration().getTtl());
+
+        /* Create session search cache. */
+        adapter.createCache(SESSION_SEARCH_CACHE_NAME,
+                MAX_SESSION_SEARCH_CACHE_ENTRIES, new SessionSearchable(),
+                serverConfiguration.getSessionConfiguration().isEnableTtl(),
+                serverConfiguration.getSessionConfiguration().getTtl());
 
         /* Create certificate cache. */
         adapter.createCache(CERTIFICATE_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
@@ -137,9 +131,6 @@ public class CachingConfiguration {
 
         /* Create radius cache. */
         adapter.createCache(RADIUS_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
-
-//        /* Create credentials cache. */
-//        adapter.createCache(CREDENTIALS_CACHE_NAME, MAX_CREDENTIALS_CACHE_ENTRIES);
 
         /* Create challenge cache. */
         adapter.createCache(CHALLENGE_CACHE_NAME, MAX_CHALLENGE_CACHE_ENTRIES, true,
@@ -202,8 +193,8 @@ public class CachingConfiguration {
         return ehcacheManager().getEhcache(RADIUS_CACHE_NAME);
     }
 
-//    @Bean
-//    public Ehcache credentialsCache() {
-//        return ehcacheManager().getEhcache(CREDENTIALS_CACHE_NAME);
-//    }
+    @Bean
+    public Ehcache sessionSearchCache() {
+        return ehcacheManager().getEhcache(SESSION_SEARCH_CACHE_NAME);
+    }
 }

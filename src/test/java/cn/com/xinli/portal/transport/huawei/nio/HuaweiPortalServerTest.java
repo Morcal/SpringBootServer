@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.transport.PortalProtocolException;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.huawei.*;
 import org.junit.Assert;
@@ -47,7 +47,7 @@ public class HuaweiPortalServerTest {
     }
 
     @Test
-    public void testHuaweiPortalServer() throws IOException, PortalProtocolException {
+    public void testHuaweiPortalServer() throws IOException, TransportException {
         final InetAddress address = InetAddress.getByName("127.0.0.1");
         final Version version = Version.V2;
         final int port = 2003;
@@ -72,7 +72,7 @@ public class HuaweiPortalServerTest {
     }
 
     @Test
-    public void testHuaweiPortalServerWithPap() throws IOException, PortalProtocolException {
+    public void testHuaweiPortalServerWithPap() throws IOException, TransportException {
         final InetAddress address = InetAddress.getByName("127.0.0.1");
         final Version version = Version.V2;
         final int port = 2004;

@@ -33,14 +33,12 @@ public class SessionTokenService extends AbstractTokenService {
 
     @Override
     protected boolean verifyExtendedInformation(String extendedInformation) {
-        String sid = "unknown";
         try {
             long id = Long.parseLong(extendedInformation);
-            sid = String.valueOf(id);
             return sessionService.exists(id);
         } catch (NumberFormatException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("* Invalid session id, {}", sid);
+                logger.debug("* Invalid session token");
             }
             return false;
         }

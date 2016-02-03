@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
 import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
-import cn.com.xinli.portal.transport.PortalProtocolException;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.huawei.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,7 +43,7 @@ public class HuaweiPacketTest {
     }
 
     @Test
-    public void testPapAuth() throws IOException, PortalProtocolException {
+    public void testPapAuth() throws IOException, TransportException {
         endpoint.setAuthType(AuthType.PAP);
         DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
         //HuaweiPacket papAuth = client.createPapAuthPacket(credentials);
@@ -60,7 +60,7 @@ public class HuaweiPacketTest {
     }
 
     @Test
-    public void testChapAuth() throws IOException, PortalProtocolException {
+    public void testChapAuth() throws IOException, TransportException {
         endpoint.setAuthType(AuthType.CHAP);
         DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
         HuaweiPacket chapReq = Packets.newChapReq(Version.V2, credentials, 1);

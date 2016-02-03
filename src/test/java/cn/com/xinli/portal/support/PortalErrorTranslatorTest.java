@@ -5,8 +5,8 @@ import cn.com.xinli.portal.core.PlatformException;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.transport.AuthenticationException;
-import cn.com.xinli.portal.transport.PortalProtocolException;
-import cn.com.xinli.portal.transport.ProtocolError;
+import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.TransportError;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class PortalErrorTranslatorTest {
 
     @Test
     public void testProtocolException() throws ServerException {
-        final PortalProtocolException exception = new AuthenticationException(ProtocolError.AUTHENTICATION_REJECTED, "rejected");
+        final TransportException exception = new AuthenticationException(TransportError.AUTHENTICATION_REJECTED, "rejected");
 
         final PlatformException ex = new PlatformException(translator.translate(exception),
                 exception.getMessage(), exception);

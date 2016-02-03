@@ -12,23 +12,23 @@ import java.util.Objects;
  *
  * @author zhoupeng 2015/12/27.
  */
-public abstract class PortalProtocolException extends Exception implements ProtocolErrorContainer {
+public abstract class TransportException extends Exception implements TransportErrorContainer {
     /** Internal protocol error. */
-    private final ProtocolError error;
+    private final TransportError error;
 
-    public PortalProtocolException(ProtocolError error) {
+    public TransportException(TransportError error) {
         super(error.getReason());
         Objects.requireNonNull(error);
         this.error = error;
     }
 
-    public PortalProtocolException(ProtocolError error, String message) {
+    public TransportException(TransportError error, String message) {
         super(error.getReason() + ", info:" + message);
         Objects.requireNonNull(error);
         this.error = error;
     }
 
-    public PortalProtocolException(ProtocolError error, String message, Throwable cause) {
+    public TransportException(TransportError error, String message, Throwable cause) {
         super(error.getReason() + ", info:" + message, cause);
         Objects.requireNonNull(error);
         this.error = error;
@@ -39,7 +39,7 @@ public abstract class PortalProtocolException extends Exception implements Proto
      * @return internal protocol error.
      */
     @Override
-    public ProtocolError getProtocolError() {
+    public TransportError getProtocolError() {
         return error;
     }
 }

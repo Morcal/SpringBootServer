@@ -63,7 +63,7 @@ final class DefaultPortalClient implements PortalClient {
     public DefaultPortalClient(Endpoint endpoint,
                                CodecFactory<HuaweiPacket> codecFactory,
                                ClientHandler<HuaweiPacket> handler)
-            throws PortalProtocolException {
+            throws TransportException {
         this.endpoint = endpoint;
         this.handler = handler;
         this.codecFactory = codecFactory;
@@ -82,10 +82,10 @@ final class DefaultPortalClient implements PortalClient {
      * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
     HuaweiPacket createRequest(RequestType type, Credentials credentials, int serialNum)
-            throws IOException, PortalProtocolException {
+            throws IOException, TransportException {
         return createRequest(type, credentials, null, serialNum);
     }
 
@@ -103,13 +103,13 @@ final class DefaultPortalClient implements PortalClient {
      * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
     HuaweiPacket createRequest(RequestType type,
                                Credentials credentials,
                                HuaweiPacket response,
                                int serialNum)
-            throws IOException, PortalProtocolException {
+            throws IOException, TransportException {
         HuaweiCredentials cred = HuaweiCredentials.class.cast(credentials);
         Version version = endpoint.getVersion();
         switch (type) {
@@ -140,7 +140,7 @@ final class DefaultPortalClient implements PortalClient {
             default:
                 break;
         }
-        throw new UnsupportedPortalProtocolException("unsupported request: " + type.name());
+        throw new UnsupportedTransportException("unsupported request: " + type.name());
     }
 
     /**
@@ -242,10 +242,10 @@ final class DefaultPortalClient implements PortalClient {
      * @param credentials user credentials.
      * @return result.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      */
     @Override
-    public Result login(Credentials credentials) throws IOException, PortalProtocolException {
+    public Result login(Credentials credentials) throws IOException, TransportException {
         Objects.requireNonNull(credentials);
 
         Optional<HuaweiPacket> response;
@@ -302,7 +302,7 @@ final class DefaultPortalClient implements PortalClient {
     }
 
     @Override
-    public Result logout(Credentials credentials) throws IOException, PortalProtocolException {
+    public Result logout(Credentials credentials) throws IOException, TransportException {
         Objects.requireNonNull(credentials);
 
         int serialNum = nextSerialNum();

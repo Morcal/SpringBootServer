@@ -11,8 +11,8 @@ import cn.com.xinli.portal.core.nas.NasType;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionProvider;
 import cn.com.xinli.portal.transport.PortalClient;
-import cn.com.xinli.portal.transport.PortalProtocolException;
-import cn.com.xinli.portal.transport.ProtocolError;
+import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.TransportError;
 import cn.com.xinli.portal.transport.Result;
 import cn.com.xinli.portal.core.nas.HuaweiNas;
 import cn.com.xinli.portal.transport.huawei.AuthType;
@@ -115,7 +115,7 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
         } catch (IOException e) {
             logger.error("Portal login error", e);
             throw new ServerException(PortalError.IO_ERROR, "Failed to login", e);
-        } catch (PortalProtocolException e) {
+        } catch (TransportException e) {
             PortalError err = errorTranslator.translate(e);
             throw new PlatformException(err, e.getMessage(), e);
         }
@@ -137,13 +137,13 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
             logger.error("Portal logout error", e);
             throw new ServerException(
                     PortalError.IO_ERROR, "Failed to logout", e);
-        } catch (PortalProtocolException e) {
+        } catch (TransportException e) {
             /*
              * Wrap protocol exception into a new Platform exception
              * unless trying to logout when user already gone.
              */
-            ProtocolError error = e.getProtocolError();
-            if (error != ProtocolError.LOGOUT_ALREADY_GONE) {
+            TransportError error = e.getProtocolError();
+            if (error != TransportError.LOGOUT_ALREADY_GONE) {
                 PortalError err = errorTranslator.translate(e);
                 throw new PlatformException(err, e.getMessage(), e);
             }

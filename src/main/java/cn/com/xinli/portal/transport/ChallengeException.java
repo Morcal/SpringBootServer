@@ -13,8 +13,8 @@ package cn.com.xinli.portal.transport;
  *
  * @author zhoupeng 2016/1/18.
  */
-public class ChallengeException extends PortalProtocolException {
-    public ChallengeException(ProtocolError error, String message) {
+public class ChallengeException extends TransportException {
+    public ChallengeException(TransportError error, String message) {
         super(error, message);
     }
 }

@@ -12,12 +12,12 @@ import java.util.Optional;
  * Default huawei portal client handler.
  *
  * <p>This handler wraps remote portal endpoint error responses
- * to {@link ProtocolError}s and throw {@link PortalProtocolException}s
+ * to {@link TransportError}s and throw {@link TransportException}s
  * with those errors.
  *
- * <p>This handler also generates {@link ProtocolError}s when
+ * <p>This handler also generates {@link TransportError}s when
  * remote portal endpoint does not respond to requests, and throw
- * {@link PortalProtocolException} with those errors.
+ * {@link TransportException} with those errors.
  *
  * <p>Project: xpws
  *
@@ -29,28 +29,28 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
 
     @Override
     public Result handleChapNotRespond(Endpoint endpoint)
-            throws IOException, PortalProtocolException {
-        logger.warn("{}", ProtocolError.NAS_NOT_RESPOND.name());
+            throws IOException, TransportException {
+        logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
         throw new NasNotRespondException(endpoint.toString());
     }
 
     @Override
     public Result handleAuthenticationNotRespond(Endpoint endpoint)
-            throws IOException, PortalProtocolException {
-        logger.warn("{}", ProtocolError.NAS_NOT_RESPOND.name());
+            throws IOException, TransportException {
+        logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
         throw new NasNotRespondException(endpoint.toString());
     }
 
     @Override
     public Result handleLogoutNotRespond(Endpoint endpoint)
-            throws IOException, PortalProtocolException {
-        logger.warn("{}", ProtocolError.NAS_NOT_RESPOND.name());
+            throws IOException, TransportException {
+        logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
         throw new NasNotRespondException(endpoint.toString());
     }
 
     @Override
     public Result handleChapResponse(HuaweiPacket response)
-            throws IOException, PortalProtocolException {
+            throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_CHALLENGE.name());
 
         if (logger.isTraceEnabled()) {
@@ -63,25 +63,25 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
                 new UnrecognizedResponseException(
                         "CHAP response error code: " + response.getError()));
 
-        ProtocolError error = null;
+        TransportError error = null;
         switch (err.get()) {
             case OK:
                 return PortalResult.from(response);
 
             case REJECTED:
-                error = ProtocolError.CHALLENGE_REJECTED;
+                error = TransportError.CHALLENGE_REJECTED;
                 break;
 
             case ALREADY_ONLINE:
-                error = ProtocolError.CHALLENGE_ALREADY_ONLINE;
+                error = TransportError.CHALLENGE_ALREADY_ONLINE;
                 break;
 
             case WAIT:
-                error = ProtocolError.CHALLENGE_UNAVAILABLE;
+                error = TransportError.CHALLENGE_UNAVAILABLE;
                 break;
 
             case FAILED:
-                error = ProtocolError.CHALLENGE_FAILURE;
+                error = TransportError.CHALLENGE_FAILURE;
                 break;
         }
 
@@ -91,7 +91,7 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
 
     @Override
     public Result handleAuthenticationResponse(HuaweiPacket response)
-            throws IOException, PortalProtocolException {
+            throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_AUTH.name());
 
         if (logger.isTraceEnabled()) {
@@ -102,25 +102,25 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
         err.orElseThrow(() ->
                 new UnrecognizedResponseException("authentication error code:" + response.getError()));
 
-        ProtocolError error = null;
+        TransportError error = null;
         switch (err.get()) {
             case OK:
                 return PortalResult.from(response);
 
             case REJECTED:
-                error = ProtocolError.AUTHENTICATION_REJECTED;
+                error = TransportError.AUTHENTICATION_REJECTED;
                 break;
 
             case ALREADY_ONLINE:
-                error = ProtocolError.AUTHENTICATION_ALREADY_ONLINE;
+                error = TransportError.AUTHENTICATION_ALREADY_ONLINE;
                 break;
 
             case WAIT:
-                error = ProtocolError.AUTHENTICATION_UNAVAILABLE;
+                error = TransportError.AUTHENTICATION_UNAVAILABLE;
                 break;
 
             case FAILED:
-                error = ProtocolError.AUTHENTICATION_FAILURE;
+                error = TransportError.AUTHENTICATION_FAILURE;
                 break;
         }
 
@@ -130,7 +130,7 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
 
     @Override
     public Result handleLogoutResponse(HuaweiPacket response)
-            throws IOException, PortalProtocolException {
+            throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_LOGOUT.name());
 
         if (logger.isTraceEnabled()) {
@@ -141,21 +141,21 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
         err.orElseThrow(() ->
                 new UnrecognizedResponseException("logout error: " + response.getError() + "."));
 
-        ProtocolError error = null;
+        TransportError error = null;
         switch (err.get()) {
             case OK:
                 return PortalResult.from(response);
 
             case REJECTED:
-                error = ProtocolError.LOGOUT_REJECTED;
+                error = TransportError.LOGOUT_REJECTED;
                 break;
 
             case FAILED:
-                error = ProtocolError.LOGOUT_FAILURE;
+                error = TransportError.LOGOUT_FAILURE;
                 break;
 
             case GONE:
-                error = ProtocolError.LOGOUT_ALREADY_GONE;
+                error = TransportError.LOGOUT_ALREADY_GONE;
                 break;
         }
 

@@ -17,18 +17,18 @@ public interface PortalClient {
      * @param credentials user credentials.
      * @return portal message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      * @throws NullPointerException if credentials is null.
      */
-    Result login(Credentials credentials) throws IOException, PortalProtocolException;
+    Result login(Credentials credentials) throws IOException, TransportException;
 
     /**
      * Logout.
      * @param credentials user credentials.
      * @return portal message.
      * @throws IOException
-     * @throws PortalProtocolException
+     * @throws TransportException
      * @throws NullPointerException if credentials is null.
      */
-    Result logout(Credentials credentials) throws IOException, PortalProtocolException;
+    Result logout(Credentials credentials) throws IOException, TransportException;
 }

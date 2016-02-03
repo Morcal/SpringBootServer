@@ -2,8 +2,8 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.transport.PortalProtocolException;
-import cn.com.xinli.portal.transport.ProtocolError;
+import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.TransportError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  *
  * <ul>
  *     <li>translate text error messages to error codes.</li>
- *      Provides functionality to identify {@link PortalProtocolException}s
+ *      Provides functionality to identify {@link TransportException}s
  *      based on known error text signatures,
  *      and translate those exceptions to portal error.
  *     <li>translate error codes to HTTP status codes.</li>
@@ -93,7 +93,7 @@ public class PortalErrorTranslator {
     }
 
     /**
-     * Translate {@link ProtocolError}s to {@link PortalError}s.
+     * Translate {@link TransportError}s to {@link PortalError}s.
      *
      * <p>If Protocol error is an authentication error, server should
      * look up the authentication message table to translate error to
@@ -104,8 +104,8 @@ public class PortalErrorTranslator {
      * @throws ServerException If no portal error defined for protocol error
      * or no portal error defined for protocol error.
      */
-    public PortalError translate(PortalProtocolException ex) throws ServerException {
-        ProtocolError error = ex.getProtocolError();
+    public PortalError translate(TransportException ex) throws ServerException {
+        TransportError error = ex.getProtocolError();
 
         if (error.isAuthenticationError()) {
             // Translate portal authentication error.
@@ -123,25 +123,25 @@ public class PortalErrorTranslator {
                 .findAny();
 
         entry.orElseThrow(() -> new ServerException(
-                PortalError.UNKNOWN_PROTOCOL_ERROR, String.valueOf(error)));
+                PortalError.UNKNOWN_TRANSPORT_ERROR, String.valueOf(error)));
 
         return PortalError.of(entry.get().portalError);
     }
 //
 //    /**
-//     * Translate {@link ProtocolError}s to {@link PortalError}s.
+//     * Translate {@link TransportError}s to {@link PortalError}s.
 //     *
 //     * @param error protocol error.
 //     * @return portal error.
 //     * @throws ServerException If no portal error defined for protocol error.
 //     */
-//    private PortalError translate(ProtocolError error) throws ServerException {
+//    private PortalError translate(TransportError error) throws ServerException {
 //        Optional<ProtocolEntry> entry = Stream.of(protocolTable)
 //                .filter(e -> e.protocolError == error.getValue())
 //                .findAny();
 //
 //        entry.orElseThrow(() -> new ServerException(
-//                PortalError.UNKNOWN_PROTOCOL_ERROR, String.valueOf(error)));
+//                PortalError.UNKNOWN_TRANSPORT_ERROR, String.valueOf(error)));
 //
 //        return PortalError.of(entry.get().portalError);
 //    }
@@ -174,7 +174,7 @@ public class PortalErrorTranslator {
 //                .findAny();
 //
 //        entry.orElseThrow(() ->
-//                new ServerException(PortalError.UNKNOWN_PROTOCOL_ERROR, text));
+//                new ServerException(PortalError.UNKNOWN_TRANSPORT_ERROR, text));
 //
 //        return PortalError.of(entry.get().error);
 //    }

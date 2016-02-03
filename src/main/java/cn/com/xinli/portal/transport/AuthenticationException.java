@@ -10,8 +10,8 @@ package cn.com.xinli.portal.transport;
  *
  * @author zhoupeng 2016/1/18.
  */
-public class AuthenticationException extends PortalProtocolException {
-    public AuthenticationException(ProtocolError error, String message) {
+public class AuthenticationException extends TransportException {
+    public AuthenticationException(TransportError error, String message) {
         super(error, message);
     }
 }

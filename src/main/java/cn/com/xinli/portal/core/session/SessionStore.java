@@ -2,7 +2,7 @@ package cn.com.xinli.portal.core.session;
 
 import cn.com.xinli.portal.core.DataStore;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Session store.
@@ -33,20 +33,20 @@ public interface SessionStore extends DataStore<Session, Long> {
      * Find data with query parameters.
      * @param ip user ip address.
      * @param mac user mac address.
-     * @return result list.
+     * @return results.
      * @throws IllegalArgumentException if parameters is null or empty.
      */
-    List<Session> find(String ip, String mac);
+    Set<Session> find(String ip, String mac);
 
     /**
      * {@inheritDoc}
      *
      * Find data with query parameters.
      * @param ip user ip address.
-     * @return result list.
+     * @return results.
      * @throws IllegalArgumentException if parameters is null or empty.
      */
-    List<Session> find(String ip);
+    Set<Session> find(String ip);
 
     /**
      * {@inheritDoc}

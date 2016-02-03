@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  *
  * @author zhoupeng 2016/1/18.
  */
-public enum ProtocolError {
+public enum TransportError {
     NAS_UNREACHABLE(0xa00, "NAS unreachable"),
     NAS_NOT_RESPOND(0xa01, "NAS not respond"),
     UNSUPPORTED_PROTOCOL(0xa02, "unsupported protocol"),
@@ -39,7 +39,7 @@ public enum ProtocolError {
     /** protocol error reason. */
     private final String reason;
 
-    ProtocolError(int value, String reason) {
+    TransportError(int value, String reason) {
         this.value = value;
         this.reason = reason;
     }
@@ -54,7 +54,7 @@ public enum ProtocolError {
 
     @Override
     public String toString() {
-        return "ProtocolError{" +
+        return "TransportError{" +
                 "value=" + value +
                 ", reason='" + reason + '\'' +
                 '}';
@@ -65,8 +65,8 @@ public enum ProtocolError {
      * @param value error reason.
      * @return portal error.
      */
-    public static ProtocolError of(int value) {
-        Optional<ProtocolError> error = Stream.of(values())
+    public static TransportError of(int value) {
+        Optional<TransportError> error = Stream.of(values())
                 .filter(err -> err.value == value)
                 .findFirst();
 

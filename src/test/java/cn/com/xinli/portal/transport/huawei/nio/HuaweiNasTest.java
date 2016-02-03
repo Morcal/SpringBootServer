@@ -46,7 +46,7 @@ public class HuaweiNasTest {
     final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Before
-    public void setup() throws PortalProtocolException, UnknownHostException {
+    public void setup() throws TransportException, UnknownHostException {
         address = InetAddress.getByName("127.0.0.1");
         version = Version.V2;
         port = 2003;
@@ -68,7 +68,7 @@ public class HuaweiNasTest {
 
 
     @Test
-    public void testHuaweiNas() throws IOException, InterruptedException, PortalProtocolException {
+    public void testHuaweiNas() throws IOException, InterruptedException, TransportException {
         endpoint.setPort(2000);
         logger.debug("endpoint: {}", endpoint);
 
@@ -88,7 +88,7 @@ public class HuaweiNasTest {
     }
 
     @Test
-    public void testLoginMoreThanOnce() throws IOException, InterruptedException, PortalProtocolException {
+    public void testLoginMoreThanOnce() throws IOException, InterruptedException, TransportException {
         endpoint.setPort(2004);
         logger.debug("endpoint: {}", endpoint);
 
@@ -112,7 +112,7 @@ public class HuaweiNasTest {
         Assert.assertNull(response);
     }
 
-    private void concurrentRun(final Credentials credentials) throws IOException, PortalProtocolException {
+    private void concurrentRun(final Credentials credentials) throws IOException, TransportException {
         final PortalClient client = HuaweiPortal.createClient(endpoint);
         for (int i = 0; i < RUN_TIMES; i ++) {
             Result response = client.login(credentials);
@@ -129,7 +129,7 @@ public class HuaweiNasTest {
             executorService.submit(() -> {
                 try {
                     this.concurrentRun(credentials);
-                } catch (IOException | PortalProtocolException e) {
+                } catch (IOException | TransportException e) {
                     logger.error("Concurrent access error", e);
                 }
             });

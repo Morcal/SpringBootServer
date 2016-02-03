@@ -66,7 +66,7 @@ public enum PortalError {
     LOGOUT_REJECTED(89, "logout rejected"),
     LOGOUT_FAILURE(90, "logout failure"),
     LOGOUT_ALREADY_GONE(91, "logout already gone"),
-    UNKNOWN_PROTOCOL_ERROR(92, "unknown protocol error"),
+    UNKNOWN_TRANSPORT_ERROR(92, "unknown transport error"),
 
     /* REST API errors. */
     INVALID_CLIENT(101, "invalid client"),

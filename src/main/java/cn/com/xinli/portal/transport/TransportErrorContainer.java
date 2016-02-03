@@ -1,16 +1,16 @@
 package cn.com.xinli.portal.transport;
 
 /**
- * Protocol error container.
+ * Transport error container.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/19.
  */
-public interface ProtocolErrorContainer {
+public interface TransportErrorContainer {
     /**
      * Get protocol error.
      * @return protocol error.
      */
-    ProtocolError getProtocolError();
+    TransportError getProtocolError();
 }

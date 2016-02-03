@@ -14,8 +14,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * REDIS based session store.
@@ -84,17 +84,17 @@ public class RedisSessionStore implements SessionStore {
     }
 
     @Override
-    public List<Session> find(String ip, String mac) {
+    public Set<Session> find(String ip, String mac) {
         long sid = sessionQueryRedisTemplate.opsForValue().get(keyFor(ip, mac));
         Session session = sessionRedisTemplate.opsForValue().get(keyFor(sid));
-        return session == null ? Collections.emptyList() : Collections.singletonList(session);
+        return session == null ? Collections.emptySet() : Collections.singleton(session);
     }
 
     @Override
-    public List<Session> find(String ip) {
+    public Set<Session> find(String ip) {
         long sid = sessionQueryRedisTemplate.opsForValue().get(keyFor(ip));
         Session session = sessionRedisTemplate.opsForValue().get(keyFor(sid));
-        return session == null ? Collections.emptyList() : Collections.singletonList(session);
+        return session == null ? Collections.emptySet() : Collections.singleton(session);
     }
 
     @Override

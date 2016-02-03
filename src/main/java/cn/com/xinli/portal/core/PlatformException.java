@@ -10,7 +10,7 @@ package cn.com.xinli.portal.core;
  * NAS/BRAS. Errors may occurs in the underlying communicating layer or
  * occurs in the business logic layer like portal related authentication.
  *
- * <p>When a PortalProtocolException been thrown, server should translate
+ * <p>When a TransportException been thrown, server should translate
  * underlying exception to {@link PortalError} and then send error response
  * to remote client.
  *

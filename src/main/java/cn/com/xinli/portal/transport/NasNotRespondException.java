@@ -10,8 +10,8 @@ package cn.com.xinli.portal.transport;
  *
  * @author zhoupeng 2016/1/18.
  */
-public class NasNotRespondException extends PortalProtocolException {
+public class NasNotRespondException extends TransportException {
     public NasNotRespondException(String message) {
-        super(ProtocolError.NAS_NOT_RESPOND, message);
+        super(TransportError.NAS_NOT_RESPOND, message);
     }
 }

@@ -3,7 +3,7 @@ package cn.com.xinli.portal.transport.huawei.nio;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.support.HuaweiPortalSessionProvider;
 import cn.com.xinli.portal.transport.PortalClient;
-import cn.com.xinli.portal.transport.PortalProtocolException;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.huawei.ClientHandler;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
@@ -66,7 +66,7 @@ public class HuaweiPortal {
      * @return portal client.
      */
     public static PortalClient createClient(Endpoint endpoint)
-            throws PortalProtocolException {
+            throws TransportException {
         Objects.requireNonNull(endpoint);
         return new DefaultPortalClient(endpoint, codecFactory, defaultHandler);
     }
