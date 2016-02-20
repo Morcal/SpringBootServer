@@ -5,6 +5,7 @@ import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.certificate.Certificate;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.Nas;
@@ -12,7 +13,6 @@ import cn.com.xinli.portal.core.nas.NasLocator;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasService;
 import cn.com.xinli.portal.core.session.*;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -53,6 +50,7 @@ import java.util.concurrent.Future;
  *     <li>Delete session</li>
  *     Delete a session revolving delete a database record and a session cache.
  * </ul>
+ *
  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/6.
@@ -73,6 +71,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     private NasLocator nasLocator;
 
     @Autowired
+    private ServerConfiguration serverConfiguration;
+
+    @Autowired
     private List<SessionProvider> sessionProviders;
 
     /** Remover executor. */
@@ -90,10 +91,20 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     }
 
     @Override
-    public Future<?> removeSessionInFuture(long id) {
-        return executor.submit(() -> doRemoveSession(id));
+    public Future<?> removeSessionInFuture(Session session) {
+        Objects.requireNonNull(session);
+        return executor.submit(() -> {
+            try {
+                removeSessionInternal(session);
+            } catch (PortalException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("remove session error, {}", e.getMessage());
+                }
+            }
+        });
     }
 
+    @Override
     public void init() {
         logger.info("Initializing session service.");
         sessionStore.init();
@@ -282,7 +293,8 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         logger.trace("session last update time: {}, current update time: {}",
                 lastUpdateTime, timestamp);
 
-        if (Math.abs(lastUpdateTime - timestamp) <= SecurityConfiguration.MIN_TIME_UPDATE_DIFF) {
+        if (Math.abs(lastUpdateTime - timestamp) <=
+                serverConfiguration.getSessionConfiguration().getMinUpdateInterval()) {
             /* Assume it's a replay attack. */
             throw new RemoteException(PortalError.INVALID_UPDATE_TIMESTAMP);
         }

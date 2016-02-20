@@ -17,16 +17,18 @@ import java.util.List;
  *
  * @author zhoupeng 2015/12/30.
  */
-public abstract class AbstractRestFilter extends OncePerRequestFilter implements InitializingBean {
+public abstract class AbstractRestFilter extends OncePerRequestFilter
+        implements ServletUriMatchable, InitializingBean {
     /** Inclusive path array. */
-    protected final List<String> filterPathMatches = new ArrayList<>();
+    private final List<String> matchedUris = new ArrayList<>();
 
     /**
      * Set filter path matches.
-     * @param filterPathMatches filter path matches.
+     * @param matchedUris filter path matches.
      */
-    public final void setFilterPathMatches(Collection<String> filterPathMatches) {
-        this.filterPathMatches.addAll(filterPathMatches);
+    @Override
+    public final void setMatchedUris(Collection<String> matchedUris) {
+        this.matchedUris.addAll(matchedUris);
     }
 
     /**
@@ -34,8 +36,8 @@ public abstract class AbstractRestFilter extends OncePerRequestFilter implements
      * @param request request.
      * @return true if needs.
      */
-    protected final boolean requiresFilter(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return filterPathMatches.stream().anyMatch(uri::startsWith);
+    @Override
+    public final boolean matches(HttpServletRequest request) {
+        return matchedUris.stream().anyMatch(request.getRequestURI()::startsWith);
     }
 }

@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.core.nas;
 
-import cn.com.xinli.portal.core.RouteMapper;
+import cn.com.xinli.portal.core.RoutingMapper;
 import cn.com.xinli.portal.core.DataStore;
 import cn.com.xinli.portal.core.Locatable;
 import cn.com.xinli.portal.core.credentials.Credentials;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  *
  * @author zhoupeng 2016/1/30.
  */
-public interface NasStore extends RouteMapper, Locatable<Credentials, Nas>, DataStore<Nas, String> {
+public interface NasStore extends RoutingMapper, Locatable<Credentials, Nas>, DataStore<Nas, String> {
     /**
      * Get NAS/BRAS by device id.
      * @param name NAS device name.

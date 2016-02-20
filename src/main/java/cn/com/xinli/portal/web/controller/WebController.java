@@ -2,7 +2,6 @@ package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.nas.NasLocator;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
-import cn.com.xinli.portal.core.nas.NasService;
 import cn.com.xinli.portal.web.rest.Scheme;
 import cn.com.xinli.portal.web.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;

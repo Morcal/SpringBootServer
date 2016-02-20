@@ -18,21 +18,23 @@ public abstract class PortalException extends Exception implements PortalErrorCo
     /** Portal error. */
     private final PortalError error;
 
+    private static final String EMPTY_PORTAL_ERROR = "Portal error is empty.";
+
     public PortalException(PortalError error) {
         super(error.getReason());
-        Objects.requireNonNull(error);
+        Objects.requireNonNull(error, EMPTY_PORTAL_ERROR);
         this.error = error;
     }
 
     public PortalException(PortalError error, String message) {
         super(error.getReason() + ", info:" + message);
-        Objects.requireNonNull(error);
+        Objects.requireNonNull(error, EMPTY_PORTAL_ERROR);
         this.error = error;
     }
 
     public PortalException(PortalError error, String message, Throwable cause) {
         super(error.getReason() + ", info:" + message, cause);
-        Objects.requireNonNull(error);
+        Objects.requireNonNull(error, EMPTY_PORTAL_ERROR);
         this.error = error;
     }
 

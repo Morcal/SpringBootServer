@@ -37,6 +37,9 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = RadiusNas.class, name = "RADIUS"),
 })
 public abstract class Nas {
+
+    public static final String EMPTY_NAS = "NAS is empty.";
+
     /** Auto generated internal id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

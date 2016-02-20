@@ -108,7 +108,7 @@ public class RedisSessionStore implements SessionStore {
 
     @Override
     public void put(Session session) {
-        Objects.requireNonNull(session);
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
         ensureKey(session);
         Credentials credentials = session.getCredentials();
         /* session:id session values */

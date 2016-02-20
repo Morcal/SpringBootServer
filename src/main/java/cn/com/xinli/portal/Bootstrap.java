@@ -4,8 +4,8 @@ import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.support.PropertiesServerConfiguration;
 import cn.com.xinli.portal.core.session.SessionProvider;
+import cn.com.xinli.portal.support.HuaweiPortalSessionProvider;
 import cn.com.xinli.portal.support.InterProcessNpsSessionProvider;
-import cn.com.xinli.portal.transport.huawei.nio.HuaweiPortal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +36,7 @@ public class Bootstrap {
     @Bean
     public List<SessionProvider> sessionProviders() {
         List<SessionProvider> providers = new ArrayList<>();
-        providers.add(HuaweiPortal.createSessionProvider());
+        providers.add(new HuaweiPortalSessionProvider());
         providers.add(new InterProcessNpsSessionProvider());
         logger.info("Session providers loaded, {}", providers.size());
         return providers;

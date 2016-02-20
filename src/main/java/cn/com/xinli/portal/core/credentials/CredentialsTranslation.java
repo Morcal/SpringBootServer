@@ -132,7 +132,7 @@ public class CredentialsTranslation {
             trimDomainIfPresent(credentials);
         }
 
-        Credentials result = DefaultCredentials.of(
+        Credentials result = Credentials.of(
                 credentials.getUsername(), credentials.getPassword(),
                 credentials.getIp(), credentials.getMac());
 

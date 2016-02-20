@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support.aspect;
 
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.support.InternalServerHandler;
+import cn.com.xinli.portal.transport.huawei.LogoutError;
 import cn.com.xinli.portal.web.admin.ActivityService;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -15,7 +16,8 @@ import java.util.Calendar;
 /**
  * Portal server aspect.
  *
- * <p>This class watches on internal portal server and records all NTF_LOGOUT events.
+ * <p>This class watches on internal portal server and records all NTF_LOGOUT events
+ * as auditing logging.
  *
  * <p>Project: xpws
  *
@@ -34,45 +36,17 @@ public class PortalServerAspect {
     public void inHandler() {}
 
     /**
-     * Define method pointcut for {@link InternalServerHandler#handleNtfLogout(String)}.
+     * Define method pointcut for {@link InternalServerHandler#ntfLogout(String, String)}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.support.InternalServerHandler.handleNtfLogout(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.support.InternalServerHandler.ntfLogout(..))")
     public void ntfLogout() {}
-
-    /**
-     * Convert returning result code to text.
-     *
-     * NTF_LOGOUT result defined in private class
-     * cn.com.xinli.portal.protocol.huawei.Enums
-     *
-     * @param result result code.
-     * @return result string.
-     */
-    public String resultOf(int result) {
-        switch (result) {
-            case 0x00:
-                return "ok";
-
-            case 0x01:
-                return "rejected";
-
-            case 0x02:
-                return "failed";
-
-            case 0x03:
-                return "gone";
-
-            default:
-                return "unknown";
-        }
-    }
 
     /**
      * Save activity.
      * @param ip NTF_LOGOUT client ip.
      * @param result result.
      */
-    private void saveActivity(String ip, String result) {
+    private void saveActivity(String nasIp, String ip, String result) {
         Activity activity = new Activity();
         activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(Activity.Severity.INFO);
@@ -80,36 +54,36 @@ public class PortalServerAspect {
         activity.setRemote(ip);
         activity.setAction(Activity.SystemAction.NTF_LOGOUT.name());
         activity.setFacility(Activity.Facility.PORTAL);
-        activity.setSource("system");
-        activity.setSourceInfo("system portal server");
+        activity.setSource("NAS");
+        activity.setSourceInfo(nasIp);
         activityService.log(activity);
     }
 
     /**
-     * Save activity after {@link InternalServerHandler#handleNtfLogout(String)}
+     * Save activity after {@link InternalServerHandler#ntfLogout(String, String)}
      * returns normally.
      * @param ip client ip.
      * @param returning returning result.
      */
     @AfterReturning(
-            value = "inHandler() && ntfLogout() && args(ip)",
-            argNames = "ip,returning",
+            value = "inHandler() && ntfLogout() && args(nasIp, ip)",
+            argNames = "nasIp,ip,returning",
             returning = "returning")
-    public void recordNtfLogout(String ip, int returning) {
-        saveActivity(ip, resultOf(returning));
+    public void recordNtfLogout(String nasIp, String ip, LogoutError returning) {
+        saveActivity(nasIp, ip, returning.getDescription());
     }
 
     /**
-     * Save activity after {@link InternalServerHandler#handleNtfLogout(String)}
+     * Save activity after {@link InternalServerHandler#ntfLogout(String, String)}
      * throws an exception.
      * @param ip client ip.
      * @param cause cause.
      */
     @AfterThrowing(
-            value = "inHandler() && ntfLogout() && args(ip)",
-            argNames = "ip,cause",
+            value = "inHandler() && ntfLogout() && args(nasIp, ip)",
+            argNames = "nasIp,ip,cause",
             throwing = "cause")
-    public void recordNtfLogout(String ip, Throwable cause) {
-        saveActivity(ip, cause.getMessage());
+    public void recordNtfLogout(String nasIp, String ip, Throwable cause) {
+        saveActivity(nasIp, ip, cause.getMessage());
     }
 }

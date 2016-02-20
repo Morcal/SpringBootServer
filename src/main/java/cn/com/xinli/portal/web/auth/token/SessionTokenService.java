@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.web.auth.token;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.session.SessionService;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +26,9 @@ public class SessionTokenService extends AbstractTokenService {
     @Autowired
     private SessionService sessionService;
 
+    @Autowired
+    private ServerConfiguration serverConfiguration;
+
     @Override
     protected TokenScope getTokenScope() {
         return TokenScope.PORTAL_SESSION_TOKEN_SCOPE;
@@ -46,7 +49,7 @@ public class SessionTokenService extends AbstractTokenService {
 
     @Override
     protected int getTokenTtl() {
-        return SecurityConfiguration.SESSION_TOKEN_TTL;
+        return serverConfiguration.getSessionConfiguration().getTokenTtl();
     }
 
 }

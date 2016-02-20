@@ -5,7 +5,6 @@ import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateService;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.credentials.DefaultCredentials;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionManager;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
@@ -57,8 +56,13 @@ public class SessionControllerImpl implements SessionController {
     private ServerConfiguration serverConfiguration;
 
     private RestResponse buildResponse(Session session, AccessAuthentication authentication, boolean grantToken) {
-        return RestResponseBuilders.successBuilder()
-                .setSession(session)
+        RestResponseBuilders.SessionResponseBuilder builder = RestResponseBuilders.successBuilder();
+
+        builder.setAccessTokenTtl(serverConfiguration.getRestConfiguration().getTokenTtl())
+                .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
+                .setSessionTokenTtl(serverConfiguration.getSessionConfiguration().getTokenTtl());
+
+        return builder.setSession(session)
                 .setAccessAuthentication(authentication)
                 .setRequiresKeepAlive(serverConfiguration.getSessionConfiguration().isEnableHeartbeat())
                 .setKeepAliveInterval(serverConfiguration.getSessionConfiguration().getHeartbeatInterval())
@@ -78,7 +82,7 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
-        Credentials credentials = DefaultCredentials.of(username, password, ip, mac);
+        Credentials credentials = Credentials.of(username, password, ip, mac);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
@@ -99,7 +103,13 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("session created id: {}", session.getId());
 
-        return buildResponse(session, authentication, true);
+        RestResponse rs = buildResponse(session, authentication, true);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("connect -> {} ", rs);
+        }
+
+        return rs;
     }
 
     @Override
@@ -116,7 +126,13 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("get session {{}}", session.getId());
 
-        return buildResponse(session, (AccessAuthentication) principal, false);
+        RestResponse rs = buildResponse(session, (AccessAuthentication) principal, false);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("get -> {} ", rs);
+        }
+
+        return rs;
     }
 
     @Override
@@ -136,7 +152,13 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session {{}} updated", updated.getId());
 
         /* send updated session information. */
-        return buildResponse(updated, (AccessAuthentication) principal, false);
+        RestResponse rs = buildResponse(updated, (AccessAuthentication) principal, false);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("update -> {} ", rs);
+        }
+
+        return rs;
     }
 
     @Override
@@ -149,9 +171,15 @@ public class SessionControllerImpl implements SessionController {
         sessionManager.removeSession(id);
         logger.info("session removed {}.", id);
 
-        return RestResponseBuilders.successBuilder()
+        RestResponse rs = RestResponseBuilders.successBuilder()
                 .setAccessAuthentication((AccessAuthentication) principal)
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("disconnect -> {} ", rs);
+        }
+
+        return rs;
     }
 
     @Override
@@ -162,27 +190,34 @@ public class SessionControllerImpl implements SessionController {
                              @RequestParam(value = "user_mac", defaultValue = "") String mac,
                              @AuthenticationPrincipal Principal principal)
             throws SessionNotFoundException {
+        RestResponse rs;
         Optional<Session> opt = sessionService.find(ip, mac);
         if (!opt.isPresent()) {
-            return RestResponseBuilders.successBuilder()
+            rs = RestResponseBuilders.successBuilder()
                     .setAccessAuthentication((AccessAuthentication) principal)
                     .build();
+        } else {
+            Session session = opt.get();
+
+            /* Revoke current session token if present. */
+            AccessAuthentication authentication = (AccessAuthentication) principal;
+            /* reallocate a new session token. */
+            RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
+            authentication.setSessionToken(token);
+            if (logger.isTraceEnabled()) {
+                logger.trace("session: {} found, new session token allocated {}.", session, token);
+            }
+
+            logger.info("session found, id: {}", session.getId());
+
+            rs = buildResponse(session, (AccessAuthentication) principal, true);
         }
 
-        Session session = opt.get();
-
-        /* Revoke current session token if present. */
-        AccessAuthentication authentication = (AccessAuthentication) principal;
-        /* reallocate a new session token. */
-        RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
-        authentication.setSessionToken(token);
-        if (logger.isTraceEnabled()) {
-            logger.trace("session: {} found, new session token allocated {}.", session, token);
+        if (logger.isDebugEnabled()) {
+            logger.debug("find -> {} ", rs);
         }
 
-        logger.info("session found, id: {}", session.getId());
-
-        return buildResponse(session, (AccessAuthentication) principal, true);
+        return rs;
     }
 
 }

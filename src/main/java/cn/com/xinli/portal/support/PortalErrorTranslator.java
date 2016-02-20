@@ -72,7 +72,7 @@ public class PortalErrorTranslator {
      * @return http status code.
      */
     public int translate(PortalError error) {
-        Objects.requireNonNull(error);
+        Objects.requireNonNull(error, PortalError.EMPTY_ERROR);
         int err = error.getValue();
         synchronized (statusCodeMapping) {
             if (!statusCodeMapping.containsKey(err)) {

@@ -1,8 +1,4 @@
-package cn.com.xinli.portal.transport.huawei.nio;
-
-import cn.com.xinli.nio.Packet;
-import cn.com.xinli.portal.transport.huawei.AttributeType;
-import cn.com.xinli.portal.transport.huawei.RequestType;
+package cn.com.xinli.portal.transport.huawei;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +11,7 @@ import java.util.Collection;
  *
  * @author zhoupeng 2015/12/2.
  */
-final class HuaweiPacket implements Packet {
+public final class Packet {
     /** HUAWEI portal version. */
     private int version;
 
@@ -67,10 +63,10 @@ final class HuaweiPacket implements Packet {
     private Collection<Attribute> attributes = new ArrayList<>();
 
     /** Maximum packet length. */
-    static final int MAX_LENGTH = 1024;
+    public static final int MAX_LENGTH = 1024;
 
     /**
-     * Add an attribute to a {@link HuaweiPacket}.
+     * Add an attribute to a {@link Packet}.
      * <p>Caller should manipulate {@link #attrs} manually.</p>
      * @param type attribute type.
      * @param value value in bytes.
@@ -125,7 +121,6 @@ final class HuaweiPacket implements Packet {
                     '}';
         }
     }
-
 
     public int getAttrs() {
         return attrs;
@@ -225,7 +220,7 @@ final class HuaweiPacket implements Packet {
 
     @Override
     public String toString() {
-        return "HuaweiPacket{" +
+        return "Packet{" +
                 "version=" + version +
                 ", type=" + type +
                 ", authType=" + authType +

@@ -1,15 +1,19 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.portal.core.nas.Nas;
-import cn.com.xinli.portal.support.HuaweiPortalSessionProvider;
-import cn.com.xinli.portal.transport.PortalClient;
-import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.Connector;
 import cn.com.xinli.portal.transport.PortalServer;
-import cn.com.xinli.portal.transport.huawei.ClientHandler;
+import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.huawei.ConnectorHandler;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
+import cn.com.xinli.portal.transport.huawei.ExtendedInformation;
 import cn.com.xinli.portal.transport.huawei.ServerHandler;
+import cn.com.xinli.portal.transport.huawei.nio.ByteBufferCodecFactory;
+import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HUAWEI portal protocol facade.
@@ -21,8 +25,7 @@ import java.util.Objects;
  * Create mock-huawei-nas device which supports huawei portal protocols.
  *
  * <p>PWS portal client factory.
- * {@link #codecFactory} is "Flyweight", and shared
- * by associated {@link PortalClient}s.
+ * {@link #codecFactory} is "Flyweight", and shared by associated {@link Connector}s.
  *
  * <p>Project: xpws
  *
@@ -30,11 +33,13 @@ import java.util.Objects;
  */
 public class HuaweiPortal {
     /** Shared default handler. */
-    private static final ClientHandler<HuaweiPacket> defaultHandler =
-            new DefaultClientHandler();
+    private static final ConnectorHandler defaultHandler = new DefaultConnectorHandler();
 
     /** Shared codec factory. */
-    private static final HuaweiCodecFactory codecFactory = new HuaweiCodecFactory();
+    private static final ByteBufferCodecFactory codecFactory = new ByteBufferCodecFactory();
+
+    /** Connectors. */
+    private static final Map<Endpoint, Connector<ExtendedInformation>> connectors = new ConcurrentHashMap<>();
 
     /** Sole constructor. */
     private HuaweiPortal() {
@@ -65,13 +70,15 @@ public class HuaweiPortal {
      * @param endpoint huawei portal endpoint.
      * @return portal client.
      */
-    public static PortalClient createClient(Endpoint endpoint)
+    public static Connector<ExtendedInformation> getConnector(Endpoint endpoint)
             throws TransportException {
-        Objects.requireNonNull(endpoint);
-        return new DefaultPortalClient(endpoint, codecFactory, defaultHandler);
-    }
+        Objects.requireNonNull(endpoint, Endpoint.EMPTY_ENDPOINT);
 
-    public static HuaweiPortalSessionProvider createSessionProvider() {
-        return new HuaweiPortalSessionProvider();
+        if (!connectors.containsKey(endpoint)) {
+            DatagramConnector connector = new DatagramConnector(endpoint, codecFactory, defaultHandler);
+            connectors.putIfAbsent(endpoint, connector);
+        }
+
+        return connectors.get(endpoint);
     }
 }

@@ -5,9 +5,6 @@ import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.configuration.*;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +37,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
     public static final String REST_HEADER = "rest.header";
     public static final String REST_META = "rest.meta";
     public static final String REST_CHALLENGE_TTL = "rest.challenge.ttl";
+    public static final String REST_TOKEN_TTL = "rest.token.ttl";
     /** Cluster configurations. */
     public static final String CLUSTER_ENABLED = "cluster.enabled";
     public static final String CLUSTER_REDIS_MASTER = "cluster.redis.master";
@@ -50,6 +48,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
     /** Session configurations. */
     public static final String SESSION_TTL_ENABLED = "session.ttl.enabled";
     public static final String SESSION_TTL_VALUE = "session.ttl.value";
+    public static final String SESSION_TOKEN_TTL = "session.token.ttl";
     public static final String SESSION_HEARTBEAT_ENABLED = "session.heartbeat.enabled";
     public static final String SESSION_HEARTBEAT_INTERVAL = "session.heartbeat.interval";
     public static final String SESSION_UPDATE_MIN_INTERVAL = "session.update.min-interval";
@@ -91,6 +90,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         /* Create session configuration. */
         SessionConfiguration session = new SessionConfiguration();
         session.setEnableHeartbeat(config.valueOf(SESSION_HEARTBEAT_ENABLED));
+        session.setTokenTtl(config.valueOf(SESSION_TOKEN_TTL));
         if (session.isEnableHeartbeat()) {
             session.setHeartbeatInterval(config.valueOf(SESSION_HEARTBEAT_INTERVAL));
         }
@@ -126,6 +126,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         rest.setServer(config.valueOf(REST_SERVER));
         rest.setMeta(config.valueOf(REST_META));
         rest.setScheme(config.valueOf(REST_SCHEME));
+        rest.setTokenTtl(config.valueOf(REST_TOKEN_TTL));
         setRestConfiguration(rest);
 
         /* Create cluster configuration. */
@@ -154,6 +155,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 Entry.of(REST_HEADER, ValueType.STRING),
                 Entry.of(REST_META, ValueType.STRING),
                 Entry.of(REST_CHALLENGE_TTL, ValueType.INTEGER),
+                Entry.of(REST_TOKEN_TTL, ValueType.INTEGER),
                 /* Cluster configurations. */
                 Entry.of(CLUSTER_ENABLED, ValueType.BOOLEAN),
                 Entry.of(CLUSTER_REDIS_MASTER, ValueType.STRING),
@@ -164,6 +166,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 /* Session configurations. */
                 Entry.of(SESSION_TTL_ENABLED, ValueType.BOOLEAN),
                 Entry.of(SESSION_TTL_VALUE, ValueType.INTEGER),
+                Entry.of(SESSION_TOKEN_TTL, ValueType.INTEGER),
                 Entry.of(SESSION_HEARTBEAT_ENABLED, ValueType.BOOLEAN),
                 Entry.of(SESSION_HEARTBEAT_INTERVAL, ValueType.INTEGER),
                 Entry.of(SESSION_UPDATE_MIN_INTERVAL, ValueType.INTEGER),

@@ -2,7 +2,6 @@ package cn.com.xinli.portal.core.session;
 
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.core.nas.Nas;
 
 /**
@@ -21,7 +20,7 @@ public interface SessionProvider {
      * is also the default. Implementation classes
      * should return a session with full populated credentials associated with
      * nas type. For example, a provider implements HUAWEI portal session service
-     * provider should return a session with populated {@link HuaweiCredentials}.
+     * provider should return a populated session.
      *
      * @param nas NAS/BRAS device.
      * @param credentials user credentials.
@@ -33,10 +32,9 @@ public interface SessionProvider {
     /**
      * Disconnect an existed portal connection.
      * @param session session to disconnect.
-     * @return session.
      * @throws PortalException
      */
-    Session disconnect(Session session) throws PortalException;
+    void disconnect(Session session) throws PortalException;
 
     /**
      * Check if this provider supports given nas.

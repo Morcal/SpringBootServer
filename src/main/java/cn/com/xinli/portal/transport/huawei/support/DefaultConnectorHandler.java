@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.portal.transport.*;
 import cn.com.xinli.portal.transport.huawei.*;
@@ -19,37 +19,25 @@ import java.util.Optional;
  * remote portal endpoint does not respond to requests, and throw
  * {@link TransportException} with those errors.
  *
+ * <p>This implementation is stateless.
+ *
  * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
-final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
+final class DefaultConnectorHandler implements ConnectorHandler {
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(DefaultClientHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultConnectorHandler.class);
 
     @Override
-    public Result handleChapNotRespond(Endpoint endpoint)
+    public void handleServerNotRespond(Endpoint endpoint)
             throws IOException, TransportException {
         logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
         throw new NasNotRespondException(endpoint.toString());
     }
 
     @Override
-    public Result handleAuthenticationNotRespond(Endpoint endpoint)
-            throws IOException, TransportException {
-        logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
-        throw new NasNotRespondException(endpoint.toString());
-    }
-
-    @Override
-    public Result handleLogoutNotRespond(Endpoint endpoint)
-            throws IOException, TransportException {
-        logger.warn("{}", TransportError.NAS_NOT_RESPOND.name());
-        throw new NasNotRespondException(endpoint.toString());
-    }
-
-    @Override
-    public Result handleChapResponse(HuaweiPacket response)
+    public void handleChapResponse(Packet response)
             throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_CHALLENGE.name());
 
@@ -66,7 +54,8 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
         TransportError error = null;
         switch (err.get()) {
             case OK:
-                return PortalResult.from(response);
+                return;
+                //return PortalResult.from(response);
 
             case REJECTED:
                 error = TransportError.CHALLENGE_REJECTED;
@@ -90,7 +79,7 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
     }
 
     @Override
-    public Result handleAuthenticationResponse(HuaweiPacket response)
+    public void handleAuthenticationResponse(Packet response)
             throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_AUTH.name());
 
@@ -105,7 +94,8 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
         TransportError error = null;
         switch (err.get()) {
             case OK:
-                return PortalResult.from(response);
+                return;
+                //return PortalResult.from(response);
 
             case REJECTED:
                 error = TransportError.AUTHENTICATION_REJECTED;
@@ -129,7 +119,7 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
     }
 
     @Override
-    public Result handleLogoutResponse(HuaweiPacket response)
+    public void handleLogoutResponse(Packet response)
             throws IOException, TransportException {
         logger.info("{}", RequestType.ACK_LOGOUT.name());
 
@@ -144,7 +134,8 @@ final class DefaultClientHandler implements ClientHandler<HuaweiPacket> {
         TransportError error = null;
         switch (err.get()) {
             case OK:
-                return PortalResult.from(response);
+                //return PortalResult.from(response);
+                return;
 
             case REJECTED:
                 error = TransportError.LOGOUT_REJECTED;

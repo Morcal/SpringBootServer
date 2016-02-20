@@ -1,10 +1,8 @@
 package cn.com.xinli.portal.web.filter;
 
-import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.admin.auth.AuthenticationFailureEvent;
+import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
-import cn.com.xinli.portal.web.rest.EntryPoint;
-import cn.com.xinli.portal.web.rest.Provider;
 import cn.com.xinli.portal.web.rest.RestRequest;
 import cn.com.xinli.portal.web.rest.RestRequestSupport;
 import cn.com.xinli.portal.web.util.CredentialsUtils;
@@ -29,11 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Rest Authentication Filter.
@@ -65,9 +59,6 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
     private boolean continueFilterChainOnUnsuccessful = false;
 
     @Autowired
-    private Provider restApiProvider;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -86,22 +77,6 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
         super.afterPropertiesSet();
         Assert.notNull(authenticationManager);
         Assert.notNull(authenticationEntryPoint);
-
-        List<List<String>> list = restApiProvider.getRegistrations().stream()
-                .map(registration ->
-                        registration.getApis().stream()
-                                .filter(EntryPoint::requiresAuth)
-                                .map(EntryPoint::getUrl)
-                                .collect(Collectors.toList()))
-                .collect(Collectors.toList());
-
-        Set<String> urls = new HashSet<>();
-        list.forEach(strings -> strings.forEach(urls::add));
-
-        if (logger.isDebugEnabled()) {
-            urls.forEach(url -> logger.info("Adding auth filter path: {}.", url));
-        }
-        setFilterPathMatches(urls);
         setContinueFilterChainOnUnsuccessful(false);
     }
 
@@ -172,7 +147,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (requiresFilter(request)) {
+        if (matches(request)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("{} ==> http://localhost{} Authentication filter checking...",
                         request.getMethod(), request.getRequestURI());

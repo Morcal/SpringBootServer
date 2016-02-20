@@ -27,12 +27,13 @@ public class InterProcessNpsSessionProvider implements SessionProvider {
 
     @Override
     public Session authenticate(Nas nas, Credentials credentials) throws PortalException {
+        //TODO implement authenticate.
         return null;
     }
 
     @Override
-    public Session disconnect(Session session) throws PortalException {
-        return null;
+    public void disconnect(Session session) throws PortalException {
+        //TODO implement disconnect
     }
 
     @Override

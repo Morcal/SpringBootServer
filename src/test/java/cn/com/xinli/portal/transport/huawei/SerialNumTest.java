@@ -1,5 +1,6 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei;
 
+import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -17,7 +18,7 @@ public class SerialNumTest {
 
     public void inc() {
         for (int i = 0; i < 10000; i++) {
-            int num = DefaultPortalClient.nextSerialNum();
+            int num = DatagramConnector.nextSerialNum();
             if (!results.add(num)) {
                 throw new RuntimeException("found redundant number.");
             }

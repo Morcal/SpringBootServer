@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.core.nas;
 
-import cn.com.xinli.portal.core.RouteMapper;
+import cn.com.xinli.portal.core.RoutingMapper;
 import cn.com.xinli.portal.core.Locatable;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.session.Session;
@@ -25,7 +25,7 @@ import cn.com.xinli.portal.core.session.Session;
  *
  * @author zhoupeng 2016/1/23.
  */
-public interface NasLocator extends Locatable<Credentials, Nas>, RouteMapper {
+public interface NasLocator extends Locatable<Credentials, Nas>, RoutingMapper {
     /**
      * {@inheritDoc}
      *

@@ -1,9 +1,10 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.PortalServer;
-import cn.com.xinli.portal.transport.huawei.*;
+import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -54,19 +55,19 @@ public class HuaweiPortalServerTest {
         final AuthType authType = AuthType.CHAP;
         final String sharedSecret = "aaa";
         final Endpoint endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
-        final DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
+        final DatagramConnector client = (DatagramConnector) HuaweiPortal.getConnector(endpoint);
         final String clientIp = "192.168.3.26";
         final byte[] ip = Packets.getIp4Address(clientIp);
 
         final PortalServer server = HuaweiPortal.createServer(endpoint, new PortalHandler());
         server.start();
 
-        HuaweiPacket ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.CHAP, endpoint.getAddress(), ip, 1);
-        Optional<HuaweiPacket> response = client.request(ntfLogout);
+        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.CHAP, endpoint.getAddress(), ip, 1);
+        Optional<Packet> response = client.request(ntfLogout);
         Assert.assertNotNull(response);
         Assert.assertTrue(response.isPresent());
-        HuaweiPacket huaweiPacket = response.get();
-        Assert.assertEquals(RequestType.ACK_NTF_LOGOUT.code(), huaweiPacket.getType());
+        Packet packet = response.get();
+        Assert.assertEquals(RequestType.ACK_NTF_LOGOUT.code(), packet.getType());
 
         server.shutdown();
     }
@@ -79,19 +80,19 @@ public class HuaweiPortalServerTest {
         final AuthType authType = AuthType.PAP;
         final String sharedSecret = "aaa";
         final Endpoint endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
-        final DefaultPortalClient client = (DefaultPortalClient) HuaweiPortal.createClient(endpoint);
+        final DatagramConnector client = (DatagramConnector) HuaweiPortal.getConnector(endpoint);
         final String clientIp = "192.168.3.26";
         final byte[] ip = Packets.getIp4Address(clientIp);
 
         final PortalServer server = HuaweiPortal.createServer(endpoint, new PortalHandler());
         server.start();
 
-        HuaweiPacket ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.PAP, endpoint.getAddress(), ip, 1);
-        Optional<HuaweiPacket> response = client.request(ntfLogout);
+        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.PAP, endpoint.getAddress(), ip, 1);
+        Optional<Packet> response = client.request(ntfLogout);
         Assert.assertNotNull(response);
         Assert.assertTrue(response.isPresent());
-        HuaweiPacket huaweiPacket = response.get();
-        Assert.assertEquals(RequestType.ACK_NTF_LOGOUT.code(), huaweiPacket.getType());
+        Packet packet = response.get();
+        Assert.assertEquals(RequestType.ACK_NTF_LOGOUT.code(), packet.getType());
 
         server.shutdown();
     }

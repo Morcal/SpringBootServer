@@ -2,8 +2,6 @@ package cn.com.xinli.portal.core.credentials;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import javax.persistence.*;
 
@@ -20,16 +18,6 @@ import javax.persistence.*;
  * more generic portal service, and it's sufficient for user to
  * perform an authentication via web page.
  *
- * <p>On the server side, particularly when the portal server perform
- * an portal request to remote NAS/BRAS as client, remote NAS/BRAS
- * need server to provide specific additional information, those information
- * may be context-data generated (originated) by NAS/BRAS.
- * For example, HUAWEI portal protocol need clients to provide
- * <code>request id</code> (which is exactly originated by NAS/BRAS) when
- * clients request certain operations. Under that circumstances, server
- * (provider) should extends {@link Credentials} to add extended information
- * to archive the goal that server can work with those devices.
- *
  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/22.
@@ -37,16 +25,11 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "bra")
 @Table(schema = "PWS", name="credentials")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @JsonInclude
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "credentials_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = HuaweiCredentials.class, name = "HUAWEI"),
-        @JsonSubTypes.Type(value = CmccCredentials.class, name = "CMCC"),
-        @JsonSubTypes.Type(value = RadiusCredentials.class, name = "RADIUS"),
-})
-public abstract class Credentials {
+public class Credentials {
+    /** Empty credentials error message. */
+    public static final String EMPTY_CREDENTIALS = "Credentials is empty";
+
     /** Id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -72,12 +55,6 @@ public abstract class Credentials {
     @Column
     @JsonProperty
     private String mac;
-
-    /**
-     * Get credentials type.
-     * @return credentials type.
-     */
-    protected abstract CredentialsType getCredentialsType();
 
     /**
      * Get session user ip address.
@@ -134,6 +111,23 @@ public abstract class Credentials {
 
     public void setMac(String mac) {
         this.mac = mac;
+    }
+
+    /**
+     * Create credentials.
+     * @param username username.
+     * @param password password.
+     * @param ip ip address.
+     * @param mac mac address.
+     * @return credentials.
+     */
+    public static Credentials of(String username, String password, String ip, String mac) {
+        Credentials credentials = new Credentials();
+        credentials.setUsername(username);
+        credentials.setPassword(password);
+        credentials.setIp(ip);
+        credentials.setMac(mac);
+        return credentials;
     }
 
     @Override

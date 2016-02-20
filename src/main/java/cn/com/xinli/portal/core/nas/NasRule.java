@@ -32,6 +32,8 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = DomainBasedNasRule.class, name = "DOMAIN"),
 })
 public abstract class NasRule implements Matcher<Credentials> {
+    public static final String EMPTY_RULE = "Nas rule is empty.";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -65,7 +67,7 @@ public abstract class NasRule implements Matcher<Credentials> {
 
     @Override
     public final boolean matches(Credentials credentials) {
-        Objects.requireNonNull(credentials);
+        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
         return matchInternal(credentials);
     }
 }

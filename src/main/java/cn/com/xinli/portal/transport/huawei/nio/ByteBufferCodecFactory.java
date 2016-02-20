@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.transport.huawei.nio;
 
 import cn.com.xinli.nio.CodecFactory;
+import cn.com.xinli.portal.transport.huawei.Packet;
+import cn.com.xinli.portal.transport.huawei.Packets;
 import cn.com.xinli.portal.transport.huawei.Version;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,34 +22,35 @@ import java.util.*;
  *
  * @author zhoupeng 2015/12/22.
  */
-final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
+public final class ByteBufferCodecFactory implements CodecFactory<Packet> {
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(HuaweiCodecFactory.class);
+    private final Logger logger = LoggerFactory.getLogger(ByteBufferCodecFactory.class);
 
     /** Decoder. */
-    private final DatagramDecoder<HuaweiPacket> decoder = new Decoder();
+    private final DatagramDecoder<Packet> decoder = new Decoder();
 
     /** Encoder. */
-    private final DatagramEncoder<HuaweiPacket> encoder = new Encoder();
+    private final DatagramEncoder<Packet> encoder = new Encoder();
 
     @Override
-    public DatagramDecoder<HuaweiPacket> getDecoder() {
+    public DatagramDecoder<Packet> getDecoder() {
         return decoder;
     }
 
     @Override
-    public DatagramEncoder<HuaweiPacket> getEncoder() {
+    public DatagramEncoder<Packet> getEncoder() {
         return encoder;
     }
 
     /**
      * Calculate authenticator.
+     *
      * @param buffer content buffer.
      * @param authenticator authenticator.
      * @param sharedSecret shared secret.
      * @return authenticator.
      */
-    static byte[] calculateAuthenticator(ByteBuffer buffer, byte[] authenticator, String sharedSecret) {
+    private static byte[] calculateAuthenticator(ByteBuffer buffer, byte[] authenticator, String sharedSecret) {
         if (!buffer.hasArray())
             return new byte[0];
 
@@ -60,12 +63,12 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
      *
      * <p><code>Authenticator = MD5(16bytes + 16bytes of 0 + attributes + shared secret)</code>
      *
-     * @param data          data.
+     * @param data data.
      * @param authenticator original request authenticator.
      * @param sharedSecret shared secret.
      * @return 16 bytes authenticator.
      */
-    static byte[] calculateAuthenticator(byte[] data, byte[] authenticator, String sharedSecret) {
+    private static byte[] calculateAuthenticator(byte[] data, byte[] authenticator, String sharedSecret) {
         if (data == null || data.length < 32) {
             return new byte[0];
         }
@@ -74,7 +77,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
             return new byte[0];
         }
 
-        ByteBuffer buf = ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+        ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_LENGTH);
         buf.put(data, 0, 16);
 
         if (authenticator != null) {
@@ -104,29 +107,29 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
      * @param bytes bytes to receive.
      * @return bytes receive.
      */
-    static byte[] readBytes(ByteBuffer buffer, int bytes) {
+    private static byte[] readBytes(ByteBuffer buffer, int bytes) {
         byte[] data = new byte[bytes];
         buffer.get(data);
         return data;
     }
 
     /**
-     * Read {@link HuaweiPacket.Attribute}s from input stream.
+     * Read {@link Packet.Attribute}s from input stream.
      *
      * @param buffer input buffer.
-     * @param size  attribute size.
-     * @return collection of {@link HuaweiPacket.Attribute}s.
+     * @param size attribute size.
+     * @return collection of {@link Packet.Attribute}s.
      */
-    static Collection<HuaweiPacket.Attribute> readAttributes(ByteBuffer buffer, int size) {
+    private static Collection<Packet.Attribute> readAttributes(ByteBuffer buffer, int size) {
         if (size == 0) {
             return Collections.emptyList();
         }
 
-        List<HuaweiPacket.Attribute> attributes = new ArrayList<>();
+        List<Packet.Attribute> attributes = new ArrayList<>();
         while (size-- > 0) {
             int type = buffer.get() & 0xFF;
             int length = buffer.get() & 0xFF;
-            attributes.add(new HuaweiPacket.Attribute(type, readBytes(buffer, length - 2)));
+            attributes.add(new Packet.Attribute(type, readBytes(buffer, length - 2)));
         }
 
         return attributes;
@@ -135,7 +138,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
     /**
      * Verify request authenticator.
      *
-     * @param buffer           incoming packet.
+     * @param buffer incoming packet.
      * @param sharedSecret shared secret.
      * @return true if incoming packet is valid.
      */
@@ -153,7 +156,7 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
      * Verify response by authenticator.
      *
      * @param authenticator original
-     * @param buffer           incoming packet.
+     * @param buffer incoming packet.
      * @param sharedSecret shared secret.
      * @return true if incoming packet is valid.
      */
@@ -167,16 +170,16 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
     }
 
     /** HUAWEI portal protocol encoder. */
-    class Encoder implements CodecFactory.DatagramEncoder<HuaweiPacket> {
+    class Encoder implements CodecFactory.DatagramEncoder<Packet> {
         /**
-         * Write attributes from a {@link HuaweiPacket} to a {@link ByteBuffer}.
+         * Write attributes from a {@link Packet} to a {@link ByteBuffer}.
          *
-         * @param buffer     output buffer.
+         * @param buffer output buffer.
          * @param attributes attributes.
          */
-        void writeAttributes(ByteBuffer buffer,
-                             Collection<HuaweiPacket.Attribute> attributes) {
-            for (HuaweiPacket.Attribute attribute : attributes) {
+        private void writeAttributes(ByteBuffer buffer,
+                             Collection<Packet.Attribute> attributes) {
+            for (Packet.Attribute attribute : attributes) {
                 buffer.put((byte) attribute.getType());
                 buffer.put((byte) attribute.getLength());
                 buffer.put(attribute.getValue());
@@ -186,10 +189,10 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
         /**
          * Write authenticator to a {@link ByteBuffer}.
          *
-         * @param buffer           output buffer.
+         * @param buffer output buffer.
          * @param authenticator authenticator to write.
          */
-        void writeAuthenticator(ByteBuffer buffer, byte[] authenticator) {
+        private void writeAuthenticator(ByteBuffer buffer, byte[] authenticator) {
             if (authenticator == null || authenticator.length != 16) {
                 throw new IllegalArgumentException("Invalid authenticator.");
             }
@@ -201,22 +204,27 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
             System.arraycopy(authenticator, 0, buffer.duplicate().array(), 16, 16);
         }
 
-
-        ByteBuffer writePacket(HuaweiPacket packet, String sharedSecret) {
+        /**
+         * Write packet to buffer.
+         * @param packet packet to write.
+         * @param sharedSecret shared secret.
+         * @return byte buffer.
+         */
+        private ByteBuffer writePacket(Packet packet, String sharedSecret) {
             return writePacket(packet, sharedSecret, null);
         }
 
         /**
-         * Write packet to datagram.
+         * Write packet to buffer.
          *
-         * @param packet           packet to write.
-         * @param sharedSecret  shared secret.
+         * @param packet packet to write.
+         * @param sharedSecret shared secret.
          * @param authenticator authenticator.
-         * @return datagram packet.
+         * @return byte buffer.
          */
-        ByteBuffer writePacket(HuaweiPacket packet, String sharedSecret, byte[] authenticator) {
+        private ByteBuffer writePacket(Packet packet, String sharedSecret, byte[] authenticator) {
             assert packet.getIp().length == 4;
-            ByteBuffer buffer = ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+            ByteBuffer buffer = ByteBuffer.allocate(Packet.MAX_LENGTH);
             buffer.put((byte) packet.getVersion());
             buffer.put((byte) packet.getType());
             buffer.put((byte) packet.getAuthType());
@@ -250,14 +258,14 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
         }
 
         @Override
-        public ByteBuffer encode(HuaweiPacket packet,
+        public ByteBuffer encode(Packet packet,
                                  String sharedSecret) {
             return writePacket(packet, sharedSecret);
         }
 
         @Override
         public ByteBuffer encode(byte[] authenticator,
-                                 HuaweiPacket packet,
+                                 Packet packet,
                                  String sharedSecret) {
             if (authenticator != null && authenticator.length != 16) {
                 throw new IllegalArgumentException("Invalid authenticator.");
@@ -267,17 +275,17 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
     }
 
     /** HUAWEI portal protocol decoder. */
-    class Decoder implements CodecFactory.DatagramDecoder<HuaweiPacket> {
+    class Decoder implements CodecFactory.DatagramDecoder<Packet> {
 
         /**
-         * Read {@link HuaweiPacket} from input stream.
+         * Read {@link Packet} from input stream.
          *
          * @param buffer input buffer.
-         * @return HuaweiPacket.
+         * @return Packet.
          */
-        private HuaweiPacket readPacket(ByteBuffer buffer) {
+        private Packet readPacket(ByteBuffer buffer) {
             byte[] ip = new byte[4];
-            HuaweiPacket packet = new HuaweiPacket();
+            Packet packet = new Packet();
             packet.setVersion(buffer.get() & 0xFF);
             packet.setType(buffer.get() & 0xFF);
             packet.setAuthType(buffer.get() & 0xFF);
@@ -298,20 +306,20 @@ final class HuaweiCodecFactory implements CodecFactory<HuaweiPacket> {
         }
 
         @Override
-        public HuaweiPacket decode(ByteBuffer in, String sharedSecret) {
+        public Packet decode(ByteBuffer in, String sharedSecret) {
             return decode(null, in, sharedSecret);
         }
 
         @Override
-        public HuaweiPacket decode(byte[] authenticator,
-                                   ByteBuffer buffer,
-                                   String sharedSecret) {
+        public Packet decode(byte[] authenticator,
+                             ByteBuffer buffer,
+                             String sharedSecret) {
             int ver = (int) buffer.get();
 
             if (ver == Version.V2.value()) {
                 buffer.rewind();
                 if (!verify(authenticator, buffer, sharedSecret)) {
-                    HuaweiCodecFactory.this.logger.warn("Invalid HUAWEI portal packet received.");
+                    ByteBufferCodecFactory.this.logger.warn("Invalid HUAWEI portal packet received.");
                     return null;
                 }
             }

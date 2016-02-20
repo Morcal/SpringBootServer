@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.session.Session;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,6 +15,8 @@ import java.util.List;
  * @author zhoupeng 2016/2/3.
  */
 public class SessionSearchable implements EhcacheSearchable<Long> {
+    public static final String EMPTY_SESSION_SEARCHABLE = "Session searchable is empty.";
+
     private String username;
     private String ip;
     private String mac;
@@ -76,5 +81,20 @@ public class SessionSearchable implements EhcacheSearchable<Long> {
         attributes.add(EhcacheManagerAdapter.search("nas", String.class, "value.getNas()"));
         attributes.add(EhcacheManagerAdapter.search("username", String.class, "value.getUsername()"));
         return attributes;
+    }
+
+    /**
+     * Create searchable from session.
+     * @param session session to create.
+     * @return searchable.
+     */
+    public static SessionSearchable from(Session session) {
+        Credentials credentials = session.getCredentials();
+        return new SessionSearchable()
+                .ip(credentials.getIp())
+                .mac(credentials.getMac())
+                .username(credentials.getUsername())
+                .nas(session.getNas().getName())
+                .value(session.getId());
     }
 }

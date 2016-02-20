@@ -10,6 +10,8 @@ import java.net.InetAddress;
  * @author zhoupeng 2016/1/30.
  */
 public class Endpoint {
+    public static final String EMPTY_ENDPOINT = "Endpoint is empty.";
+    
     /** Default listen port. */
     public static final int DEFAULT_LISTEN_PORT = 2000;
 
@@ -86,6 +88,28 @@ public class Endpoint {
         endpoint.setPort(port);
         endpoint.setSharedSecret(sharedSecret);
         return endpoint;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Endpoint endpoint = (Endpoint) o;
+
+        return port == endpoint.port &&
+                address.equals(endpoint.address) &&
+                authType == endpoint.authType &&
+                version == endpoint.version;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = address.hashCode();
+        result = 31 * result + port;
+        result = 31 * result + authType.hashCode();
+        result = 31 * result + version.hashCode();
+        return result;
     }
 
     @Override

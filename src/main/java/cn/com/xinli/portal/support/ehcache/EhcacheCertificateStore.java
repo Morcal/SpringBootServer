@@ -53,7 +53,7 @@ public class EhcacheCertificateStore implements CertificateStore {
 
     @Override
     public void put(Certificate certificate) {
-        Objects.requireNonNull(certificate);
+        Objects.requireNonNull(certificate, Certificate.EMPTY_CERTIFICATE);
         /* save to database, id will be generated if missing. */
         certificatePersistence.save(certificate);
         Element element = new Element(certificate.getAppId(), certificate);

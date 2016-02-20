@@ -120,7 +120,9 @@ public enum PortalError {
     UNKNOWN_LOGIN_ERROR(291, "unknown login error"),
     UNKNOWN_LOGOUT_ERROR(292, "unknown logout error"),
     UNKNOWN_PORTAL_ERROR(299, "unknown portal error");
-    
+
+    public static final String EMPTY_ERROR = "Portal error is empty.";
+
     /** PortalError value. */
     private final int value;
 

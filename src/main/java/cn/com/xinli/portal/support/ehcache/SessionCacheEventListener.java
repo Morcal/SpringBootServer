@@ -33,7 +33,10 @@ public class SessionCacheEventListener implements CacheEventListener, Initializi
     private final Logger logger = LoggerFactory.getLogger(SessionCacheEventListener.class);
 
     @Autowired
-    public SessionManager sessionManager;
+    private SessionManager sessionManager;
+
+    @Autowired
+    private EhcacheSessionDataStore dataStore;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -55,17 +58,22 @@ public class SessionCacheEventListener implements CacheEventListener, Initializi
         logger.debug(">> Session in cache updated.");
     }
 
+    private void removeSessionElement(Element element) {
+        Session session = dataStore.fromElement(element);
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
+        sessionManager.removeSessionInFuture(session);
+    }
+
     @Override
     public void notifyElementExpired(Ehcache ehcache, Element element) {
         logger.debug(">> Session in cache expired.");
+        removeSessionElement(element);
     }
 
     @Override
     public void notifyElementEvicted(Ehcache ehcache, Element element) {
         logger.debug(">> Session in cache evicted.");
-        Session session = (Session) element.getObjectValue();
-        Objects.requireNonNull(session);
-        sessionManager.removeSessionInFuture(session.getId());
+        removeSessionElement(element);
     }
 
     @Override

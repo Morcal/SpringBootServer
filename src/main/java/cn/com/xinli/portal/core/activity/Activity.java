@@ -10,6 +10,10 @@ import java.util.Date;
 /**
  * PWS activity.
  *
+ * <p>This class represents auditing information for system.
+ * Any portal business (requests and responses) will be saved
+ * as an auditing-logging activity.
+ *
  * Project: xpws
  *
  * @author zhoupeng 2015/12/19.
@@ -18,6 +22,7 @@ import java.util.Date;
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="activity")
 public class Activity {
+    public static final String EMPTY_ACTIVITY = "Activity is empty.";
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;

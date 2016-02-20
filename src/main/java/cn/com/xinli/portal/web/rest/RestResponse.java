@@ -89,4 +89,14 @@ public abstract class RestResponse {
     public void setAuthorization(Authorization authorization) {
         this.authorization = authorization;
     }
+
+    @Override
+    public String toString() {
+        return "RestResponse{" +
+                "truncated=" + truncated +
+                ", createdAt=" + createdAt +
+                ", authorization=" + authorization +
+                ", authentication=" + authentication +
+                '}';
+    }
 }

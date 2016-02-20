@@ -1,7 +1,9 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.portal.transport.Result;
 import cn.com.xinli.portal.transport.huawei.AttributeType;
+import cn.com.xinli.portal.transport.huawei.Packet;
+import cn.com.xinli.portal.transport.huawei.Packets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +24,7 @@ final class PortalResult implements Result {
     private String text;
 
     /** Packet inside this message. */
-    private HuaweiPacket packet;
+    private Packet packet;
 
     @Override
     public String getText() {
@@ -34,11 +36,11 @@ final class PortalResult implements Result {
      * @param packet packet.
      * @return portal message.
      */
-    public static PortalResult from(HuaweiPacket packet) {
+    public static PortalResult from(Packet packet) {
         PortalResult result = new PortalResult();
         result.packet = packet;
 
-        Optional<HuaweiPacket.Attribute> text = packet.getAttributes().stream()
+        Optional<Packet.Attribute> text = packet.getAttributes().stream()
                 .filter(attr -> attr.getType() == AttributeType.TEXT_INFO.code())
                 .findFirst();
 

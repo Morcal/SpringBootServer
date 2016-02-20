@@ -36,7 +36,7 @@ public class SystemActivityAspect {
         activity.setSource("system");
         activity.setFacility(Activity.Facility.SYSTEM);
         activity.setAction(Activity.SystemAction.DELETE_OLD_ACTIVITIES.name());
-        activity.setRemote("system");
+        activity.setRemote("none");
         activity.setResult(result);
         activity.setSeverity(Activity.Severity.INFO);
         activity.setSourceInfo("system automation");

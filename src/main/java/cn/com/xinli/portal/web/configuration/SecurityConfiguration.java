@@ -56,21 +56,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     /** Challenge response type. */
     public static final String CHALLENGE_RESPONSE_TYPE = "challenge";
 
-    /** Minimum update time diff in seconds. */
-    public static final long MIN_TIME_UPDATE_DIFF = 3; // seconds.
-
-    /** Access token time to live in seconds. */
-    public static final int ACCESS_TOKEN_TTL = 35;
-
-    /** Session token time to live in seconds. */
-    public static final int SESSION_TOKEN_TTL = 35;
-
-    /** Challenge token time to live in seconds. */
-    public static final int CHALLENGE_TTL = 35;
-
-    /** Rate limiting (requests per second). */
-    public static final int RATE_LIMITING = 5;
-
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 

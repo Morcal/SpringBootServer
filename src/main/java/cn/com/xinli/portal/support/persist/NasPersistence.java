@@ -50,12 +50,12 @@ public class NasPersistence {
     }
 
     public NasRule save(NasRule rule) {
-        Objects.requireNonNull(rule);
+        Objects.requireNonNull(rule, NasRule.EMPTY_RULE);
         return nasRuleRepository.save(rule);
     }
 
     public Nas save(Nas nas) {
-        Objects.requireNonNull(nas);
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
 
         CredentialsTranslation translation = nas.getTranslation();
         if (translation != null) {

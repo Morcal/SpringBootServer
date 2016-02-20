@@ -71,7 +71,7 @@ public class RedisCertificateStore implements CertificateStore {
 
     @Override
     public void put(Certificate certificate) {
-        Objects.requireNonNull(certificate);
+        Objects.requireNonNull(certificate, Certificate.EMPTY_CERTIFICATE);
         certificateRedisTemplate.opsForValue().set(keyFor(certificate), certificate);
         /* certificate:client for searching. */
         redisQueryTemplate.opsForValue().set(keyFor(certificate.getAppId()), certificate.getId());

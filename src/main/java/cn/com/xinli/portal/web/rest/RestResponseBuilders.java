@@ -1,10 +1,9 @@
 package cn.com.xinli.portal.web.rest;
 
-import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.session.Session;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
+import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 import org.apache.commons.lang3.StringUtils;
@@ -27,19 +26,17 @@ public class RestResponseBuilders {
         T build();
     }
 
-    /**
-     * Abstract server response builder.
-     */
-    static abstract class ServerResponseBuilder<T> implements Builder<T> {
-        /**
-         * If server truncated response.
-         */
+    /** Abstract server response builder. */
+    public static abstract class ServerResponseBuilder<T> implements Builder<T> {
+        /** If server truncated response. */
         private boolean truncated;
 
-        /**
-         * Server time (UNIX epoch time) when response was created.
-         */
+        /** Server time (UNIX epoch time) when response was created. */
         private long createdAt;
+
+        int sessionTokenTtl;
+        int challengeTtl;
+        int accessTokenTtl;
 
         private Challenge challenge = null;
 
@@ -64,6 +61,21 @@ public class RestResponseBuilders {
 
         public ServerResponseBuilder setChallenge(Challenge challenge) {
             this.challenge = challenge;
+            return this;
+        }
+
+        public ServerResponseBuilder setSessionTokenTtl(int sessionTokenTtl) {
+            this.sessionTokenTtl = sessionTokenTtl;
+            return this;
+        }
+
+        public ServerResponseBuilder setChallengeTtl(int challengeTtl) {
+            this.challengeTtl = challengeTtl;
+            return this;
+        }
+
+        public ServerResponseBuilder setAccessTokenTtl(int accessTokenTtl) {
+            this.accessTokenTtl = accessTokenTtl;
             return this;
         }
 
@@ -150,8 +162,8 @@ public class RestResponseBuilders {
 
     /**
      * Session response builder.
-     * <p>
-     * Session response may contains information of {@link Authentication},
+     *
+     * <p>Session response may contains information of {@link Authentication},
      * {@link Authorization} and {@link SessionBean}.
      */
     public static class SessionResponseBuilder extends ServerResponseBuilder<SessionResponse> {
@@ -163,7 +175,6 @@ public class RestResponseBuilders {
         SessionResponseBuilder() {
             super(false);
         }
-
 
         public SessionResponseBuilder setSession(Session session) {
             this.session = session;
@@ -273,7 +284,7 @@ public class RestResponseBuilders {
         protected RestError buildInternal() {
             RestError error = new RestError();
             error.setError(this.error.getValue());
-            error.setDescription(StringUtils.defaultString(description));
+            error.setDescription(StringUtils.defaultString(description, error.getDescription()));
             error.setUrl(StringUtils.defaultString(url));
             error.setToken(StringUtils.defaultString(token));
             return error;
@@ -311,7 +322,7 @@ public class RestResponseBuilders {
                 session.setKeepAlive(requiresKeepAlive);
                 if (token != null) {
                     session.setToken(token.getKey());
-                    session.setTokenExpiresIn(SecurityConfiguration.SESSION_TOKEN_TTL);
+                    session.setTokenExpiresIn(sessionTokenTtl);
                 }
                 return session;
             }
@@ -335,7 +346,7 @@ public class RestResponseBuilders {
                 throw new IllegalStateException("Server failed to locate challenge.");
             } else {
                 Authentication authentication = new Authentication();
-                authentication.setExpiresIn(SecurityConfiguration.CHALLENGE_TTL);
+                authentication.setExpiresIn(challengeTtl);
                 authentication.setChallenge(challenge.getChallenge());
                 authentication.setNonce(challenge.getNonce());
                 return authentication;
@@ -361,7 +372,7 @@ public class RestResponseBuilders {
             } else {
                 Authorization authorization = new Authorization();
                 authorization.setToken(token.getKey());
-                authorization.setExpiresIn(SecurityConfiguration.ACCESS_TOKEN_TTL);
+                authorization.setExpiresIn(accessTokenTtl);
                 authorization.setScope(token.getScope().alias());
                 authorization.setRefreshToken(""); /* Refresh token not supported yet. */
                 return authorization;

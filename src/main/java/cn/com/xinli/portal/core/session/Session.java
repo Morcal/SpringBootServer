@@ -13,8 +13,21 @@ import java.util.Date;
 /**
  * PWS portal session.
  *
- * <p>This class instances represent portal authentication based
+ * <p>Instances of this class represent portal authentication based
  * broadband internet connections.
+ *
+ * <p>When the portal server perform a portal request to remote NAS/BRAS as client,
+ * remote NAS/BRAS may need server to provide specific information other than basic
+ * credentials, those information may be generated (originated) by NAS/BRAS.
+ * For example, HUAWEI portal protocol need clients to provide
+ * <code>request id</code> (which is exactly originated by NAS/BRAS) when
+ * clients request certain operations. Under that circumstances, server
+ * (provider) should save those extended information.
+ *
+ * <p>Session extended information is saved in {@link #extendedInformation} with a
+ * limited-length of 255. Extended information can be plain-text based
+ * serialized data such as JSON and normally it can not be searched.
+ * Do not try to search this field unless you know what you're doing.
  *
  * <p>Project: xpws
  *
@@ -25,23 +38,20 @@ import java.util.Date;
 @Table(schema = "PWS", name="session")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Session {
-    /**
-     * Auto generated id.
-     */
+    /** Empty session error message. */
+    public static final String EMPTY_SESSION = "Session is empty.";
+
+    /** Auto generated id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    /**
-     * Session's host NAS/BRAS.
-     */
+    /** Session's host NAS/BRAS. */
     @ManyToOne
     @JoinColumn(name = "nas_id", referencedColumnName = "id")
     private Nas nas;
 
-    /**
-     * Session owner's credentials.
-     */
+    /** Session owner's credentials. */
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "credentials_id")
     private Credentials credentials;
@@ -50,9 +60,7 @@ public class Session {
     @JsonProperty("start_date")
     private Date startTime;
 
-    /**
-     * Session owner's client certificate.
-     */
+    /** Session owner's client certificate. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "certificate_id", referencedColumnName = "id")
     private Certificate certificate;
@@ -60,6 +68,10 @@ public class Session {
     /** Last modified time (UNIX epoch time), do not save in database. */
     @Transient
     private long lastModified = 0L;
+
+    /** Extended information. */
+    @Column(name = "extended_information")
+    private String extendedInformation;
 
     /**
      * Get session internal id.
@@ -123,26 +135,34 @@ public class Session {
         this.credentials = credentials;
     }
 
-    public String cacheId() {
-        return "session:" + id;
+    public String getExtendedInformation() {
+        return extendedInformation;
     }
 
-    public static long fromCacheId(String id) {
-        if (StringUtils.isEmpty(id)) {
-            throw new IllegalArgumentException("cache id can not be blank.");
-        }
-
-        String value[] = id.split(":");
-        if (value.length != 2) {
-            throw new IllegalArgumentException("invalid session cache id.");
-        }
-
-        try {
-            return Long.parseLong(value[1]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("invalid session cache id.");
-        }
+    public void setExtendedInformation(String extendedInformation) {
+        this.extendedInformation = extendedInformation;
     }
+
+//        public String cacheId() {
+//        return "session:" + id;
+//    }
+//
+//    public static long fromCacheId(String id) {
+//        if (StringUtils.isEmpty(id)) {
+//            throw new IllegalArgumentException("cache id can not be blank.");
+//        }
+//
+//        String value[] = id.split(":");
+//        if (value.length != 2) {
+//            throw new IllegalArgumentException("invalid session cache id.");
+//        }
+//
+//        try {
+//            return Long.parseLong(value[1]);
+//        } catch (NumberFormatException e) {
+//            throw new IllegalArgumentException("invalid session cache id.");
+//        }
+//    }
 
     /**
      * Create a paired information for ip and mac.

@@ -3,7 +3,7 @@ package cn.com.xinli.portal.core;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 
 /**
- * Route entry mapper.
+ * Routing entry mapper.
  *
  * <p>Classes implement this interface save routing entries in a map,
  * so routing entries can be retrieved later.
@@ -12,7 +12,7 @@ import cn.com.xinli.portal.core.nas.NasNotFoundException;
  *
  * @author zhoupeng 2016/2/1.
  */
-public interface RouteMapper {
+public interface RoutingMapper {
     /**
      * Map user/client to their originate NAS/BRAS device by device's ip address.
      * @param ip user ip.

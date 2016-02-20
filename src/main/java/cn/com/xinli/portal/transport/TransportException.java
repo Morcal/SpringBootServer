@@ -1,7 +1,5 @@
 package cn.com.xinli.portal.transport;
 
-import java.util.Objects;
-
 /**
  * Abstract portal protocol exception.
  *
@@ -18,19 +16,16 @@ public abstract class TransportException extends Exception implements TransportE
 
     public TransportException(TransportError error) {
         super(error.getReason());
-        Objects.requireNonNull(error);
         this.error = error;
     }
 
     public TransportException(TransportError error, String message) {
         super(error.getReason() + ", info:" + message);
-        Objects.requireNonNull(error);
         this.error = error;
     }
 
     public TransportException(TransportError error, String message, Throwable cause) {
         super(error.getReason() + ", info:" + message, cause);
-        Objects.requireNonNull(error);
         this.error = error;
     }
 

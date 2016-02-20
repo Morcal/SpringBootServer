@@ -21,6 +21,8 @@ import javax.persistence.*;
 @Table(schema = "PWS", name="certificate")
 @JsonInclude
 public class Certificate {
+    public static final String EMPTY_CERTIFICATE = "Certificate is empty.";
+
     /** Internal id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

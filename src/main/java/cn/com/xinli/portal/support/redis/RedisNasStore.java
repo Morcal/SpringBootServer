@@ -115,7 +115,7 @@ public class RedisNasStore implements NasStore {
 
     @Override
     public NasRule put(NasRule rule) {
-        Objects.requireNonNull(rule);
+        Objects.requireNonNull(rule, NasRule.EMPTY_RULE);
         redisNasRuleTemplate.opsForSet().add(RULE_LIST_KEY, rule);
         return rule;
     }
@@ -142,7 +142,7 @@ public class RedisNasStore implements NasStore {
 
     @Override
     public void put(Nas nas) {
-        Objects.requireNonNull(nas);
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
         /* nas:name. */
         redisNasTemplate.opsForValue().set(keyFor(nas), nas);
         /* nas:ip for searching. */
@@ -195,7 +195,7 @@ public class RedisNasStore implements NasStore {
 
     @Override
     public Nas locate(Credentials credentials) throws NasNotFoundException {
-        Objects.requireNonNull(credentials);
+        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
         Nas nas = redisNasTemplate.opsForValue().get(keyFor(credentials));
         if (nas == null) {
             throw new NasNotFoundException(credentials.toString());

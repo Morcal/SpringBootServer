@@ -2,24 +2,21 @@ package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.activity.Activity;
-import cn.com.xinli.portal.core.certificate.Certificate;
-import cn.com.xinli.portal.core.certificate.CertificateManager;
-import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
-import cn.com.xinli.portal.core.certificate.CertificateService;
 import cn.com.xinli.portal.core.configuration.PortalServerConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
-import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
-import cn.com.xinli.portal.core.credentials.CredentialsEncoders;
-import cn.com.xinli.portal.core.credentials.CredentialsModifier;
-import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
-import cn.com.xinli.portal.core.nas.*;
+import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.nas.NasNotFoundException;
+import cn.com.xinli.portal.core.nas.NasService;
+import cn.com.xinli.portal.core.session.SessionService;
 import cn.com.xinli.portal.support.InternalServerHandler;
 import cn.com.xinli.portal.transport.PortalServer;
-import cn.com.xinli.portal.transport.huawei.AuthType;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
 import cn.com.xinli.portal.transport.huawei.Version;
-import cn.com.xinli.portal.transport.huawei.nio.HuaweiPortal;
-import org.apache.commons.lang3.StringUtils;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
+import cn.com.xinli.portal.web.filter.AuthenticationFilter;
+import cn.com.xinli.portal.web.filter.RateLimitingFilter;
+import cn.com.xinli.portal.web.rest.EntryPoint;
+import cn.com.xinli.portal.web.rest.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +24,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -36,12 +32,15 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Portal runtime environment.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/31.
  */
@@ -57,14 +56,60 @@ public class Environment implements ApplicationEventPublisherAware {
     private NasService nasService;
 
     @Autowired
+    private SessionService sessionService;
+
+    @Autowired
     private InternalServerHandler internalServerHandler;
 
     @Autowired
     private ServerConfiguration serverConfiguration;
 
+    @Autowired
+    private Provider restApiProvider;
+
     @Bean
     public Activity.Severity minimalSeverity() {
         return serverConfiguration.getActivityConfiguration().getSeverity();
+    }
+
+    @Autowired
+    public void setupAuthenticationFilterMatchedUris(AuthenticationFilter filter) {
+        List<List<String>> list = restApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .filter(EntryPoint::requiresAuth)
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        list.forEach(strings -> strings.forEach(urls::add));
+
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.info("Adding auth filter path: {}.", url));
+        }
+
+        filter.setMatchedUris(urls);
+        filter.setContinueFilterChainOnUnsuccessful(false);
+    }
+
+    @Autowired
+    public void setupRateLimitingFilterMatchedUris(RateLimitingFilter filter) {
+        List<List<String>> list = restApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        Set<String> urls = new HashSet<>();
+        list.forEach(strings -> strings.forEach(urls::add));
+
+        if (logger.isDebugEnabled()) {
+            urls.forEach(url -> logger.info("Adding rate-limiting filter path: {}.", url));
+        }
+
+        filter.setMatchedUris(urls);
     }
 
     /**
@@ -83,6 +128,7 @@ public class Environment implements ApplicationEventPublisherAware {
     public void handleContextRefresh(ContextRefreshedEvent event) throws Exception {
         logger.info("context refresh event: {}", event);
         nasService.init();
+        sessionService.init();
 
         applicationEventPublisher.publishEvent(new EnvironmentInitializedEvent(this));
     }

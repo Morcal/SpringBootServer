@@ -1,11 +1,11 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.nio.support.AbstractDatagramServer;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.UnsupportedAuthenticationTypeException;
 import cn.com.xinli.portal.transport.huawei.*;
+import cn.com.xinli.portal.transport.huawei.nio.ByteBufferCodecFactory;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Default portal server.
  *
+ * <p>Portal server listens on local port, receives incoming requests encoded
+ * in portal protocol, and serves those requests and responds back to remote
+ * client.
+ *
  * <p>Portal server listens on udp port at {@link #endpoint} and
  * handles incoming portal request from NAS/BRAS.
  *
@@ -38,7 +42,7 @@ final class HuaweiPortalServer implements PortalServer {
     private static final int DEFAULT_THREAD_SIZE = 4;
 
     /** Portal server codec factory. */
-    private final HuaweiCodecFactory codecFactory;
+    private final ByteBufferCodecFactory codecFactory;
 
     /** Internal datagram server. */
     private final DatagramPortalServer datagramPortalServer;
@@ -63,7 +67,7 @@ final class HuaweiPortalServer implements PortalServer {
 
     HuaweiPortalServer(Endpoint endpoint, ServerHandler handler, int threadSize) {
         this.handler = handler;
-        this.codecFactory = new HuaweiCodecFactory();
+        this.codecFactory = new ByteBufferCodecFactory();
         this.endpoint = endpoint;
         this.datagramPortalServer
                 = new DatagramPortalServer(endpoint.getPort(), threadSize);
@@ -74,7 +78,7 @@ final class HuaweiPortalServer implements PortalServer {
      * @return request id.
      */
     private int nextReqId(String ip) {
-        Objects.requireNonNull(ip);
+        Objects.requireNonNull(ip, "Huawei portal server request id, ip is empty.");
         int next;
         do {
             next = reqId.updateAndGet(i -> (i >= Short.MAX_VALUE - 1 ? 0 : i + 1));
@@ -115,7 +119,7 @@ final class HuaweiPortalServer implements PortalServer {
      * @throws IOException
      */
     private void handleChallenge(DatagramChannel channel,
-                                 HuaweiPacket request,
+                                 Packet request,
                                  SocketAddress remote) throws IOException {
         logger.info("REQ_CHALLENGE, request: {}, remote: {}", request, remote);
 
@@ -124,7 +128,7 @@ final class HuaweiPortalServer implements PortalServer {
         List<String> results = new ArrayList<>();
         ChallengeError error = handler.challenge(ip, req, results);
 
-        HuaweiPacket ack;
+        Packet ack;
         if (error ==  ChallengeError.OK) {
             String challenge = results.get(0);
             ack = Packets.newChallengeAck(
@@ -161,12 +165,12 @@ final class HuaweiPortalServer implements PortalServer {
                                        final String username,
                                        final String ip,
                                        AuthType authType,
-                                       Collection<HuaweiPacket.Attribute> attributes)
+                                       Collection<Packet.Attribute> attributes)
             throws UnsupportedAuthenticationTypeException, IOException {
         final byte[] password;
         switch (authType) {
             case CHAP:
-                Optional<HuaweiPacket.Attribute> chapPassword = attributes.stream()
+                Optional<Packet.Attribute> chapPassword = attributes.stream()
                         .filter(attr -> attr.getType() == AttributeType.CHALLENGE_PASSWORD.code())
                         .findFirst();
                 if (!chapPassword.isPresent()) {
@@ -177,7 +181,7 @@ final class HuaweiPortalServer implements PortalServer {
                 break;
 
             case PAP:
-                Optional<HuaweiPacket.Attribute> pwd = attributes.stream()
+                Optional<Packet.Attribute> pwd = attributes.stream()
                         .filter(attr -> attr.getType() == AttributeType.PASSWORD.code())
                         .findFirst();
                 if (pwd.isPresent()) {
@@ -193,7 +197,7 @@ final class HuaweiPortalServer implements PortalServer {
         //FIXME collect mac address from request.
         return handler.authenticate(
                 requestId,
-                HuaweiCredentials.of(username, Hex.encodeHexString(password), ip, "", requestId),
+                Credentials.of(username, Hex.encodeHexString(password), ip, ""),
                 authType);
     }
 
@@ -205,12 +209,12 @@ final class HuaweiPortalServer implements PortalServer {
      * @throws IOException
      */
     private void handleAuth(DatagramChannel channel,
-                            HuaweiPacket request,
+                            Packet request,
                             SocketAddress remote) throws IOException {
         logger.info("REQ_AUTH, request: {}, remote: {}", request, remote);
 
-        Collection<HuaweiPacket.Attribute> attributes = request.getAttributes();
-        Optional<HuaweiPacket.Attribute> username = attributes.stream()
+        Collection<Packet.Attribute> attributes = request.getAttributes();
+        Optional<Packet.Attribute> username = attributes.stream()
                 .filter(attr -> attr.getType() == AttributeType.USER_NAME.code())
                 .findFirst();
 
@@ -254,7 +258,7 @@ final class HuaweiPortalServer implements PortalServer {
      * @throws IOException
      */
     private void handleLogout(DatagramChannel channel,
-                              HuaweiPacket request,
+                              Packet request,
                               SocketAddress remote) throws IOException {
         logger.info("REQ_LOGOUT, request: {}, remote: {}", request, remote);
 
@@ -265,7 +269,7 @@ final class HuaweiPortalServer implements PortalServer {
         if (!taken.containsKey(requestId)) {
             error = LogoutError.GONE;
         } else {
-            Credentials credentials = HuaweiCredentials.of("", "", ip, "", requestId);
+            Credentials credentials = Credentials.of("", "", ip, "");
             error = handler.logout(credentials);
             if (error == LogoutError.OK) {
                 taken.remove(requestId);
@@ -285,7 +289,7 @@ final class HuaweiPortalServer implements PortalServer {
     }
 
     private void handleNtfLogout(DatagramChannel channel,
-                                 HuaweiPacket request,
+                                 Packet request,
                                  SocketAddress remote) throws IOException {
         logger.info("NTF_LOGOUT, request: {}, remote: {}", request, remote);
         byte[] ip = request.getIp();
@@ -293,7 +297,7 @@ final class HuaweiPortalServer implements PortalServer {
         String userIp = InetAddress.getByAddress(ip).getHostAddress();
         String nasIp = ((InetSocketAddress) remote).getAddress().getHostAddress();
         LogoutError error = handler.ntfLogout(nasIp, userIp);
-        HuaweiPacket ack = Packets.newNtfLogoutAck(request, error);
+        Packet ack = Packets.newNtfLogoutAck(request, error);
         ByteBuffer buf = codecFactory.getEncoder()
                 .encode(request.getAuthenticator(), ack, endpoint.getSharedSecret());
         channel.send(buf, remote);
@@ -308,7 +312,7 @@ final class HuaweiPortalServer implements PortalServer {
         @Override
         protected void handlePacket(ByteBuffer buffer, SocketAddress remote) {
             try {
-                HuaweiPacket in = codecFactory.getDecoder()
+                Packet in = codecFactory.getDecoder()
                         .decode(buffer, endpoint.getSharedSecret());
                 Optional<RequestType> type = RequestType.valueOf(in.getType());
                 if (type.isPresent()) {
@@ -347,7 +351,7 @@ final class HuaweiPortalServer implements PortalServer {
 
         @Override
         protected ByteBuffer createReceiveBuffer() {
-            return ByteBuffer.allocate(HuaweiPacket.MAX_LENGTH);
+            return ByteBuffer.allocate(Packet.MAX_LENGTH);
         }
 
         /**
@@ -366,7 +370,8 @@ final class HuaweiPortalServer implements PortalServer {
             byte[] data = buffer.array();
             /* HUAWEI V1 and V2 has a minimum length at 16. */
             return data.length > 16 && data[0] == endpoint.getVersion().value() &&
-                    (endpoint.getVersion() == Version.V2 && HuaweiCodecFactory.verify(buffer, endpoint.getSharedSecret()));
+                    (endpoint.getVersion() == Version.V2 &&
+                            ByteBufferCodecFactory.verify(buffer, endpoint.getSharedSecret()));
         }
     }
 }

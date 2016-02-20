@@ -7,6 +7,8 @@ import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalErrorContainer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -34,6 +36,9 @@ import java.io.IOException;
  */
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(RestAuthenticationEntryPoint.class);
+
     /** Json factory. */
     private static final JsonFactory factory = new JsonFactory();
 
@@ -52,6 +57,9 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     private void respond(RestResponse response, HttpServletResponse httpServletResponse)
             throws IOException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("authentication commence {}", response);
+        }
         httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
         httpServletResponse.getWriter().print(
                 mapper.writeValueAsString(response));

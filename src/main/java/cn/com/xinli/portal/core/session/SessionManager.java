@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 /**
  * Session manager.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/27.
  */
@@ -34,8 +34,8 @@ public interface SessionManager {
 
     /**
      * Remove session in a future.
-     * @param id session id.
+     * @param session session.
      * @return future.
      */
-    Future<?> removeSessionInFuture(long id);
+    Future<?> removeSessionInFuture(Session session);
 }

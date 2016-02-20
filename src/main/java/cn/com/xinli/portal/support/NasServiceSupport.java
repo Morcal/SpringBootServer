@@ -112,7 +112,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
      */
     @Override
     public Nas locate(Credentials credentials) throws NasNotFoundException {
-        Objects.requireNonNull(credentials);
+        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
 
         try {
             return nasStore.locate(credentials);
@@ -126,7 +126,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
 
             rule.orElseThrow(() -> e);
 
-            logger.trace("rule hit, nas id: ", rule.get().getNas().getId());
+            logger.trace("rule hit, nas id: {}", rule.get().getNas().getId());
 
             return rule.get().getNas();
         }

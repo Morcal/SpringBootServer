@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -77,17 +78,19 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {PlatformException.class})
     public RestResponse handlePlatformException(HttpServletResponse response, PlatformException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage());
-        }
-
         setResponseStatus(response, e);
 
-        return RestResponseBuilders.errorBuilder()
+        RestResponse rs = RestResponseBuilders.errorBuilder()
                 .setError(e.getPortalError())
                 .setDescription(e.getMessage())
                 .setUrl("/error")
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle platform exception: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 
     /**
@@ -103,21 +106,26 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {SessionNotFoundException.class})
     public RestResponse handleSessionNotFoundException(SessionNotFoundException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage());
-        }
-
         /* In case that request came with authentication. */
         AccessAuthentication authentication =
                 (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        return RestResponseBuilders.successBuilder()
+        RestResponse rs = RestResponseBuilders.successBuilder()
                 .setAccessAuthentication(authentication)
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle session exception: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 
     /**
      * REST API remote exception handler.
+     *
+     * <p>{@link RemoteException} may occur before client acquired {@link AccessAuthentication},
+     * so response need to check if {@link AccessAuthentication} already acquired.
      *
      * @param response servlet http response.
      * @param e {@link RemoteException}
@@ -126,21 +134,26 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {RemoteException.class})
     public RestResponse handleRemoteException(HttpServletResponse response, RemoteException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage());
-        }
-
         setResponseStatus(response, e);
 
         /* In case that request came with authentication. */
-        AccessAuthentication authentication =
-                (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        return RestResponseBuilders.errorBuilder()
+        AccessAuthentication authentication = auth != null && auth instanceof AccessAuthentication ?
+                (AccessAuthentication) SecurityContextHolder.getContext().getAuthentication() :
+                null;
+
+        RestResponse rs = RestResponseBuilders.errorBuilder()
                 .setError(e.getPortalError())
                 .setAccessAuthentication(authentication)
                 .setDescription(e.getMessage())
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle remote exception: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 
     /**
@@ -167,14 +180,16 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {AccessDeniedException.class})
     public RestResponse handleAccessDeniedException(AccessDeniedException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage());
-        }
-
-        return RestResponseBuilders.errorBuilder()
+        RestResponse rs = RestResponseBuilders.errorBuilder()
                 .setError(PortalError.UNAUTHORIZED_REQUEST)
                 .setDescription(e.getMessage())
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle access denied: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 
     /**
@@ -193,16 +208,18 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {ServerException.class})
     public RestResponse handleServerException(HttpServletResponse response, ServerException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage());
-        }
-
         setResponseStatus(response, e);
 
-        return RestResponseBuilders.errorBuilder()
+        RestResponse rs = RestResponseBuilders.errorBuilder()
                 .setError(e.getPortalError())
                 .setDescription(e.getMessage())
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle server exception: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 
     /**
@@ -223,13 +240,15 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = {RuntimeException.class})
     public RestResponse handleRuntimeException(RuntimeException e) {
-        if (logger.isDebugEnabled()) {
-            logger.error("handle exception: {} ", e.getMessage(), e);
-        }
-
-        return RestResponseBuilders.errorBuilder()
+        RestResponse rs = RestResponseBuilders.errorBuilder()
                 .setError(PortalError.SERVER_INTERNAL_ERROR)
                 .setDescription(e.getMessage())
                 .build();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("handle runtime exception: {} -> {} ", e.getMessage(), rs);
+        }
+
+        return rs;
     }
 }

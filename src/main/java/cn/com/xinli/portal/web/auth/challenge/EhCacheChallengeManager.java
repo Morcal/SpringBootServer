@@ -1,12 +1,12 @@
 package cn.com.xinli.portal.web.auth.challenge;
 
+import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateService;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.support.configuration.CachingConfiguration;
-import cn.com.xinli.portal.Constants;
 import cn.com.xinli.portal.web.util.SignatureUtil;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 /**
  * EhCache based challenge manager.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -33,6 +33,9 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
     @Autowired
     private CertificateService certificateService;
 
+    @Autowired
+    private ServerConfiguration serverConfiguration;
+
     private Element createChallengeElement(Challenge challenge) {
         long now = System.currentTimeMillis();
         return new Element(
@@ -43,7 +46,7 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
                 now,
                 0,
                 true,
-                SecurityConfiguration.CHALLENGE_TTL,
+                serverConfiguration.getRestConfiguration().getChallengeTtl(),
                 0,
                 now);
     }

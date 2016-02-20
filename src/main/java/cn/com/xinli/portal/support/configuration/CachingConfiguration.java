@@ -60,7 +60,7 @@ public class CachingConfiguration {
     public static final String RADIUS_CACHE_NAME = "radius-cache";
 
     /** Session search cache name. */
-    public static final String SESSION_SEARCH_CACHE_NAME = "session-serach-cache";
+    public static final String SESSION_SEARCH_CACHE_NAME = "session-search-cache";
 
     /** Max supported NAS/BRAS devices, rules, certificates. */
     private static final int DEFAULT_MAX_SUPPORTED = 1000;

@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.core.configuration;
 
 /**
- * Project: xpws
+ * Session configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
@@ -11,6 +13,7 @@ public class SessionConfiguration {
     private boolean enableHeartbeat;
     private int heartbeatInterval;
     private int minUpdateInterval;
+    private int tokenTtl;
 
     public boolean isEnableTtl() {
         return enableTtl;
@@ -52,11 +55,20 @@ public class SessionConfiguration {
         this.minUpdateInterval = minUpdateInterval;
     }
 
+    public int getTokenTtl() {
+        return tokenTtl;
+    }
+
+    public void setTokenTtl(int tokenTtl) {
+        this.tokenTtl = tokenTtl;
+    }
+
     @Override
     public String toString() {
         return "SessionConfiguration{" +
                 "enableTtl=" + enableTtl +
                 ", ttl=" + ttl +
+                ", tokenTtl=" + tokenTtl +
                 ", enableHeartbeat=" + enableHeartbeat +
                 ", heartbeatInterval=" + heartbeatInterval +
                 ", minUpdateInterval=" + minUpdateInterval +

@@ -12,4 +12,5 @@ import java.io.Serializable;
  * @author zhoupeng 2015/12/24.
  */
 public interface Packet extends Serializable {
+    String EMPTY_PACKET = "Packet is empty.";
 }

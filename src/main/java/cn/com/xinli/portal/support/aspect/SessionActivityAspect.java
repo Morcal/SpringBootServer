@@ -22,7 +22,7 @@ import java.util.Calendar;
  * Session activity aspect.
  *
  * <p>This aspect watches session operations in the controller,
- * and save operation log as {@link Activity}s.
+ * and save operation log as auditing logging {@link Activity}s.
  *
  * <p>Project: xpws
  *
@@ -42,11 +42,6 @@ public class SessionActivityAspect {
 
     private String buildInfo(Session session) {
         return session.getCredentials().toString();
-//        StringJoiner joiner = new StringJoiner(",");
-//        joiner.add(session.getIp())
-//                .add(session.getMac())
-//                .add(session.getAppName());
-//        return joiner.toString();
     }
 
     /**

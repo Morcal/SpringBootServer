@@ -25,7 +25,7 @@ public class ActivityPersistence {
     private ActivityRepository activityRepository;
 
     public Activity load(Long id) throws ServerException {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
         Activity activity = activityRepository.findOne(id);
         if (activity == null) {
             throw new ServerException(PortalError.SERVER_INTERNAL_ERROR, "activity not found:" + id);
@@ -34,17 +34,17 @@ public class ActivityPersistence {
     }
 
     public Activity find(Long id) {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
         return activityRepository.findOne(id);
     }
 
     public void save(Activity activity) {
-        Objects.requireNonNull(activity);
+        Objects.requireNonNull(activity, Activity.EMPTY_ACTIVITY);
         activityRepository.save(activity);
     }
 
     public void delete(Long id) {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
         activityRepository.delete(id);
     }
 

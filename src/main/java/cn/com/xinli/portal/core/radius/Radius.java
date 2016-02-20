@@ -13,6 +13,8 @@ import javax.persistence.*;
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="radius")
 public class Radius {
+    public static final String EMPTY_RADIUS = "Radius is empty.";
+
     /** Auto generated internal id. */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

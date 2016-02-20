@@ -155,6 +155,6 @@ public class CredentialsModifier {
                 break;
         }
 
-        return DefaultCredentials.of(username, password, credentials.getIp(), credentials.getMac());
+        return Credentials.of(username, password, credentials.getIp(), credentials.getMac());
     }
 }

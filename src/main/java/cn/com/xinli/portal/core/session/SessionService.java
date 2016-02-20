@@ -12,6 +12,7 @@ import java.util.Optional;
  * @author zhoupeng 2015/12/2.
  */
 public interface SessionService {
+    void init();
     /**
      * Get session by id.
      *
@@ -52,4 +53,5 @@ public interface SessionService {
      * @throws PortalException
      */
     void removeSession(String nasIp, String userIp) throws PortalException;
+
 }

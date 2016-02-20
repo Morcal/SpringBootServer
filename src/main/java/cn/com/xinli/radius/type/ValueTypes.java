@@ -18,7 +18,7 @@ public class ValueTypes {
 
         @Override
         public String decode(byte[] data) {
-            Objects.requireNonNull(data);
+            Objects.requireNonNull(data, "decode data is empty.");
             return new String(data);
         }
     }

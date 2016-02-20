@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
 import cn.com.xinli.portal.core.ratelimiting.TrackStore;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 /**
  * Rate-Limiting track store based on <a href="http://ehcache.org">EhCache</a>.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/31.
  */
@@ -22,6 +22,9 @@ public class EhcacheTrackStore implements TrackStore {
 
     @Autowired
     private Ehcache rateLimitingCache;
+
+    @Autowired
+    private ServerConfiguration serverConfiguration;
 
     void doPut(String remote, AccessTimeTrack track) {
         Element element = new Element(remote, track, 1, 1);
@@ -38,7 +41,8 @@ public class EhcacheTrackStore implements TrackStore {
     public void put(String remote) {
         long now = System.currentTimeMillis();
         /* EhCache get/put operations are thread-safe. */
-        AccessTimeTrack track = new AccessTimeTrack(SecurityConfiguration.RATE_LIMITING, 1L);
+        AccessTimeTrack track = new AccessTimeTrack(
+                serverConfiguration.getRateLimitingConfiguration().getRate(), 1L);
         track.trackAndCheckRate(now);
 
         doPut(remote, track);

@@ -5,30 +5,30 @@ import cn.com.xinli.portal.core.credentials.Credentials;
 import java.io.IOException;
 
 /**
- * Portal Client.
+ * Portal connector.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */
-public interface PortalClient {
+public interface Connector<T> {
     /**
      * Login.
      * @param credentials user credentials.
-     * @return portal message.
+     * @return login result as session extended information.
      * @throws IOException
      * @throws TransportException
      * @throws NullPointerException if credentials is null.
      */
-    Result login(Credentials credentials) throws IOException, TransportException;
+    T login(Credentials credentials) throws IOException, TransportException;
 
     /**
      * Logout.
      * @param credentials user credentials.
-     * @return portal message.
+     * @param extendedInformation extended Information.
      * @throws IOException
      * @throws TransportException
      * @throws NullPointerException if credentials is null.
      */
-    Result logout(Credentials credentials) throws IOException, TransportException;
+    void logout(Credentials credentials, T extendedInformation) throws IOException, TransportException;
 }

@@ -5,20 +5,20 @@ import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
+import cn.com.xinli.portal.core.nas.HuaweiNas;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasType;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionProvider;
-import cn.com.xinli.portal.transport.PortalClient;
-import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.Connector;
 import cn.com.xinli.portal.transport.TransportError;
-import cn.com.xinli.portal.transport.Result;
-import cn.com.xinli.portal.core.nas.HuaweiNas;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.huawei.AuthType;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
+import cn.com.xinli.portal.transport.huawei.ExtendedInformation;
 import cn.com.xinli.portal.transport.huawei.Version;
-import cn.com.xinli.portal.transport.huawei.nio.HuaweiPortal;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiSessionExtInfoSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Huawei portal protocol session provider.
@@ -54,6 +55,8 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
     @Autowired
     private PortalErrorTranslator errorTranslator;
 
+    private final HuaweiSessionExtInfoSerializer serializer = new HuaweiSessionExtInfoSerializer();
+
     @Override
     public boolean supports(Nas nas) {
         return nas != null && nas.getType() != null && nas.getType() == NasType.HUAWEI;
@@ -69,25 +72,11 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
     Session createSession(Nas nas, Credentials credentials) throws UnknownHostException {
         Session session = new Session();
         session.setNas(nas);
-        session.setCredentials(from(credentials));
+        session.setCredentials(credentials);
         return session;
     }
 
-    /**
-     * Create huawei credentials from other credentials.
-     * @param credentials other credentials.
-     * @return huawei credentials.
-     */
-    static HuaweiCredentials from(Credentials credentials) {
-        return HuaweiCredentials.of(
-                credentials.getUsername(),
-                credentials.getPassword(),
-                credentials.getIp(),
-                credentials.getMac(),
-                0);
-    }
-
-    static Endpoint from(HuaweiNas nas) throws UnknownHostException {
+    static Endpoint endpointOf(HuaweiNas nas) throws UnknownHostException {
         return Endpoint.of(
                 Version.valueOf(nas.getVersion()),
                 nas.getNetworkAddress(),
@@ -98,19 +87,20 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
 
     @Override
     public Session authenticate(Nas nas, Credentials credentials) throws PortalException {
-        Objects.requireNonNull(nas);
-        Objects.requireNonNull(credentials);
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
+        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
 
         try {
             HuaweiNas huaweiNas = HuaweiNas.class.cast(nas);
             Session session = createSession(nas, credentials);
-            PortalClient client = HuaweiPortal.createClient(from(huaweiNas));
-            Result result = client.login(session.getCredentials());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Portal login result: {}", result);
-            }
-
+            Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpointOf(huaweiNas));
+            ExtendedInformation info = client.login(session.getCredentials());
+            Optional<String> ext = serializer.serialize(info);
+            ext.orElseThrow(() ->
+                    new ServerException(
+                            PortalError.SERVER_INTERNAL_ERROR,
+                            "session extended information serialize failure"));
+            session.setExtendedInformation(ext.get());
             return session;
         } catch (IOException e) {
             logger.error("Portal login error", e);
@@ -122,17 +112,19 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
     }
 
     @Override
-    public Session disconnect(Session session) throws PortalException {
-        Objects.requireNonNull(session);
+    public void disconnect(Session session) throws PortalException {
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
         HuaweiNas huaweiNas = HuaweiNas.class.cast(session.getNas());
 
         try {
-            PortalClient client = HuaweiPortal.createClient(from(huaweiNas));
-            Result result = client.logout(session.getCredentials());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Portal logout result: {}", result);
-            }
+            Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpointOf(huaweiNas));
+            String extendedInformation = session.getExtendedInformation();
+            Optional<ExtendedInformation> ext = serializer.deserialize(extendedInformation);
+            ext.orElseThrow(() ->
+                    new ServerException(
+                            PortalError.SERVER_INTERNAL_ERROR,
+                            "session extended information deserialize failure"));
+            client.logout(session.getCredentials(), ext.get());
         } catch (IOException e) {
             logger.error("Portal logout error", e);
             throw new ServerException(
@@ -148,6 +140,5 @@ public class HuaweiPortalSessionProvider implements SessionProvider {
                 throw new PlatformException(err, e.getMessage(), e);
             }
         }
-        return session;
     }
 }

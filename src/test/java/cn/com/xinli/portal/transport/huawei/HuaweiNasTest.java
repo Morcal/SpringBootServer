@@ -1,12 +1,11 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.core.credentials.DefaultCredentials;
-import cn.com.xinli.portal.core.credentials.HuaweiCredentials;
-import cn.com.xinli.portal.transport.*;
-import cn.com.xinli.portal.transport.huawei.AuthType;
-import cn.com.xinli.portal.transport.huawei.Endpoint;
-import cn.com.xinli.portal.transport.huawei.Version;
+import cn.com.xinli.portal.transport.ChallengeException;
+import cn.com.xinli.portal.transport.Connector;
+import cn.com.xinli.portal.transport.PortalServer;
+import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +39,7 @@ public class HuaweiNasTest {
     AuthType authType;
     String sharedSecret;
     Endpoint endpoint;
-    HuaweiCredentials credentials;
+    Credentials credentials;
     PortalServer server;
 
     final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -53,7 +52,7 @@ public class HuaweiNasTest {
         authType = AuthType.CHAP;
         sharedSecret = "aaa";
         endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
-        credentials = HuaweiCredentials.of("test0", "test0", "127.0.0.1", "mac", 0);
+        credentials = Credentials.of("test0", "test0", "127.0.0.1", "mac");
     }
 
     @After
@@ -77,12 +76,11 @@ public class HuaweiNasTest {
 
         //Thread.sleep(100L);
 
-        final PortalClient client = HuaweiPortal.createClient(endpoint);
-        Result response = client.login(credentials);
-        Assert.assertNotNull(response);
+        final Connector client = HuaweiPortal.getConnector(endpoint);
+        ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+        Assert.assertNotNull(extendedInformation);
 
-        response = client.logout(credentials);
-        Assert.assertNotNull(response);
+        client.logout(credentials, extendedInformation);
 
         server.shutdown();
     }
@@ -96,36 +94,33 @@ public class HuaweiNasTest {
         server.start();
 
         //Thread.sleep(100L);
-        final PortalClient client = HuaweiPortal.createClient(endpoint);
-        Result response = client.login(credentials);
-        Assert.assertNotNull(response);
+        final Connector client = HuaweiPortal.getConnector(endpoint);
+        ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+        Assert.assertNotNull(extendedInformation);
 
-        response = null;
         try {
-            response = client.login(credentials);
+            client.login(credentials);
+            Assert.assertTrue(true);
         } catch (ChallengeException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("challenge exception: {}", e.getMessage());
             }
         }
-
-        Assert.assertNull(response);
     }
 
     private void concurrentRun(final Credentials credentials) throws IOException, TransportException {
-        final PortalClient client = HuaweiPortal.createClient(endpoint);
+        final Connector client = HuaweiPortal.getConnector(endpoint);
         for (int i = 0; i < RUN_TIMES; i ++) {
-            Result response = client.login(credentials);
-            Assert.assertNotNull(response);
+            ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+            Assert.assertNotNull(extendedInformation);
 
-            response = client.logout(credentials);
-            Assert.assertNotNull(response);
+            client.logout(credentials, extendedInformation);
         }
     }
 
     public void concurrentAccess() {
         for (int i = 0; i < CONCURRENT_SIZE; i++) {
-            final Credentials credentials = DefaultCredentials.of("test" + i, "test" + i, "192.168.3." + i, "mac-" + i);
+            final Credentials credentials = Credentials.of("test" + i, "test" + i, "192.168.3." + i, "mac-" + i);
             executorService.submit(() -> {
                 try {
                     this.concurrentRun(credentials);

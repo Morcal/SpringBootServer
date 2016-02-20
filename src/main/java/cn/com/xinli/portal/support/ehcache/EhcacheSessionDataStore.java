@@ -2,7 +2,6 @@ package cn.com.xinli.portal.support.ehcache;
 
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.SessionConfiguration;
-import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionStore;
@@ -74,6 +73,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
+    @Override
     public void init() {
         boolean registered = sessionCache.getCacheEventNotificationService()
                 .registerListener(sessionCacheEventListener, NotificationScope.LOCAL);
@@ -90,7 +90,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
         Assert.notNull(sessionPersistence);
     }
 
-    @Scheduled(fixedDelay = 300_000L)
+    @Scheduled(fixedDelay = 10_000L)
     public void evictExpiredSessions() {
         if (serverConfiguration.getSessionConfiguration().isEnableTtl()) {
             if (logger.isTraceEnabled()) {
@@ -105,6 +105,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
      *
      * <p>{@link #sessionCache} is <code>{session id: full-populated session}</code>,
      * the other {@link #sessionSearchCache} is <code>{session id: session-search-content}</code>.
+     *
      * @param session session to add.
      */
     private void addSession(Session session) {
@@ -112,52 +113,40 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
             logger.trace("put session into cache and search cache.");
         }
         sessionCache.put(toElement(session));
-        sessionSearchCache.put(toElement(toSearchable(session)));
-    }
-
-    /**
-     * Create searchable from session.
-     * @param session session to create.
-     * @return searchable.
-     */
-    private SessionSearchable toSearchable(Session session) {
-        Credentials credentials = session.getCredentials();
-        return new SessionSearchable()
-                .ip(credentials.getIp())
-                .mac(credentials.getMac())
-                .username(credentials.getUsername())
-                .nas(session.getNas().getName())
-                .value(session.getId());
+        sessionSearchCache.put(toElement(SessionSearchable.from(session)));
     }
 
     /**
      * Deserialize cache value to session.
+     *
      * @param element cache element.
      * @return session.
      */
-    private Session fromElement(Element element) {
-        Objects.requireNonNull(element);
+    Session fromElement(Element element) {
+        Objects.requireNonNull(element, "session element is null");
         return sessionSerializer.deserialize((byte[]) element.getObjectValue());
     }
 
     /**
      * Serialize searchable to cache element.
+     *
      * @param searchable searchable.
      * @return cache element.
      */
     private Element toElement(SessionSearchable searchable) {
-        Objects.requireNonNull(searchable);
+        Objects.requireNonNull(searchable, SessionSearchable.EMPTY_SESSION_SEARCHABLE);
         return new Element(searchable.getValue(), searchable);
     }
 
     /**
      * Serialize session to cache element.
+     *
      * @param session session.
      * @return cache element.
      */
     private Element toElement(Session session) {
-        Objects.requireNonNull(session);
-        final long key = session.getId();
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
+        final Long key = session.getId();
         final byte[] value = sessionSerializer.serialize(session);
         Element element;
 
@@ -201,7 +190,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public void put(Session session) {
-        Objects.requireNonNull(session);
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
 
         /* Save to database, id will be generated. */
         sessionPersistence.save(session);
@@ -243,7 +232,8 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public boolean delete(Session session) {
-        Objects.requireNonNull(session);
+        Objects.requireNonNull(session, Session.EMPTY_SESSION);
+        logger.trace("ehcache session data store deleting session {}.", session);
         sessionPersistence.delete(session);
         sessionSearchCache.remove(session.getId());
         return sessionCache.remove(session.getId());
@@ -251,9 +241,16 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public boolean delete(Long id) {
+        Objects.requireNonNull(id, Session.EMPTY_SESSION);
         logger.trace("ehcache session data store deleting session {}.", id);
         sessionPersistence.delete(id);
+        if (logger.isTraceEnabled()) {
+            logger.trace("before delete search keys: {}", dumpKeys(sessionSearchCache.getKeys()));
+        }
         sessionSearchCache.remove(id);
+        if (logger.isTraceEnabled()) {
+            logger.trace("after delete search keys: {}", dumpKeys(sessionSearchCache.getKeys()));
+        }
         return sessionCache.remove(id);
     }
 
@@ -271,6 +268,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     /**
      * Find cached session in cache.
+     *
      * @param parameters find parameters.
      * @return list of cached sessions.
      */
@@ -308,7 +306,13 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
                 .map(result -> (Long) result.getKey())
                 .collect(Collectors.toList());
 
+        if (logger.isTraceEnabled()) {
+            logger.trace("session keys: {}", dumpKeys(sessionCache.getKeys()));
+            logger.trace("search keys: {}", dumpKeys(sessionSearchCache.getKeys()));
+        }
+
         return sessionCache.getAll(keys).values().stream()
+                .filter(e -> e != null)
                 .map(this::fromElement)
                 .collect(Collectors.toSet());
     }
@@ -325,7 +329,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
      */
     @Override
     public Set<Session> find(String ip) {
-        Objects.requireNonNull(ip);
+        Objects.requireNonNull(ip, "find session ip is empty.");
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put("ip", ip);
@@ -346,13 +350,25 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
      */
     @Override
     public Set<Session> find(String ip, String mac) {
-        Objects.requireNonNull(ip);
-        Objects.requireNonNull(mac);
+        Objects.requireNonNull(ip, "find session ip/mac ip is empty");
+        Objects.requireNonNull(mac, "find session ip/mac mac is empty");
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put("ip", ip);
         parameters.put("mac", mac);
 
         return findInCache(parameters);
+    }
+
+    public String dumpKeys(Collection<?> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return "none";
+        }
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (Object key : keys) {
+            joiner.add(key.toString());
+        }
+        return joiner.toString();
     }
 }

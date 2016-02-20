@@ -25,7 +25,7 @@ public class CredentialsTranslationTest {
     private final Logger logger = LoggerFactory.getLogger(CredentialsTranslationTest.class);
 
     final String privateKey = "some-private-key";
-    final Credentials credentials = DefaultCredentials.of("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
+    final Credentials credentials = Credentials.of("foo", "bar", "192.168.3.26", "20-CF-30-BB-E9-AF");
 
     HuaweiNas nas;
 

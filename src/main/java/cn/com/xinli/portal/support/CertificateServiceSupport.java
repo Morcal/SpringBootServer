@@ -47,7 +47,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public void delete(Certificate certificate) throws CertificateNotFoundException {
-        Objects.requireNonNull(certificate);
+        Objects.requireNonNull(certificate, Certificate.EMPTY_CERTIFICATE);
         certificateStore.delete(certificate.getAppId());
     }
 

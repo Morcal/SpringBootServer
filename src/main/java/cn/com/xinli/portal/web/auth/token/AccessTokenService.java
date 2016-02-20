@@ -1,14 +1,14 @@
 package cn.com.xinli.portal.web.auth.token;
 
 import cn.com.xinli.portal.core.certificate.CertificateService;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * REST Access token service.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/13.
  */
@@ -17,6 +17,9 @@ public class AccessTokenService extends AbstractTokenService {
 
     @Autowired
     private CertificateService certificateService;
+
+    @Autowired
+    private ServerConfiguration serverConfiguration;
 
     @Override
     protected TokenScope getTokenScope() {
@@ -30,6 +33,6 @@ public class AccessTokenService extends AbstractTokenService {
 
     @Override
     protected int getTokenTtl() {
-        return SecurityConfiguration.ACCESS_TOKEN_TTL;
+        return serverConfiguration.getRestConfiguration().getTokenTtl();
     }
 }

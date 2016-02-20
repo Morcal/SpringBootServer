@@ -47,9 +47,9 @@ import java.util.stream.Stream;
  */
 @Component
 @Profile("standalone")
-public class EhcacheNasStore implements NasStore {
+public class RoutingMapper implements NasStore {
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(EhcacheNasStore.class);
+    private final Logger logger = LoggerFactory.getLogger(RoutingMapper.class);
 
     @Autowired
     private Ehcache nasCache;
@@ -175,7 +175,7 @@ public class EhcacheNasStore implements NasStore {
      */
     @Override
     public void put(Nas nas) {
-        Objects.requireNonNull(nas);
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
         addDevice(nas);
         nasPersistence.save(nas);
     }
@@ -224,7 +224,7 @@ public class EhcacheNasStore implements NasStore {
      */
     @Override
     public NasRule put(NasRule rule) {
-        Objects.requireNonNull(rule);
+        Objects.requireNonNull(rule, NasRule.EMPTY_RULE);
         addRule(rule);
         return nasPersistence.save(rule);
     }
@@ -255,7 +255,7 @@ public class EhcacheNasStore implements NasStore {
 
     @Override
     public Nas locate(Credentials credentials) throws NasNotFoundException {
-        Objects.requireNonNull(credentials);
+        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
         final String key = Session.pair(credentials.getIp(), credentials.getMac());
         Element element = nasMappingCache.get(key);
         if (element != null) {

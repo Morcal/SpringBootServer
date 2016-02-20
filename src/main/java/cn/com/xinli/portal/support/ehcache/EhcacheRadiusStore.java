@@ -44,7 +44,7 @@ public class EhcacheRadiusStore implements RadiusStore {
 
     @Override
     public void put(Radius radius) {
-        Objects.requireNonNull(radius);
+        Objects.requireNonNull(radius, Radius.EMPTY_RADIUS);
         radiusPersistence.save(radius);
         radiusCache.put(toElement(radius));
     }

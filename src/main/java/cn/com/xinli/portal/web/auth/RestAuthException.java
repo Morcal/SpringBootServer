@@ -4,8 +4,6 @@ import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalErrorContainer;
 import org.springframework.security.core.AuthenticationException;
 
-import java.util.Objects;
-
 /**
  * REST API authentication and authorization base exception.
  *
@@ -30,19 +28,16 @@ public abstract class RestAuthException extends AuthenticationException implemen
 
     public RestAuthException(PortalError error) {
         super(error.getReason());
-        Objects.requireNonNull(error);
         this.error = error;
     }
 
     public RestAuthException(PortalError error, String message, Throwable cause) {
         super(error.getReason() + ", info:" + message, cause);
-        Objects.requireNonNull(error);
         this.error = error;
     }
 
     public RestAuthException(PortalError error, String message) {
         super(error.getReason() + ", info:" + message);
-        Objects.requireNonNull(error);
         this.error = error;
     }
 

@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.transport.huawei.nio;
+package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.transport.PortalServer;
@@ -199,7 +199,7 @@ final class HuaweiNas implements PortalServer {
     }
 
     /**
-     * Mock session.
+     * Simple session.
      */
     class Session {
         long id;

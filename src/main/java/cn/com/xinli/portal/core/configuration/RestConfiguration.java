@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.core.configuration;
 
 /**
- * Project: xpws
+ * REST configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
@@ -12,6 +14,7 @@ public class RestConfiguration {
     private String header;
     private String meta;
     private int challengeTtl;
+    private int tokenTtl;
 
     public String getScheme() {
         return scheme;
@@ -61,6 +64,14 @@ public class RestConfiguration {
         this.server = server;
     }
 
+    public int getTokenTtl() {
+        return tokenTtl;
+    }
+
+    public void setTokenTtl(int tokenTtl) {
+        this.tokenTtl = tokenTtl;
+    }
+
     @Override
     public String toString() {
         return "RestConfiguration{" +
@@ -70,6 +81,7 @@ public class RestConfiguration {
                 ", header='" + header + '\'' +
                 ", meta='" + meta + '\'' +
                 ", challengeTtl=" + challengeTtl +
+                ", tokenTtl=" + tokenTtl +
                 '}';
     }
 }

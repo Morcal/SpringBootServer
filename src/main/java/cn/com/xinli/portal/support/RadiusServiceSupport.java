@@ -20,7 +20,7 @@ public class RadiusServiceSupport implements RadiusService, RadiusManager {
 
     @Override
     public Radius create(Radius radius) {
-        Objects.requireNonNull(radius);
+        Objects.requireNonNull(radius, Radius.EMPTY_RADIUS);
         radiusStore.put(radius);
         return radius;
     }
