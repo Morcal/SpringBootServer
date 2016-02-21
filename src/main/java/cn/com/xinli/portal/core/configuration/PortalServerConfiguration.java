@@ -1,15 +1,26 @@
 package cn.com.xinli.portal.core.configuration;
 
 /**
- * Project: xpws
+ * Portal Server Configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
 public class PortalServerConfiguration {
+    /** Portal server name. */
     private String name;
+
+    /** Host. */
     private String host;
+
+    /** Port. */
     private int port;
+
+    /** Shared secret. */
     private String sharedSecret;
+
+    /** Portal version. */
     private String version;
 
     public String getName() {

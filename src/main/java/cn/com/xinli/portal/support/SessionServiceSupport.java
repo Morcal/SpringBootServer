@@ -110,18 +110,18 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         sessionStore.init();
     }
 
-    /**
-     * Session service queued session remover.
-     */
-    private void doRemoveSession(long id) {
-        try {
-            removeSession(id);
-        } catch (PortalException e) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Session service remover error: {}", e.getMessage());
-            }
-        }
-    }
+//    /**
+//     * Session service queued session remover.
+//     */
+//    private void doRemoveSession(long id) {
+//        try {
+//            removeSession(id);
+//        } catch (PortalException e) {
+//            if (logger.isTraceEnabled()) {
+//                logger.trace("Session service remover error: {}", e.getMessage());
+//            }
+//        }
+//    }
 
     /**
      * Find session provider for nas.

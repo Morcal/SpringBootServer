@@ -29,8 +29,8 @@ public interface SessionController {
      * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.
      *
-     * @param ip        source ip address.
-     * @param mac       source mac address.
+     * @param ip source ip address.
+     * @param mac source mac address.
      * @param principal spring security principal.
      * @return JSON.
      */
@@ -40,6 +40,7 @@ public interface SessionController {
                          String mac,
                          String os,
                          String version,
+                         String context,
                          Principal principal)
             throws PortalException;
 
@@ -52,7 +53,7 @@ public interface SessionController {
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
-     * @param id        session id.
+     * @param id session id.
      * @param principal spring security principal.
      * @return JSON.
      */
@@ -67,7 +68,7 @@ public interface SessionController {
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
-     * @param id        session id.
+     * @param id session id.
      * @param timestamp source timestamp.
      * @param principal spring security principal.
      * @return JSON.
@@ -84,7 +85,7 @@ public interface SessionController {
      * <p>AFAIK, Administrators with role of {@link RestRole#ADMIN}
      * overrule anything and everything.
      *
-     * @param id        session id.
+     * @param id session id.
      * @param principal spring security principal.
      * @return JSON.
      */
@@ -96,12 +97,13 @@ public interface SessionController {
      * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.
      *
-     * @param ip        user ip address.
-     * @param mac       user mac address.
+     * @param ip user ip address.
+     * @param mac user mac address.
+     * @param context user session context.
      * @param principal spring security principal.
      * @return JSON.
-     * @throws SessionNotFoundException
+     * @throws PortalException
      */
-    RestResponse find(String ip, String mac, Principal principal)
-            throws SessionNotFoundException;
+    RestResponse find(String ip, String mac, String context, Principal principal)
+            throws PortalException;
 }

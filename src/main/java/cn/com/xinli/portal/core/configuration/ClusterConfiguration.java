@@ -3,12 +3,17 @@ package cn.com.xinli.portal.core.configuration;
 import java.util.Arrays;
 
 /**
- * Project: xpws
+ * Cluster configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
 public class ClusterConfiguration {
+    /** REDIS master name. */
     private String redisMaster;
+
+    /** REDIS sentinel ip addresses. */
     private String[] redisSentinels;
 
     public String getRedisMaster() {

@@ -1,12 +1,17 @@
 package cn.com.xinli.portal.core.configuration;
 
 /**
- * Project: xpws
+ * Rate-Limiting Configuration.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/29.
  */
 public class RateLimitingConfiguration {
+    /** Allow maximum rate. */
     private int rate;
+
+    /** Time to live. */
     private int ttl;
 
     public int getRate() {

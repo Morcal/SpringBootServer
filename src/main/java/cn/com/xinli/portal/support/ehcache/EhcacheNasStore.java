@@ -47,9 +47,9 @@ import java.util.stream.Stream;
  */
 @Component
 @Profile("standalone")
-public class RoutingMapper implements NasStore {
+public class EhcacheNasStore implements NasStore {
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(RoutingMapper.class);
+    private final Logger logger = LoggerFactory.getLogger(EhcacheNasStore.class);
 
     @Autowired
     private Ehcache nasCache;

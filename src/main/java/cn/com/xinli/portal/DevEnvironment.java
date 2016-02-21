@@ -48,13 +48,12 @@ public class DevEnvironment {
     private final Logger logger = LoggerFactory.getLogger(DevEnvironment.class);
 
     /** Configuration options for Developing, Testing. */
-    public static final String MOCK_NAS_HOST = "223.99.128.144";
-    //public static final String MOCK_NAS_NAME = "mock-huawei-nas";
-    public static final String MOCK_NAS_NAME = "shandong-test-nas";
+    public static final String MOCK_NAS_HOST = "192.168.3.26";
+    public static final String MOCK_NAS_NAME = "mock-huawei-nas";
     public static final int MOCK_NAS_LISTEN_PORT = 2000;
-    public static final String MOCK_NAS_SHARED_SECRET = "sdyd225";
+    public static final String MOCK_NAS_SHARED_SECRET = "aaa";
     public static final Version MOCK_NAS_VERSION = Version.V2;
-    public static final AuthType MOCK_NAS_AUTH_TYPE = AuthType.PAP;
+    public static final AuthType MOCK_NAS_AUTH_TYPE = AuthType.CHAP;
 
     @Autowired
     private NasService nasService;
@@ -169,8 +168,7 @@ public class DevEnvironment {
         } catch (NasNotFoundException e) {
             logger.debug("NAS not found, name: {}", nasName);
             Nas nas = createNas(nasName);
-            nasManager.createNasIpv4RangeRule(nas, "10.177.0.2", "10.177.63.254");
-            nasManager.createNasIpv4RangeRule(nas, "111.37.0.1", "111.37.0.254");
+            nasManager.createNasIpv4RangeRule(nas, "192.168.3.1", "192.168.3.254");
             nasService.reload();
         }
     }

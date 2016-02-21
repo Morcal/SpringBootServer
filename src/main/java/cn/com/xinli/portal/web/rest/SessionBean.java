@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Portal session rest bean.
  *
- * Project: xpws.
+ * <p>Project: xpws.
  *
  * @author zhoupeng 2015/12/13.
  */
@@ -35,6 +35,10 @@ public class SessionBean {
     /** Server suggested keep alive interval in seconds. */
     @JsonProperty("keepalive_interval")
     private int keepAliveInterval;
+
+    /** Session associated context. */
+    @JsonProperty
+    private String context;
 
     @JsonProperty("authentication")
     private Object authentication;
@@ -117,18 +121,27 @@ public class SessionBean {
         this.startTime = startTime;
     }
 
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
     @Override
     public String toString() {
-        return "SessionResponse{" +
-                "accounting=" + accounting +
-                ", id='" + id + '\'' +
+        return "SessionBean{" +
+                "id='" + id + '\'' +
                 ", token='" + token + '\'' +
                 ", tokenExpiresIn=" + tokenExpiresIn +
                 ", keepAlive=" + keepAlive +
                 ", startTime=" + startTime +
                 ", keepAliveInterval=" + keepAliveInterval +
+                ", context='" + context + '\'' +
                 ", authentication=" + authentication +
                 ", authorization=" + authorization +
+                ", accounting=" + accounting +
                 '}';
     }
 }

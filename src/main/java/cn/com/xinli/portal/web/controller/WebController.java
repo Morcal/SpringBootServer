@@ -1,18 +1,12 @@
 package cn.com.xinli.portal.web.controller;
 
-import cn.com.xinli.portal.core.nas.NasLocator;
-import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.web.rest.Scheme;
-import cn.com.xinli.portal.web.util.AddressUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.View;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.StringJoiner;
 
@@ -62,12 +56,6 @@ import java.util.StringJoiner;
  */
 @Controller
 public class WebController {
-    /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(WebController.class);
-
-    @Autowired
-    private NasLocator nasLocator;
-
     @Autowired
     private Scheme scheme;
 
@@ -93,61 +81,13 @@ public class WebController {
         return joiner.toString();
     }
 
-    /**
-     * Handle redirect.
-     *
-     * @param sourceIp source ip.
-     * @param sourceMac source mac.
-     * @param nasIp nas ip.
-     * @param basIp bas ip.
-     * @return springframework mvc result.
-     */
-    @RequestMapping(value = "/portal", method = RequestMethod.GET)
-    public View main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
-                       @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
-                       @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
-                       @RequestParam(value="nas-ip", defaultValue = "") String nasIp,
-                       @RequestParam(value="basIp", defaultValue = "") String basIp,
-                       HttpServletRequest request) {
-        /* TODO check logic here. */
-        String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
-
-        do {
-            if (StringUtils.isEmpty(deviceIp)
-                    || StringUtils.isEmpty(sourceIp)
-                    || StringUtils.isEmpty(sourceMac)) {
-                /* Invalid redirection, forward to main page. */
-                break;
-            }
-
-            if (!AddressUtil.validateIp(realIp, sourceIp, request.getRemoteAddr())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("invalid ip: {}.", sourceIp);
-                }
-                break;
-            }
-
-            try {
-                nasLocator.map(sourceIp, sourceMac, nasIp);
-            } catch (NasNotFoundException e) {
-                logger.debug(" Nas not found, not mapped.");
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
-            }
-        } while (false);
-
-        return mainPageView;
-    }
-
-    @RequestMapping(value = "/portal", method = RequestMethod.POST)
-    public View post() {
+    @RequestMapping(value = "/portal")
+    public View main() {
         return mainPageView;
     }
 
     @RequestMapping("/")
-    public View main() {
+    public View root() {
         return mainPageView;
     }
 

@@ -6,16 +6,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * REST Authentication response.
  *
- * Project: xpws
+ * <p>This class defines all Authentication information server respond to clients.
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/12.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Authentication {
     /** Authentication nonce. */
+    @JsonProperty
     private String nonce;
 
     /** Challenge. */
+    @JsonProperty
     private String challenge;
 
     /** UNIX epoch time Challenge expires at. */

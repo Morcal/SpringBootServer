@@ -11,10 +11,10 @@ import java.util.List;
 
 /**
  * REST API endpoint registration.
- * <p>
- * A registration contains a set of API {@link EntryPoint}s.
- * <p>
- * Project: rest-api
+ *
+ * <p>A registration contains a set of API {@link EntryPoint}s.
+ *
+ * <p>Project: rest-api
  *
  * @author zhoupeng 2015/12/6.
  */

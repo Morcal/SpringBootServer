@@ -168,6 +168,7 @@ final class HuaweiPortalServer implements PortalServer {
                                        Collection<Packet.Attribute> attributes)
             throws UnsupportedAuthenticationTypeException, IOException {
         final byte[] password;
+        final String plainPassword;
         switch (authType) {
             case CHAP:
                 Optional<Packet.Attribute> chapPassword = attributes.stream()
@@ -178,16 +179,18 @@ final class HuaweiPortalServer implements PortalServer {
                 }
 
                 password = chapPassword.get().getValue();
+                plainPassword = Hex.encodeHexString(password);
                 break;
 
             case PAP:
                 Optional<Packet.Attribute> pwd = attributes.stream()
                         .filter(attr -> attr.getType() == AttributeType.PASSWORD.code())
                         .findFirst();
-                if (pwd.isPresent()) {
+                if (!pwd.isPresent()) {
                     return AuthError.FAILED;
                 }
                 password = pwd.get().getValue();
+                plainPassword = new String(password);
                 break;
 
             default:
@@ -197,7 +200,7 @@ final class HuaweiPortalServer implements PortalServer {
         //FIXME collect mac address from request.
         return handler.authenticate(
                 requestId,
-                Credentials.of(username, Hex.encodeHexString(password), ip, ""),
+                Credentials.of(username, plainPassword, ip, ""),
                 authType);
     }
 
@@ -218,7 +221,7 @@ final class HuaweiPortalServer implements PortalServer {
                 .filter(attr -> attr.getType() == AttributeType.USER_NAME.code())
                 .findFirst();
 
-        final int requestId = request.getReqId();
+        int requestId = request.getReqId();
         AuthError error;
         do {
             if (!username.isPresent()) {
@@ -229,6 +232,10 @@ final class HuaweiPortalServer implements PortalServer {
             final String user = new String(username.get().getValue());
             final String ip = ipHexString(request.getIp());
             AuthType authType = AuthType.valueOf(request.getAuthType());
+
+            if (authType == AuthType.PAP) {
+                requestId = nextReqId(ip);
+            }
 
             try {
                 error = handleChapAndPap(requestId, user, ip, authType, attributes);

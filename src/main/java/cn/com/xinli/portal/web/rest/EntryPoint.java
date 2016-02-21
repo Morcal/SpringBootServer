@@ -7,8 +7,8 @@ import java.util.StringJoiner;
 
 /**
  * PWS REST API endpoint.
- * <p>
- * Project: rest-api
+ *
+ * <p>Project: rest-api
  *
  * @author zhoupeng 2015/12/6.
  */

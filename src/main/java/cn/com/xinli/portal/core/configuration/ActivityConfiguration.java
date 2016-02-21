@@ -10,7 +10,10 @@ import cn.com.xinli.portal.core.activity.Activity;
  * @author zhoupeng 2016/1/29.
  */
 public class ActivityConfiguration {
+    /** Most recent days server should keep auditing logs. */
     private int mostRecent;
+
+    /** Minimum severity to save auditing logs. */
     private Activity.Severity severity;
 
     public int getMostRecent() {

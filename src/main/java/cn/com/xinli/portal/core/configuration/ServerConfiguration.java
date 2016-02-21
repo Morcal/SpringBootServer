@@ -8,10 +8,19 @@ package cn.com.xinli.portal.core.configuration;
  * @author zhoupeng 2016/1/29.
  */
 public class ServerConfiguration {
+    /** Server private key. */
     private String privateKey;
+
+    /** Server main page if need to redirect clients to another url. */
     private String mainPageRedirectUrl;
+
+    /** Server allowed NAT environment. */
     private boolean allowNat;
+
+    /** Server works in a cluster mode. */
     private boolean enableCluster;
+
+    /** Server enabled rate-limiting. */
     private boolean enableRateLimiting;
 
     private ActivityConfiguration activityConfiguration;
@@ -20,6 +29,7 @@ public class ServerConfiguration {
     private RateLimitingConfiguration rateLimitingConfiguration;
     private RestConfiguration restConfiguration;
     private SessionConfiguration sessionConfiguration;
+    private RedirectConfiguration redirectConfiguration;
 
     public boolean isEnableCluster() {
         return enableCluster;
@@ -109,6 +119,14 @@ public class ServerConfiguration {
         this.portalServerConfiguration = portalServerConfiguration;
     }
 
+    public RedirectConfiguration getRedirectConfiguration() {
+        return redirectConfiguration;
+    }
+
+    public void setRedirectConfiguration(RedirectConfiguration redirectConfiguration) {
+        this.redirectConfiguration = redirectConfiguration;
+    }
+
     @Override
     public String toString() {
         return "ServerConfiguration{" +
@@ -123,6 +141,7 @@ public class ServerConfiguration {
                 ", rateLimitingConfiguration=" + rateLimitingConfiguration +
                 ", restConfiguration=" + restConfiguration +
                 ", sessionConfiguration=" + sessionConfiguration +
+                ", redirectConfiguration=" + redirectConfiguration +
                 '}';
     }
 }

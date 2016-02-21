@@ -87,6 +87,7 @@ public enum PortalError {
     INVALID_REQUEST(142, "invalid request"),
     UNPROCESSABLE_ENTITY(143, "unprocessable entity"),
     REST_REQUEST_RATE_LIMITED(151, "rest request rate limited"),
+    INVALID_ENVIRONMENT(152, "not in a portal environment"),
 
     /* Portal service errors. */
     INVALID_AUTHENTICATE_CREDENTIALS(201, "invalid authenticate credentials"),
@@ -117,6 +118,7 @@ public enum PortalError {
     XL_NEED_MERGE_ACCOUNT(244, "xl need merge account"),
     XL_ALREADY_IN(245, "xl already in"),
     XL_UNKNOWN_ERROR(249, "xl unknown error"),
+    NETWORK_CHANGED(250, "session exists, network changed"),
     UNKNOWN_LOGIN_ERROR(291, "unknown login error"),
     UNKNOWN_LOGOUT_ERROR(292, "unknown logout error"),
     UNKNOWN_PORTAL_ERROR(299, "unknown portal error");

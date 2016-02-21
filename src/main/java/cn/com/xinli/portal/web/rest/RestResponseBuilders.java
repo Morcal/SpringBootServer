@@ -37,9 +37,7 @@ public class RestResponseBuilders {
         int sessionTokenTtl;
         int challengeTtl;
         int accessTokenTtl;
-
         private Challenge challenge = null;
-
         protected AccessAuthentication accessAuthentication = null;
 
         /**
@@ -143,11 +141,18 @@ public class RestResponseBuilders {
      * Acquire a session builder.
      *
      * @param session session.
-     * @param token   session token.
+     * @param token session token.
+     * @param requiresKeepAlive session requires Keep Alive.
+     * @param keepAliveInterval session keep Alive Interval.
+     * @param context session context token.
      * @return builder
      */
-    private static SessionBuilder sessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
-        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval);
+    private static SessionBuilder sessionBuilder(Session session,
+                                                 Token token,
+                                                 boolean requiresKeepAlive,
+                                                 int keepAliveInterval,
+                                                 Token context) {
+        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval, context);
     }
 
     /**
@@ -171,6 +176,7 @@ public class RestResponseBuilders {
         private boolean grantToken = false;
         private boolean requiresKeepAlive;
         private int keepAliveInterval;
+        private Token context = null;
 
         SessionResponseBuilder() {
             super(false);
@@ -193,6 +199,11 @@ public class RestResponseBuilders {
 
         public SessionResponseBuilder setGrantToken(boolean grantToken) {
             this.grantToken = grantToken;
+            return this;
+        }
+
+        public SessionResponseBuilder setContext(Token context) {
+            this.context = context;
             return this;
         }
 
@@ -220,13 +231,14 @@ public class RestResponseBuilders {
                                 session,
                                 accessAuthentication.getSessionToken(),
                                 requiresKeepAlive,
-                                keepAliveInterval)
+                                keepAliveInterval,
+                                context)
                                 .build());
             }
 
             if (accessAuthentication == null || !grantToken) {
                 response.setSession(
-                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval).build());
+                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval, context).build());
             }
 
             return response;
@@ -301,13 +313,19 @@ public class RestResponseBuilders {
         private final Token token;
         private final boolean requiresKeepAlive;
         private final int keepAliveInterval;
+        private final Token context;
 
-        public SessionBuilder(Session session, Token token, boolean requiresKeepAlive, int keepAliveInterval) {
+        public SessionBuilder(Session session,
+                              Token token,
+                              boolean requiresKeepAlive,
+                              int keepAliveInterval,
+                              Token context) {
             super(false);
             this.session = session;
             this.token = token;
             this.requiresKeepAlive = requiresKeepAlive;
             this.keepAliveInterval = keepAliveInterval;
+            this.context = context;
         }
 
         @Override
@@ -323,6 +341,9 @@ public class RestResponseBuilders {
                 if (token != null) {
                     session.setToken(token.getKey());
                     session.setTokenExpiresIn(sessionTokenTtl);
+                }
+                if (context != null) {
+                    session.setContext(context.getKey());
                 }
                 return session;
             }

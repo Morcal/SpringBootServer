@@ -8,12 +8,25 @@ package cn.com.xinli.portal.core.configuration;
  * @author zhoupeng 2016/1/29.
  */
 public class RestConfiguration {
+    /** REST API host. */
     private String host;
+
+    /** REST API server. */
     private String server;
+
+    /** REST API scheme. */
     private String scheme;
+
+    /** REST API header in page http header. */
     private String header;
+
+    /** REST API meta in page meta element. */
     private String meta;
+
+    /** REST API challenge time to live in seconds. */
     private int challengeTtl;
+
+    /** REST Access token time to live in seconds. */
     private int tokenTtl;
 
     public String getScheme() {

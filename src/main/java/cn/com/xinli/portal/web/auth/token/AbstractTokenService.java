@@ -42,6 +42,8 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     @Autowired
     private ServerConfiguration serverConfiguration;
 
+    private static final String DELIMITER = "::";
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(secureRandomStringGenerator);
@@ -75,7 +77,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return content string.
      */
     private String createContent(TokenScope scope, long creationTime, String extendedInformation, String random) {
-        StringJoiner joiner = new StringJoiner(":");
+        StringJoiner joiner = new StringJoiner(DELIMITER);
         joiner.add(scope.name())
                 .add(String.valueOf(creationTime))
                 .add(random)
@@ -90,7 +92,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return SHA summary.
      */
     private String sha(String content) {
-        return Sha512DigestUtils.shaHex(content + ":" + serverConfiguration.getPrivateKey());
+        return Sha512DigestUtils.shaHex(content + DELIMITER + serverConfiguration.getPrivateKey());
     }
 
     @Override
@@ -101,7 +103,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
 
         long now = System.currentTimeMillis();
 
-        String[] tokens = StringUtils.delimitedListToStringArray(Utf8.decode(Base64.decode(Utf8.encode(key))), ":");
+        String[] tokens = StringUtils.delimitedListToStringArray(Utf8.decode(Base64.decode(Utf8.encode(key))), DELIMITER);
 
         if (tokens == null || tokens.length != 5) {
             return null;
@@ -155,14 +157,13 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         return new RestToken(key, creationTime, getTokenScope(), extendedInformation);
     }
 
-
     @Override
     public final Token allocateToken(String extendedInformation) {
         long creationTime = System.currentTimeMillis();
         String random = secureRandomStringGenerator.generateUniqueRandomString(32);
         String content = createContent(getTokenScope(), creationTime, extendedInformation, random);
         String sha512Hex = sha(content);
-        String keyPayload = content + ":" + sha512Hex;
+        String keyPayload = content + DELIMITER + sha512Hex;
         String key = Utf8.decode(Base64.encode(Utf8.encode(keyPayload)));
         return new RestToken(key, creationTime, getTokenScope(), extendedInformation);
     }

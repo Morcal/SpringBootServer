@@ -63,6 +63,10 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
     public static final String PORTAL_SERVER_LISTEN_PORT = "portal-server.listen.port";
     public static final String PORTAL_SERVER_CORE_THREADS = "portal-server.core-threads";
     public static final String PORTAL_SERVER_SHARED_SECRET = "portal-server.shared-secret";
+    /** Redirect configurations. */
+    public static final String REDIRECT_USER_IP = "redirect.user.ip";
+    public static final String REDIRECT_USER_MAC = "redirect.user.mac";
+    public static final String REDIRECT_NAS_IP = "redirect.nas.ip";
 
     private static final String PROPERTIES_RESOURCE = "pws.properties";
 
@@ -138,6 +142,16 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
             cluster.setRedisSentinels(sentinels.split(","));
             setClusterConfiguration(cluster);
         }
+
+        /* Create redirect configuration. */
+        RedirectConfiguration redirectConfiguration = new RedirectConfiguration();
+        String nasIp = config.valueOf(REDIRECT_NAS_IP);
+        redirectConfiguration.setNasIp(nasIp.split(","));
+        String userIp = config.valueOf(REDIRECT_USER_IP);
+        redirectConfiguration.setUserIp(userIp.split(","));
+        String userMac = config.valueOf(REDIRECT_USER_MAC);
+        redirectConfiguration.setUserMac(userMac.split(","));
+        setRedirectConfiguration(redirectConfiguration);
     }
 
     class Configuration {
@@ -181,6 +195,10 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 Entry.of(PORTAL_SERVER_LISTEN_PORT, ValueType.INTEGER),
                 Entry.of(PORTAL_SERVER_CORE_THREADS, ValueType.INTEGER),
                 Entry.of(PORTAL_SERVER_SHARED_SECRET, ValueType.STRING),
+                /* redirect configurations. */
+                Entry.of(REDIRECT_USER_IP, ValueType.STRING),
+                Entry.of(REDIRECT_USER_MAC, ValueType.STRING),
+                Entry.of(REDIRECT_NAS_IP, ValueType.STRING),
         };
 
         <T>T valueOf(String entry) {

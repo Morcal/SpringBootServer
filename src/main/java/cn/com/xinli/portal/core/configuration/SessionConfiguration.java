@@ -8,11 +8,28 @@ package cn.com.xinli.portal.core.configuration;
  * @author zhoupeng 2016/1/29.
  */
 public class SessionConfiguration {
+    /** Server enabled session ttl. if enabled, session will be removed
+     * when it reaches ttl.
+     */
     private boolean enableTtl;
+
+    /** Time to live. */
     private int ttl;
+
+    /** Server enabled heart-beat. if true, no-heart-beat session will be removed
+     * when certain time elapsed.  */
     private boolean enableHeartbeat;
+
+    /** Server suggests heart-beat interval in seconds. */
     private int heartbeatInterval;
+
+    /** Server allowed minimum update interval in seconds,
+     * if incoming update interval less than this value, server will
+     * respond an error to originate client.
+     */
     private int minUpdateInterval;
+
+    /** Session token time to live in seconds. */
     private int tokenTtl;
 
     public boolean isEnableTtl() {

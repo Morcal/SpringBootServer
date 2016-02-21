@@ -50,6 +50,7 @@ public class HuaweiNasTest {
         version = Version.V2;
         port = 2003;
         authType = AuthType.CHAP;
+        authType = AuthType.PAP;
         sharedSecret = "aaa";
         endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
         credentials = Credentials.of("test0", "test0", "127.0.0.1", "mac");
@@ -68,7 +69,7 @@ public class HuaweiNasTest {
 
     @Test
     public void testHuaweiNas() throws IOException, InterruptedException, TransportException {
-        endpoint.setPort(2000);
+        endpoint.setPort(2010);
         logger.debug("endpoint: {}", endpoint);
 
         PortalServer server = HuaweiPortal.createNas(endpoint);
@@ -76,8 +77,8 @@ public class HuaweiNasTest {
 
         //Thread.sleep(100L);
 
-        final Connector client = HuaweiPortal.getConnector(endpoint);
-        ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+        final Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpoint);
+        ExtendedInformation extendedInformation = client.login(credentials);
         Assert.assertNotNull(extendedInformation);
 
         client.logout(credentials, extendedInformation);
@@ -109,9 +110,9 @@ public class HuaweiNasTest {
     }
 
     private void concurrentRun(final Credentials credentials) throws IOException, TransportException {
-        final Connector client = HuaweiPortal.getConnector(endpoint);
+        final Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpoint);
         for (int i = 0; i < RUN_TIMES; i ++) {
-            ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+            ExtendedInformation extendedInformation = client.login(credentials);
             Assert.assertNotNull(extendedInformation);
 
             client.logout(credentials, extendedInformation);

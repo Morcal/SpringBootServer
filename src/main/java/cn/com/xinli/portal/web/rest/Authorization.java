@@ -6,13 +6,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Authorization.
  *
- * Project: rest-api
+ * <p>This class defines all authorization information server respond to clients.
+ *
+ * <p>Project: xpws.
  *
  * @author zhoupeng 2015/12/13.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Authorization {
     /** Token string. */
+    @JsonProperty
     private String token;
 
     /** Token type. */
@@ -32,6 +35,7 @@ public class Authorization {
     private long expiresIn;
 
     /** Authorization scope. */
+    @JsonProperty
     private String scope;
 
     public String getToken() {

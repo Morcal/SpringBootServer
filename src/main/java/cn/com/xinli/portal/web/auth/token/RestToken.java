@@ -14,16 +14,16 @@ import org.springframework.security.core.token.Token;
  * @author zhoupeng 2015/12/12.
  */
 public final class RestToken implements Token {
-    /** SessionToken key. */
+    /** Rest Token key. */
     private final String key;
 
-    /** SessionToken creation time. */
+    /** Rest Token creation time. */
     private final long creationTime;
 
-    /** SessionToken scope. */
+    /** Rest Token scope. */
     private final TokenScope scope;
 
-    /** SessionToken type. */
+    /** Rest Token type. */
     private final String type;
 
     /** Extended information. */
