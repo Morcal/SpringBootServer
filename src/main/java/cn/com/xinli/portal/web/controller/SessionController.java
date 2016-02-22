@@ -29,8 +29,13 @@ public interface SessionController {
      * <p>Only request authenticated with role of {@link RestRole#USER}
      * and has authority of this session can proceed.
      *
-     * @param ip source ip address.
-     * @param mac source mac address.
+     * @param username username.
+     * @param password password.
+     * @param ip ip address.
+     * @param mac mac address.
+     * @param os client operation system name.
+     * @param version client version.
+     * @param url redirect url.
      * @param principal spring security principal.
      * @return JSON.
      */
@@ -40,7 +45,7 @@ public interface SessionController {
                          String mac,
                          String os,
                          String version,
-                         String context,
+                         String url,
                          Principal principal)
             throws PortalException;
 

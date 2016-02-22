@@ -118,7 +118,7 @@ public class SessionActivityAspect {
 
     /**
      * Define method pointcut for
-     * {@link SessionController#connect(String, String, String, String, String, String, Principal)}.
+     * {@link SessionController#connect(String, String, String, String, String, String, String, Principal)}.
      */
     @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.connect(..))")
     public void connect() {}
@@ -146,7 +146,7 @@ public class SessionActivityAspect {
 
     /**
      * Define method pointcut for
-     * {@link SessionController#find(String, String, Principal)}.
+     * {@link SessionController#find(String, String, String, Principal)}.
      */
     @Pointcut("execution(* cn.com.xinli.portal.web.controller.SessionController.find(..))")
     public void find() {}
@@ -184,18 +184,19 @@ public class SessionActivityAspect {
     }
 
     /**
-     * Save activity log after {@link SessionController#update(long, long, Principal)}
+     * Save activity log after {@link SessionController#find(String, String, String, Principal)}
      * returns normally.
      *
      * @param ip ip address.
      * @param mac mac address.
+     * @param context portal context.
      * @param principal spring security principal.
      */
     @AfterReturning(
-            value = "inSessionController() && find() && args(ip,mac,principal)",
-            argNames = "ip,mac,principal,returning",
+            value = "inSessionController() && find() && args(ip,mac,context,principal)",
+            argNames = "ip,mac,context,principal,returning",
             returning = "returning")
-    public void recordFind(String ip, String mac, Principal principal, RestResponse returning) {
+    public void recordFind(String ip, String mac, String context, Principal principal, RestResponse returning) {
         saveActivity(ip, mac, returning.toString());
     }
 
@@ -272,7 +273,7 @@ public class SessionActivityAspect {
 
     /**
      * Save activity log after
-     * {@link SessionController#connect(String, String, String, String, String, String, Principal)}
+     * {@link SessionController#connect(String, String, String, String, String, String, String, Principal)}
      * returns normally.
      *
      * @param username username.
@@ -281,12 +282,13 @@ public class SessionActivityAspect {
      * @param mac mac address.
      * @param os client operation system name.
      * @param version client version.
+     * @param url redirect url.
      * @param principal spring security principal.
      * @param returning server response.
      */
     @AfterReturning(
-            value = "inSessionController() && connect() && args(username,password,ip,mac,os,version,principal)",
-            argNames = "username,password,ip,mac,os,version,principal,returning",
+            value = "inSessionController() && connect() && args(username,password,ip,mac,os,version,url,principal)",
+            argNames = "username,password,ip,mac,os,version,url,principal,returning",
             returning = "returning")
     public void recordConnect(String username,
                               String password,
@@ -294,6 +296,7 @@ public class SessionActivityAspect {
                               String mac,
                               String os,
                               String version,
+                              String url,
                               Principal principal,
                               RestResponse returning) {
         if (logger.isTraceEnabled()) {
@@ -306,7 +309,7 @@ public class SessionActivityAspect {
 
     /**
      * Save activity log after
-     * {@link SessionController#connect(String, String, String, String, String, String, Principal)}
+     * {@link SessionController#connect(String, String, String, String, String, String, String, Principal)}
      * returns normally.
      *
      * @param username username.
@@ -315,12 +318,13 @@ public class SessionActivityAspect {
      * @param mac mac address.
      * @param os client operation system name.
      * @param version client version.
+     * @param url redirect url.
      * @param principal spring security principal.
      * @param cause exception.
      */
     @AfterThrowing(
-            value = "inSessionController() && connect() && args(username,password,ip,mac,os,version,principal)",
-            argNames = "username,password,ip,mac,os,version,principal,cause",
+            value = "inSessionController() && connect() && args(username,password,ip,mac,os,version,url,principal)",
+            argNames = "username,password,ip,mac,os,version,url,principal,cause",
             throwing = "cause")
     public void recordConnectError(String username,
                                    String password,
@@ -328,6 +332,7 @@ public class SessionActivityAspect {
                                    String mac,
                                    String os,
                                    String version,
+                                   String url,
                                    Principal principal,
                                    Throwable cause) {
         if (logger.isTraceEnabled()) {
