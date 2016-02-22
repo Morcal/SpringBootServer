@@ -76,8 +76,8 @@ public class HuaweiNasTest {
 
         //Thread.sleep(100L);
 
-        final Connector client = HuaweiPortal.getConnector(endpoint);
-        ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+        final Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpoint);
+        ExtendedInformation extendedInformation = client.login(credentials);
         Assert.assertNotNull(extendedInformation);
 
         client.logout(credentials, extendedInformation);
@@ -109,9 +109,9 @@ public class HuaweiNasTest {
     }
 
     private void concurrentRun(final Credentials credentials) throws IOException, TransportException {
-        final Connector client = HuaweiPortal.getConnector(endpoint);
+        final Connector<ExtendedInformation> client = HuaweiPortal.getConnector(endpoint);
         for (int i = 0; i < RUN_TIMES; i ++) {
-            ExtendedInformation extendedInformation = (ExtendedInformation) client.login(credentials);
+            ExtendedInformation extendedInformation = client.login(credentials);
             Assert.assertNotNull(extendedInformation);
 
             client.logout(credentials, extendedInformation);

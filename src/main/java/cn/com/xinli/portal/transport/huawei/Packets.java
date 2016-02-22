@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.transport.AddressUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +116,8 @@ public final class Packets {
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
         attrs++;
         if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(AttributeType.USER_MAC, credentials.getUsername().getBytes());
+            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
 
@@ -151,7 +153,8 @@ public final class Packets {
             packet.setAuthType(AuthType.CHAP.code());
             packet.setIp(getIp4Address(credentials.getIp()));
             if (!StringUtils.isEmpty(credentials.getMac())) {
-                packet.addAttribute(AttributeType.USER_MAC, credentials.getMac().getBytes());
+                final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+                packet.addAttribute(AttributeType.USER_MAC, mac);
                 attrs++;
             }
             packet.setAttrs(attrs);
@@ -187,7 +190,8 @@ public final class Packets {
         packet.addAttribute(AttributeType.PASSWORD, credentials.getPassword().getBytes());
         attrs++;
         if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(AttributeType.USER_MAC, credentials.getUsername().getBytes());
+            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
         packet.setAttrs(attrs);
@@ -326,7 +330,7 @@ public final class Packets {
      * @return packet.
      */
     public static Packet newChallengeAck(InetAddress nasAddress,
-                                         String challenge,
+                                         byte[] challenge,
                                          int reqId,
                                          ChallengeError error,
                                          Packet request) {
@@ -342,9 +346,11 @@ public final class Packets {
         response.setPort(request.getPort());
         response.setReserved(request.getReserved());
         response.setError(error.code());
-        response.setAttrs(2);
-        response.addAttribute(AttributeType.CHALLENGE, challenge.getBytes());
-        response.addAttribute(AttributeType.BAS_IP, nasAddress.getAddress());
+        response.setAttrs(1);
+        //response.setAttrs(2);
+        response.addAttribute(AttributeType.CHALLENGE, challenge);
+        // uncomment this line to mimic h3c vbras
+        // response.addAttribute(AttributeType.BAS_IP, nasAddress.getAddress());
 
         return response;
     }

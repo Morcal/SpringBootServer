@@ -45,22 +45,6 @@ public final class ByteBufferCodecFactory implements CodecFactory<Packet> {
     /**
      * Calculate authenticator.
      *
-     * @param buffer content buffer.
-     * @param authenticator authenticator.
-     * @param sharedSecret shared secret.
-     * @return authenticator.
-     */
-    private static byte[] calculateAuthenticator(ByteBuffer buffer, byte[] authenticator, String sharedSecret) {
-        if (!buffer.hasArray())
-            return new byte[0];
-
-        byte[] data = Arrays.copyOfRange(buffer.array(), 0, buffer.remaining());
-        return calculateAuthenticator(data, authenticator, sharedSecret);
-    }
-
-    /**
-     * Calculate authenticator.
-     *
      * <p><code>Authenticator = MD5(16bytes + 16bytes of 0 + attributes + shared secret)</code>
      *
      * @param data data.
@@ -87,17 +71,17 @@ public final class ByteBufferCodecFactory implements CodecFactory<Packet> {
             buf.putLong(0L);
         }
 
-        if (!StringUtils.isEmpty(sharedSecret)) {
-            buf.put(sharedSecret.getBytes());
-        }
-
         if (data.length > 32) {
             buf.put(data, 32, data.length - 32);
         }
 
+        if (!StringUtils.isEmpty(sharedSecret)) {
+            buf.put(sharedSecret.getBytes());
+        }
+
         buf.flip();
 
-        return Packets.md5sum(buf.array());
+        return Packets.md5sum(Arrays.copyOfRange(buf.array(), 0, buf.remaining()));
     }
 
     /**
@@ -201,7 +185,7 @@ public final class ByteBufferCodecFactory implements CodecFactory<Packet> {
                 throw new IllegalArgumentException("Not enough space buffer buffer.");
             }
 
-            System.arraycopy(authenticator, 0, buffer.duplicate().array(), 16, 16);
+            System.arraycopy(authenticator, 0, buffer.array(), 16, 16);
         }
 
         /**
@@ -245,7 +229,10 @@ public final class ByteBufferCodecFactory implements CodecFactory<Packet> {
 
             if (packet.getVersion() == Version.V2.value()) {
                 /* Calculate authenticator. */
-                byte[] result = calculateAuthenticator(buffer, authenticator, sharedSecret);
+                byte[] result = calculateAuthenticator(
+                        Arrays.copyOfRange(buffer.array(), 0, buffer.position()),
+                        authenticator,
+                        sharedSecret);
                 if (result.length < 1) {
                     throw new RuntimeException("Invalid calculated authenticator.");
                 }

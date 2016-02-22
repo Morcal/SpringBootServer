@@ -5,6 +5,9 @@ import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.huawei.nio.ByteBufferCodecFactory;
 import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
+import cn.com.xinli.portal.util.CodecUtils;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +35,10 @@ public class PacketTest {
     Credentials credentials;
     ByteBufferCodecFactory codecFactory;
 
+    String byteBufferToHexString(ByteBuffer buffer) {
+        return CodecUtils.bytesToHexString(Arrays.copyOfRange(buffer.array(), 0, buffer.remaining()));
+    }
+
     @Before
     public void setup() throws UnknownHostException {
         credentials = Credentials.of("zhoup", "123456", "192.168.3.26", "20cf-30bb-e9af");
@@ -51,6 +58,7 @@ public class PacketTest {
         //Packet papAuth = client.createPapAuthPacket(credentials);
         Packet papAuth = client.createRequest(RequestType.REQ_AUTH, credentials, null, 1);
         ByteBuffer buffer = codecFactory.getEncoder().encode(papAuth, endpoint.getSharedSecret());
+        logger.debug("PAP auth buffer: {}", byteBufferToHexString(buffer));
         buffer.rewind();
         Packet decoded = codecFactory.getDecoder().decode(buffer, endpoint.getSharedSecret());
 
@@ -67,9 +75,11 @@ public class PacketTest {
         DatagramConnector client = (DatagramConnector) HuaweiPortal.getConnector(endpoint);
         Packet chapReq = Packets.newChapReq(Version.V2, credentials, 1);
         Packet chapAck = Packets.newChallengeAck(
-                InetAddress.getLocalHost(), "challenge-value", 1, ChallengeError.OK, chapReq);
+                InetAddress.getLocalHost(), "challenge-value".getBytes(), 1, ChallengeError.OK, chapReq);
         Packet chapAuth = client.createRequest(RequestType.REQ_AUTH, credentials, chapAck, null, 1);
         ByteBuffer buffer = codecFactory.getEncoder().encode(chapAuth, endpoint.getSharedSecret());
+
+        logger.debug("CHAP auth buffer: {}", byteBufferToHexString(buffer));
         buffer.rewind();
         Packet decoded = codecFactory.getDecoder().decode(buffer, endpoint.getSharedSecret());
 
@@ -78,5 +88,83 @@ public class PacketTest {
 
         Assert.assertEquals(chapAuth.toString(), decoded.toString());
         logger.debug("decoded: {}", decoded);
+    }
+
+    @Test
+    public void testChallengePacket() throws IOException {
+        final String sharedSecret = "1234567890123456";
+        final Credentials credentials = Credentials.of("web@default0", "123456", "172.75.100.253", "");
+        Packet challenge = Packets.newChapReq(Version.V2, credentials, 4);
+        ByteBuffer buffer = codecFactory.getEncoder().encode(challenge, sharedSecret);
+
+        final String result = byteBufferToHexString(buffer);
+        logger.debug("result: {}", result);
+
+        Assert.assertEquals(
+                "02 01 00 00 00 04 00 00 ac 4b 64 fd 00 00 00 00 " +
+                "e8 0d a1 b2 79 f3 b5 f2 e8 cb c2 dd 32 4f 56 dd", result);
+    }
+
+    @Test
+    public void testChallengeAckMd5() throws DecoderException {
+        final String in = "02 02 00 00 00 04 00 02 ac 4b 64 fd 00 00 00 01 e8 0d a1 b2 79 f3 b5 f2 e8 cb c2 dd 32 4f 56 dd 03 12 bb 0b cd 57 41 5d 3d b7 b7 cd 5b 39 3f c1 29 e3".replace(" ", "").trim();
+        final String sharedSecret = "1234567890123456";
+        final byte[] i = Hex.decodeHex(in.toCharArray());
+        byte[] content  = new byte[i.length + sharedSecret.getBytes().length];
+        System.arraycopy(i, 0, content, 0, i.length);
+        System.arraycopy(sharedSecret.getBytes(), 0, content, i.length, sharedSecret.getBytes().length);
+        final byte[] r = Packets.md5sum(content);
+
+        final String rs = CodecUtils.bytesToHexString(r);
+        logger.debug("result: {}", rs);
+        Assert.assertEquals("4e 1f f4 eb 21 57 50 bc 1d 4a a4 e4 8b 25 76 11", rs);
+    }
+
+    @Test
+    public void testChallengeAckPacket() throws IOException, DecoderException {
+        final String cbs = "bb 0b cd 57 41 5d 3d b7 b7 cd 5b 39 3f c1 29 e3".replace(" ", "").trim();
+        final byte[] chb = Hex.decodeHex(cbs.toCharArray());
+        final String s = CodecUtils.bytesToHexString(chb);
+        logger.debug("challenge: {}", s);
+        final String sharedSecret = "1234567890123456";
+        final Credentials credentials = Credentials.of("web@default0", "123456", "172.75.100.253", "");
+        Packet req = Packets.newChapReq(Version.V2, credentials, 4);
+        codecFactory.getEncoder().encode(req, sharedSecret);
+
+        // request authenticator: e8 0d a1 b2 79 f3 b5 f2 e8 cb c2 dd 32 4f 56 dd
+        assert req != null;
+        final byte[] authenticator = req.getAuthenticator();
+        logger.debug("request authenticator: {}", CodecUtils.bytesToHexString(authenticator));
+
+        Packet ack = Packets.newChallengeAck(
+                InetAddress.getByName(credentials.getIp()),
+                chb,
+                2,
+                ChallengeError.OK,
+                req);
+        //.Version.V2, credentials, 4);
+        ByteBuffer buffer = codecFactory.getEncoder().encode(authenticator, ack, sharedSecret);
+
+        final String result = byteBufferToHexString(buffer);
+        logger.debug("result: {}", result);
+
+        Assert.assertEquals(
+                "02 02 00 00 00 04 00 02 ac 4b 64 fd 00 00 00 01 " +
+                "4e 1f f4 eb 21 57 50 bc 1d 4a a4 e4 8b 25 76 11 " +
+                "03 12 bb 0b cd 57 41 5d 3d b7 b7 cd 5b 39 3f c1 " +
+                "29 e3",
+                result);
+    }
+
+    @Test
+    public void testChapAuthPacket() throws IOException {
+        final String sharedSecret = "1234567890123456";
+        final Credentials credentials = Credentials.of("web@default0", "123456", "172.75.100.253", "");
+        Packet req = Packets.newChapReq(Version.V2, credentials, 1);
+        ByteBuffer buffer = codecFactory.getEncoder().encode(req, sharedSecret);
+
+        final String result = byteBufferToHexString(buffer);
+        logger.debug("result: {}", result);
+
     }
 }

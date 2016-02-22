@@ -132,13 +132,13 @@ final class HuaweiPortalServer implements PortalServer {
         if (error ==  ChallengeError.OK) {
             String challenge = results.get(0);
             ack = Packets.newChallengeAck(
-                    endpoint.getAddress(), challenge, req, error, request);
+                    endpoint.getAddress(), challenge.getBytes(), req, error, request);
             if (logger.isDebugEnabled()) {
                 logger.debug("[NAS] challenge created: {}.", challenge);
             }
         } else {
             ack = Packets.newChallengeAck(
-                    endpoint.getAddress(), "", req, error, request);
+                    endpoint.getAddress(), "challenge".getBytes(), req, error, request);
         }
 
         channel.send(codecFactory.getEncoder()

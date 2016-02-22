@@ -1,14 +1,18 @@
 package cn.com.xinli.portal.util;
 
 import cn.com.xinli.portal.Constants;
+import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.StringJoiner;
 
 /**
  * Codec utility.
@@ -65,5 +69,20 @@ public class CodecUtils {
             e.printStackTrace();
             return new byte[0];
         }
+    }
+
+    /**
+     * Convert bytes to hex string.
+     * @param bytes input bytes.
+     * @return hex string.
+     */
+    public static String bytesToHexString(byte[] bytes) {
+        String hex = Hex.encodeHexString(bytes);
+        StringJoiner joiner = new StringJoiner(" ");
+        for (int i = 0; i < hex.length(); i = i + 2) {
+            joiner.add(hex.substring(i, i + 2));
+        }
+
+        return joiner.toString();
     }
 }

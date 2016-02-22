@@ -128,7 +128,7 @@ public class EhcacheManagerAdapter {
      * @param ttl ttl in seconds.
      */
     public void createCache(String name, int maxEntries,
-                            EhcacheSearchable searchable,
+                            EhcacheSearchable<?> searchable,
                             boolean ttlEnabled,
                             int ttl) {
         CacheConfiguration cache = new CacheConfiguration();

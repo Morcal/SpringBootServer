@@ -9,6 +9,7 @@ import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionManager;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionService;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.web.auth.token.RestToken;
@@ -82,7 +83,8 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(defaultValue = "") String version,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
-        Credentials credentials = Credentials.of(username, password, ip, mac);
+        final String formatted = AddressUtil.formatMac(mac);
+        Credentials credentials = Credentials.of(username, password, ip, formatted);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
@@ -191,7 +193,8 @@ public class SessionControllerImpl implements SessionController {
                              @AuthenticationPrincipal Principal principal)
             throws SessionNotFoundException {
         RestResponse rs;
-        Optional<Session> opt = sessionService.find(ip, mac);
+        final String formatted = AddressUtil.formatMac(mac);
+        Optional<Session> opt = sessionService.find(ip, formatted);
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.successBuilder()
                     .setAccessAuthentication((AccessAuthentication) principal)
