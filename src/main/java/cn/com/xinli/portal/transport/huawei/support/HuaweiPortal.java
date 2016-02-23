@@ -4,10 +4,7 @@ import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.transport.Connector;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.TransportException;
-import cn.com.xinli.portal.transport.huawei.ConnectorHandler;
-import cn.com.xinli.portal.transport.huawei.Endpoint;
-import cn.com.xinli.portal.transport.huawei.ExtendedInformation;
-import cn.com.xinli.portal.transport.huawei.ServerHandler;
+import cn.com.xinli.portal.transport.huawei.*;
 import cn.com.xinli.portal.transport.huawei.nio.ByteBufferCodecFactory;
 import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 
@@ -39,7 +36,7 @@ public class HuaweiPortal {
     private static final ByteBufferCodecFactory codecFactory = new ByteBufferCodecFactory();
 
     /** Connectors. */
-    private static final Map<Endpoint, Connector<ExtendedInformation>> connectors = new ConcurrentHashMap<>();
+    private static final Map<Endpoint, Connector<RequestContext>> connectors = new ConcurrentHashMap<>();
 
     /** Sole constructor. */
     private HuaweiPortal() {
@@ -70,7 +67,7 @@ public class HuaweiPortal {
      * @param endpoint huawei portal endpoint.
      * @return portal client.
      */
-    public static Connector<ExtendedInformation> getConnector(Endpoint endpoint)
+    public static Connector<RequestContext> getConnector(Endpoint endpoint)
             throws TransportException {
         Objects.requireNonNull(endpoint, Endpoint.EMPTY_ENDPOINT);
 

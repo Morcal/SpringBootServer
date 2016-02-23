@@ -7,12 +7,16 @@ import java.util.Optional;
 /**
  * Portal web server session service.
  *
- * Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/2.
  */
 public interface SessionService {
+    /**
+     * Initialize session service.
+     */
     void init();
+
     /**
      * Get session by id.
      *
@@ -48,10 +52,12 @@ public interface SessionService {
 
     /**
      * Remove session by ip address.
+     *
+     * <p>This method supports removing session when NAS/BRAS notified portal server
+     * that certain user already disconnected.
      * @param nasIp  nas ip address.
      * @param userIp user ip address.
      * @throws PortalException
      */
     void removeSession(String nasIp, String userIp) throws PortalException;
-
 }
