@@ -67,7 +67,7 @@ public final class Packets {
         buffer.put(password);
         buffer.put(challenge);
         buffer.flip();
-        return md5sum(buffer.array());
+        return md5sum(Arrays.copyOfRange(buffer.array(), 0, buffer.remaining()));
     }
 
     /**
