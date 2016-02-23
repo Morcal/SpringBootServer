@@ -64,7 +64,7 @@ public final class DatagramConnector extends AbstractConnector {
                     .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from endpoint timeout, endpoint: {}", endpoint);
+            logger.warn("* Receive from endpoint timeout, endpoint: {}, request: {}", endpoint, request);
             return Optional.empty();
         } finally {
             if (socket != null) {

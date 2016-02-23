@@ -85,7 +85,7 @@ public final class Packet {
             if (attribute.getType() == type.code())
                 return attribute.getValue();
         }
-        return null;
+        return new byte[0];
     }
 
     /** HUAWEI packet attribute (TLV). */

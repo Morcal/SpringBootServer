@@ -1,8 +1,8 @@
 package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.PortalServer;
+import cn.com.xinli.portal.transport.TransportException;
 import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
 import org.junit.Assert;
@@ -57,12 +57,11 @@ public class HuaweiPortalServerTest {
         final Endpoint endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
         final DatagramConnector client = (DatagramConnector) HuaweiPortal.getConnector(endpoint);
         final String clientIp = "192.168.3.26";
-        final byte[] ip = Packets.getIp4Address(clientIp);
 
         final PortalServer server = HuaweiPortal.createServer(endpoint, new PortalHandler());
         server.start();
 
-        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.CHAP, endpoint.getAddress(), ip, 1);
+        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.CHAP, endpoint.getAddress(), clientIp, 1);
         Optional<Packet> response = client.request(ntfLogout);
         Assert.assertNotNull(response);
         Assert.assertTrue(response.isPresent());
@@ -82,12 +81,11 @@ public class HuaweiPortalServerTest {
         final Endpoint endpoint = Endpoint.of(version, address, port, authType, sharedSecret);
         final DatagramConnector client = (DatagramConnector) HuaweiPortal.getConnector(endpoint);
         final String clientIp = "192.168.3.26";
-        final byte[] ip = Packets.getIp4Address(clientIp);
 
         final PortalServer server = HuaweiPortal.createServer(endpoint, new PortalHandler());
         server.start();
 
-        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.PAP, endpoint.getAddress(), ip, 1);
+        Packet ntfLogout = Packets.newNtfLogout(Version.V2, AuthType.PAP, endpoint.getAddress(), clientIp, 1);
         Optional<Packet> response = client.request(ntfLogout);
         Assert.assertNotNull(response);
         Assert.assertTrue(response.isPresent());
