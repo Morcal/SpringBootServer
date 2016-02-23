@@ -50,7 +50,7 @@ public class RedirectServiceSupport implements RedirectService {
                     userIp, userMac, nasIp);
         }
 
-        userMac = StringUtils.isEmpty(userMac) ? "" : AddressUtil.trimMac(userMac);
+        userMac = StringUtils.isEmpty(userMac) ? "" : AddressUtil.formatMac(userMac);
 
         if (StringUtils.isEmpty(userIp)) {
             throw new RemoteException(PortalError.INVALID_REQUEST, "redirect url user ip missing");
@@ -58,7 +58,7 @@ public class RedirectServiceSupport implements RedirectService {
 
         if (!StringUtils.equals(userIp, ip) ||
                 (!StringUtils.isEmpty(userMac) && !StringUtils.isEmpty(mac) &&
-                !StringUtils.equals(userMac, AddressUtil.trimMac(mac)))) {
+                !StringUtils.equals(userMac, AddressUtil.formatMac(mac)))) {
             throw new RemoteException(PortalError.NAT_NOT_ALLOWED);
         }
 

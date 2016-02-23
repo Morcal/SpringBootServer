@@ -64,17 +64,17 @@ public class InternalServerHandler implements ServerHandler {
     @Override
     public LogoutError ntfLogout(String nasIp, String userIp) throws IOException {
         if (logger.isTraceEnabled()) {
-            logger.trace("NAS NtfLogout, nas:{}, user:{}", nasIp, userIp);
+            logger.trace("NAS NtfLogout, nas:{}, user ip:{}", nasIp, userIp);
         }
 
         try {
             sessionService.removeSession(nasIp, userIp);
             if(logger.isDebugEnabled()) {
-                logger.debug("NTF_LOGOUT nas:{}, user:{}", nasIp, userIp);
+                logger.debug("NTF_LOGOUT nas:{}, user ip:{}", nasIp, userIp);
             }
             return LogoutError.OK;
         } catch (NasNotFoundException e) {
-            logger.error("Failed to remove session, nas:{}, user:{}", nasIp, userIp, e);
+            logger.error("Failed to remove session, nas:{}, user:{}", nasIp, userIp);
             return LogoutError.FAILED;
         } catch (PortalException e) {
             return LogoutError.GONE;

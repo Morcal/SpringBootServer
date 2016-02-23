@@ -1,20 +1,18 @@
 package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.transport.AddressUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * HUAWEI portal packet helper.
@@ -66,29 +64,17 @@ public final class Packets {
         buffer.put(password);
         buffer.put(challenge);
         buffer.flip();
-        return md5sum(buffer.array());
-    }
-
-    /**
-     * Get ipv4 address in bytes.
-     *
-     * <p>FIXME: can't apply on ipv6 address.
-     *
-     * @param ip ipv4 address in form of "xxx.xxx.xxx.xxx".
-     * @return ipv4 address in bytes.
-     * @throws UnknownHostException
-     */
-    static byte[] getIp4Address(String ip) throws IOException {
-        byte[] bytes = InetAddress.getByName(ip).getAddress();
-        if (bytes.length > 4) {
-            return Arrays.copyOfRange(bytes, bytes.length - 4, bytes.length);
-        } else {
-            return Arrays.copyOf(bytes, 4);
-        }
+        return md5sum(Arrays.copyOfRange(buffer.array(), 0, buffer.remaining()));
     }
 
     /**
      * Create HUAWEI portal CHAP authentication packet.
+     *
+     * <p>Packet requires {@link AttributeType#USER_NAME} and {@link AttributeType#CHALLENGE_PASSWORD}.
+     * {@link AttributeType#USER_MAC} is optional,
+     * {@link AttributeType#USER_IPV6} is optional.
+     * {@link AttributeType#CHAP_ID} is optional.
+     * {@link AttributeType#TEXT_INFO} is optional.
      *
      * <p><code>CHAP password = MD5(CHAP id + Password + Challenge)</code>
      *
@@ -111,11 +97,12 @@ public final class Packets {
         packet.setAuthType(AuthType.CHAP.code());
         packet.setSerialNum(serialNum);
         packet.setReqId(ack.getReqId());
-        packet.setIp(getIp4Address(credentials.getIp()));
+        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
         attrs++;
         if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(AttributeType.USER_MAC, credentials.getUsername().getBytes());
+            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
 
@@ -132,7 +119,7 @@ public final class Packets {
     }
 
     /**
-     * Create challenge request packet.
+     * Create <code>REQ_CHALLENGE</code> packet.
      *
      * @param version protocol version.
      * @param credentials user credentials.
@@ -142,28 +129,29 @@ public final class Packets {
      */
     public static Packet newChapReq(Version version, Credentials credentials, int serialNum)
             throws IOException {
-        try {
-            int attrs = 0;
-            Packet packet = new Packet();
-            packet.setVersion(version.value());
-            packet.setType(RequestType.REQ_CHALLENGE.code());
-            packet.setSerialNum(serialNum);
-            packet.setAuthType(AuthType.CHAP.code());
-            packet.setIp(getIp4Address(credentials.getIp()));
-            if (!StringUtils.isEmpty(credentials.getMac())) {
-                packet.addAttribute(AttributeType.USER_MAC, credentials.getMac().getBytes());
-                attrs++;
-            }
-            packet.setAttrs(attrs);
-            return packet;
-        } catch (UnknownHostException e) {
-            logger.error("Unknown host", e);
-            return null;
+        int attrs = 0;
+        Packet packet = new Packet();
+        packet.setVersion(version.value());
+        packet.setType(RequestType.REQ_CHALLENGE.code());
+        packet.setSerialNum(serialNum);
+        packet.setAuthType(AuthType.CHAP.code());
+        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
+        if (!StringUtils.isEmpty(credentials.getMac())) {
+            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            packet.addAttribute(AttributeType.USER_MAC, mac);
+            attrs++;
         }
+        packet.setAttrs(attrs);
+        return packet;
     }
 
     /**
      * Create PAP authentication packet.
+     *
+     * <p>Packet requires {@link AttributeType#USER_NAME} and {@link AttributeType#PASSWORD}.
+     * {@link AttributeType#USER_MAC} is optional,
+     * {@link AttributeType#USER_IPV6} is optional.
+     * {@link AttributeType#TEXT_INFO} is optional.
      *
      * @param version protocol version.
      * @param credentials user credentials.
@@ -181,13 +169,14 @@ public final class Packets {
         packet.setReserved(0);
         packet.setReqId(0);
         packet.setAuthType(AuthType.PAP.code());
-        packet.setIp(getIp4Address(credentials.getIp()));
+        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
         attrs++;
         packet.addAttribute(AttributeType.PASSWORD, credentials.getPassword().getBytes());
         attrs++;
         if (StringUtils.isEmpty(credentials.getMac())) {
-            packet.addAttribute(AttributeType.USER_MAC, credentials.getUsername().getBytes());
+            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
         packet.setAttrs(attrs);
@@ -208,6 +197,7 @@ public final class Packets {
      * @param version protocol version.
      * @param authType authentication type.
      * @param credentials user credentials.
+     * @param context context.
      * @param serialNum serial number.
      * @return logout request packet,
      * or null if ip address in credentials is unknown.
@@ -216,15 +206,15 @@ public final class Packets {
     public static Packet newLogout(Version version,
                                    AuthType authType,
                                    Credentials credentials,
-                                   ExtendedInformation extendedInformation,
+                                   RequestContext context,
                                    int serialNum) throws IOException {
         Packet packet = new Packet();
         packet.setVersion(version.value());
         packet.setType(RequestType.REQ_LOGOUT.code());
         packet.setAuthType(authType.code());
         packet.setSerialNum(serialNum);
-        packet.setReqId(extendedInformation.getRequestId());
-        packet.setIp(getIp4Address(credentials.getIp()));
+        packet.setReqId(context.getRequestId());
+        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
         packet.setPort(0);
         packet.setError(LogoutRequestError.REQUEST.code());
         packet.setAttrs(0);
@@ -232,13 +222,13 @@ public final class Packets {
     }
 
     /**
-     * Create affirmative acknowledge packet.
+     * Create <code>AFF_ACK_AUTH</code> packet.
      *
      * @param version protocol version.
      * @param response response packet from remote.
      * @return packet.
      */
-    public static Packet newAffAck(Version version, Packet response) {
+    public static Packet newAffAckAuth(Version version, Packet response) {
         Objects.requireNonNull(response, cn.com.xinli.nio.Packet.EMPTY_PACKET);
         Packet ack = new Packet();
         ack.setVersion(version.value());
@@ -280,7 +270,9 @@ public final class Packets {
     }
 
     /**
-     * Create authentication ack response packet.
+     * Create <code>ACK_AUTH</code> packet.
+     *
+     * <p><code>ACK_AUTH</code> requires BAS_IP in attributes.
      *
      * @param nasAddress nas address.
      * @param reqId request id.
@@ -314,9 +306,9 @@ public final class Packets {
     }
 
     /**
-     * Create challenge response packet.
+     * Create <code>ACK_CHALLENGE</code> packet.
      *
-     * <p>H3C vBRAS will response with a bas ip attribute.
+     * <p><code>ACK_CHALLENGE</code> requires BAS_IP in attributes.
      *
      * @param nasAddress nas address.
      * @param challenge challenge.
@@ -326,7 +318,7 @@ public final class Packets {
      * @return packet.
      */
     public static Packet newChallengeAck(InetAddress nasAddress,
-                                         String challenge,
+                                         byte[] challenge,
                                          int reqId,
                                          ChallengeError error,
                                          Packet request) {
@@ -343,14 +335,16 @@ public final class Packets {
         response.setReserved(request.getReserved());
         response.setError(error.code());
         response.setAttrs(2);
-        response.addAttribute(AttributeType.CHALLENGE, challenge.getBytes());
+        response.addAttribute(AttributeType.CHALLENGE, challenge);
         response.addAttribute(AttributeType.BAS_IP, nasAddress.getAddress());
 
         return response;
     }
 
     /**
-     * Create logout response packet.
+     * Create <code>ACK_LOGOUT</code> packet.
+     *
+     * <p><code>ACK_LOGOUT</code> requires BAS_IP in attributes.
      *
      * @param nasAddress nas address.
      * @param error logout error.
@@ -378,7 +372,9 @@ public final class Packets {
     }
 
     /**
-     * Create NTF_LOGOUT request packet.
+     * Create <code>NTF_LOGOUT</code> request packet.
+     *
+     * <p><code>NTF_LOGOUT</code> requires BAS_IP in attributes.
      *
      * @param version protocol version.
      * @param authType authentication type.
@@ -387,8 +383,11 @@ public final class Packets {
      * @param reqId request id.
      * @return packet.
      */
-    public static Packet newNtfLogout(Version version, AuthType authType,
-                                      InetAddress nasAddress, byte[] ip, int reqId) {
+    public static Packet newNtfLogout(Version version,
+                                      AuthType authType,
+                                      InetAddress nasAddress,
+                                      String ip,
+                                      int reqId) throws IOException {
         //LogoutRequestError
         Packet ntf = new Packet();
         ntf.setVersion(version.value());
@@ -396,7 +395,7 @@ public final class Packets {
         ntf.setAuthType(authType.code());
         ntf.setSerialNum(0);
         ntf.setReqId(reqId);
-        ntf.setIp(ip);
+        ntf.setIp(AddressUtils.getIp4Address(ip));
         ntf.setPort(0);
         ntf.setReserved(0);
         ntf.setError(LogoutRequestError.REQUEST.code());
@@ -406,94 +405,33 @@ public final class Packets {
     }
 
     /**
-     * Create NTF_LOGOUT request response ACK packet.
+     * Create <code>ACK_NTF_LOGOUT</code> request response ACK packet.
      *
+     * <p><code>ACK_NTF_LOGOUT</code> requires BAS_IP in attributes.
+     *
+     * @param nasAddress NAS address.
      * @param request original request.
      * @param error logout error.
      * @return packet.
      */
-    public static Packet newNtfLogoutAck(Packet request, LogoutError error) {
+    public static Packet newNtfLogoutAck(InetAddress nasAddress,
+                                         Packet request,
+                                         LogoutError error) {
         Objects.requireNonNull(request, cn.com.xinli.nio.Packet.EMPTY_PACKET);
         //LogoutRequestError
         Packet ntf = new Packet();
         ntf.setVersion(request.getVersion());
         ntf.setType(RequestType.ACK_NTF_LOGOUT.code());
         ntf.setAuthType(request.getAuthType());
-        ntf.setSerialNum(0);
+        ntf.setSerialNum(request.getSerialNum());
         ntf.setReqId(request.getReqId());
         ntf.setIp(request.getIp());
         ntf.setPort(request.getPort());
         ntf.setReserved(request.getReserved());
         ntf.setError(error.code());
+        ntf.setAttrs(1);
+        ntf.addAttribute(AttributeType.BAS_IP, nasAddress.getAddress());
         return ntf;
     }
 
-    /**
-     * Builder text content from HUAWEI portal packet.
-     *
-     * @return text content.
-     */
-    public static String buildText(Packet packet) {
-        Objects.requireNonNull(packet, cn.com.xinli.nio.Packet.EMPTY_PACKET);
-
-        try {
-            Optional<RequestType> type = RequestType.valueOf(packet.getType());
-
-            int error = packet.getError();
-
-            if (type.isPresent()) {
-                switch (type.get()) {
-                    case ACK_AUTH:
-                        return AuthError.valueOf(error).get().getDescription();
-
-                    case ACK_LOGOUT:
-                        return LogoutError.valueOf(error).get().getDescription();
-
-                    case ACK_CHALLENGE:
-                        return ChallengeError.valueOf(error).get().getDescription();
-
-                    default:
-                        return "Unknown";
-                }
-            } else {
-                return "Invalid packet type: " + packet.getType();
-            }
-        } catch (NoSuchElementException e) {
-            return "Unknown packet error, packet type: " + packet.getType() +
-                    ", error:" + packet.getError();
-        }
-    }
-
-    /**
-     * Get error from HUAWEI Packet.
-     *
-     * @return error string.
-     */
-    static String buildError(Packet packet) {
-        Objects.requireNonNull(packet, cn.com.xinli.nio.Packet.EMPTY_PACKET);
-
-        int error = packet.getError();
-        Optional<RequestType> type = RequestType.valueOf(packet.getType());
-        if (type.isPresent()) {
-            try {
-                switch (type.get()) {
-                    case REQ_CHALLENGE:
-                        return ChallengeError.valueOf(error).get().name();
-
-                    case REQ_AUTH:
-                        return AuthError.valueOf(error).get().name();
-
-                    case REQ_LOGOUT:
-                        return LogoutError.valueOf(error).get().name();
-                }
-            } catch (NoSuchElementException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Failed to parse error, type: {}, error: {}",
-                            type.get(), error);
-                }
-            }
-        }
-
-        return "unknown";
-    }
 }

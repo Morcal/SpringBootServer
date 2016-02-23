@@ -11,7 +11,7 @@ import java.io.IOException;
  *
  * @author zhoupeng 2015/12/22.
  */
-public interface Connector<T> {
+public interface Connector<T extends Context> {
     /**
      * Login.
      * @param credentials user credentials.
@@ -25,10 +25,10 @@ public interface Connector<T> {
     /**
      * Logout.
      * @param credentials user credentials.
-     * @param extendedInformation extended Information.
+     * @param context context.
      * @throws IOException
      * @throws TransportException
      * @throws NullPointerException if credentials is null.
      */
-    void logout(Credentials credentials, T extendedInformation) throws IOException, TransportException;
+    void logout(Credentials credentials, T context) throws IOException, TransportException;
 }

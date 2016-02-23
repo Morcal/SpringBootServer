@@ -82,7 +82,7 @@ public class DevEnvironment {
         logger.info("PWS environment initialized, {}", event);
         ensureJPortalCertificate();
         PortalServer huaweiNas = createHuaweiNas();
-        huaweiNas.start();
+        //huaweiNas.start();
     }
 
     PortalServer createHuaweiNas() throws NasNotFoundException, UnknownHostException {

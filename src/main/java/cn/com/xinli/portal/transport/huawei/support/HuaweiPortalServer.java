@@ -2,6 +2,7 @@ package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.nio.support.AbstractDatagramServer;
 import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.transport.AddressUtils;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.UnsupportedAuthenticationTypeException;
 import cn.com.xinli.portal.transport.huawei.*;
@@ -12,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -132,13 +132,13 @@ final class HuaweiPortalServer implements PortalServer {
         if (error ==  ChallengeError.OK) {
             String challenge = results.get(0);
             ack = Packets.newChallengeAck(
-                    endpoint.getAddress(), challenge, req, error, request);
+                    endpoint.getAddress(), challenge.getBytes(), req, error, request);
             if (logger.isDebugEnabled()) {
                 logger.debug("[NAS] challenge created: {}.", challenge);
             }
         } else {
             ack = Packets.newChallengeAck(
-                    endpoint.getAddress(), "", req, error, request);
+                    endpoint.getAddress(), "challenge".getBytes(), req, error, request);
         }
 
         channel.send(codecFactory.getEncoder()
@@ -302,12 +302,22 @@ final class HuaweiPortalServer implements PortalServer {
         byte[] ip = request.getIp();
         //byte[] mac = in.getAttribute(Enums.AttributeType.USER_MAC);
         String userIp = InetAddress.getByAddress(ip).getHostAddress();
-        String nasIp = ((InetSocketAddress) remote).getAddress().getHostAddress();
-        LogoutError error = handler.ntfLogout(nasIp, userIp);
-        Packet ack = Packets.newNtfLogoutAck(request, error);
-        ByteBuffer buf = codecFactory.getEncoder()
-                .encode(request.getAuthenticator(), ack, endpoint.getSharedSecret());
-        channel.send(buf, remote);
+
+        byte[] text = request.getAttribute(AttributeType.TEXT_INFO);
+        if (text.length > 0 && logger.isTraceEnabled()) {
+            logger.trace("NTF_LOGOUT TEXT: {}", new String(text));
+        }
+
+        // BAS_IP is mandatory.
+        byte[] nas = request.getAttribute(AttributeType.BAS_IP);
+        if (nas.length > 0) {
+            String nasIp = AddressUtils.getIp4Address(nas);
+            LogoutError error = handler.ntfLogout(nasIp, userIp);
+            Packet ack = Packets.newNtfLogoutAck(InetAddress.getByAddress(nas), request, error);
+            ByteBuffer buf = codecFactory.getEncoder()
+                    .encode(request.getAuthenticator(), ack, endpoint.getSharedSecret());
+            channel.send(buf, remote);
+        }
     }
 
     /** Internal datagram server. */

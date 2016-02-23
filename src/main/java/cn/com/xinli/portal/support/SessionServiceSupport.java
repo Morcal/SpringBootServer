@@ -110,19 +110,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         sessionStore.init();
     }
 
-//    /**
-//     * Session service queued session remover.
-//     */
-//    private void doRemoveSession(long id) {
-//        try {
-//            removeSession(id);
-//        } catch (PortalException e) {
-//            if (logger.isTraceEnabled()) {
-//                logger.trace("Session service remover error: {}", e.getMessage());
-//            }
-//        }
-//    }
-
     /**
      * Find session provider for nas.
      * @param nas nas.
@@ -184,6 +171,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         CredentialsTranslation translation = nas.getTranslation();
         if (translation != null) {
             credentials = translation.translate(credentials);
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("authenticating: {}", credentials);
         }
         SessionProvider provider = find(nas);
         Session session = provider.authenticate(nas, credentials);
@@ -303,11 +294,22 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         return sessionStore.get(id);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Delete session without logout. This method does not thrown any
+     * checked exceptions.
+     *
+     * @param nasIp nas ip.
+     * @param userIp user ip.
+     * @throws PortalException
+     */
     @Override
     public void removeSession(String nasIp, String userIp) throws PortalException {
         Set<Session> found = sessionStore.find(userIp);
         Optional<Session> session = found.stream().findFirst();
-        session.orElseThrow(() -> new SessionNotFoundException("ip: " + userIp));
-        removeSessionInternal(session.get());
+        if (session.isPresent()) {
+            sessionStore.delete(session.get().getId());
+        }
     }
 }

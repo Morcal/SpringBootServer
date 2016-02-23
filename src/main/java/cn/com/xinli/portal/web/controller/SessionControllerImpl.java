@@ -17,6 +17,7 @@ import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionManager;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionService;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
 import cn.com.xinli.portal.web.auth.token.ContextTokenService;
@@ -141,7 +142,8 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(name = "redirect_url") String redirectUrl,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
-        Credentials credentials = Credentials.of(username, password, ip, mac);
+        final String formatted = AddressUtil.formatMac(mac);
+        Credentials credentials = Credentials.of(username, password, ip, formatted);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
@@ -271,6 +273,7 @@ public class SessionControllerImpl implements SessionController {
                              @AuthenticationPrincipal Principal principal)
             throws PortalException {
         RestResponse rs;
+
         Token ctx = contextTokenService.verifyToken(context);
         if (ctx != null) {
             Context c = Context.parse(context);
@@ -280,6 +283,7 @@ public class SessionControllerImpl implements SessionController {
         }
 
         Optional<Session> opt = findSession(ctx, ip, mac);
+
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.successBuilder()
                     .setAccessAuthentication((AccessAuthentication) principal)

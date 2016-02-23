@@ -2,10 +2,7 @@ package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.nio.CodecFactory;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.transport.Connector;
-import cn.com.xinli.portal.transport.TransportException;
-import cn.com.xinli.portal.transport.UnsupportedAuthenticationTypeException;
-import cn.com.xinli.portal.transport.UnsupportedTransportException;
+import cn.com.xinli.portal.transport.*;
 import cn.com.xinli.portal.transport.huawei.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author zhoupeng 2015/12/22.
  */
-public abstract class AbstractConnector implements Connector<ExtendedInformation> {
+public abstract class AbstractConnector implements Connector<RequestContext> {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(AbstractConnector.class);
 
@@ -100,7 +97,7 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
      *
      * @param type request type.
      * @param credentials user credentials.
-     * @param extendedInformation extended Information.
+     * @param context context.
      * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
@@ -108,9 +105,9 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
      */
     public Packet createRequest(RequestType type,
                                  Credentials credentials,
-                                 ExtendedInformation extendedInformation,
+                                RequestContext context,
                                  int serialNum) throws IOException, TransportException {
-        return createRequest(type, credentials, null, extendedInformation, serialNum);
+        return createRequest(type, credentials, null, context, serialNum);
     }
 
     /**
@@ -124,7 +121,7 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
      * @param type request type.
      * @param credentials user credentials.
      * @param response previous response.
-     * @param extendedInformation extended Information.
+     * @param context extended context.
      * @param serialNum serial number.
      * @return request packet.
      * @throws IOException
@@ -133,7 +130,7 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
     public Packet createRequest(RequestType type,
                                  Credentials credentials,
                                  Packet response,
-                                 ExtendedInformation extendedInformation,
+                                 RequestContext context,
                                  int serialNum) throws IOException, TransportException {
         Version version = endpoint.getVersion();
         switch (type) {
@@ -141,13 +138,20 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
                 return Packets.newChapReq(version, credentials, serialNum);
 
             case REQ_LOGOUT:
-                return Packets.newLogout(version, endpoint.getAuthType(), credentials, extendedInformation, serialNum);
+                return Packets.newLogout(
+                        version, endpoint.getAuthType(), credentials, context, serialNum);
 
             case AFF_ACK_AUTH:
-                return Packets.newAffAck(version, response);
+                return Packets.newAffAckAuth(version, response);
 
             case NTF_LOGOUT:
-                break;
+                return Packets.newNtfLogout(
+                        version,
+                        endpoint.getAuthType(),
+                        endpoint.getAddress(),
+                        credentials.getIp(),
+                        context.getRequestId());
+                //FIXME break;
 
             case REQ_AUTH:
                 switch (endpoint.getAuthType()) {
@@ -156,6 +160,7 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
                     case PAP:
                         return Packets.newPapAuth(version, credentials, serialNum);
                 }
+
             case REQ_INFO:
             case NTF_USERDISCOVERY:
             case NTF_USERIPCHANGE:
@@ -201,6 +206,21 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
         sendAffAck(nak);
     }
 
+    private RequestContext createContext(Packet response) {
+        Objects.requireNonNull(response);
+
+        RequestContext context = new RequestContext();
+            /* Populate 'request id' issued by NAS/BRAS. */
+        context.setRequestId(response.getReqId());
+
+        byte[] text = response.getAttribute(AttributeType.TEXT_INFO);
+        if (text.length > 0) {
+            context.setTextInfo(new String(text));
+        }
+
+        return context;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -214,19 +234,18 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
      * 在同一个认证流程中所有报文的SerialNo相同。
      *
      * @param credentials user credentials.
-     * @return Extended Information.
+     * @return Extended context.
      * @throws IOException
      * @throws TransportException
      */
     @Override
-    public ExtendedInformation login(Credentials credentials) throws IOException, TransportException {
+    public RequestContext login(Credentials credentials) throws IOException, TransportException {
         Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
 
         Optional<Packet> response;
         Packet request;
 
         int serialNum = nextSerialNum(); /* Ensure same serial number in login. */
-        ExtendedInformation extendedInformation = new ExtendedInformation();
 
         switch (endpoint.getAuthType()) {
             case CHAP:
@@ -236,13 +255,10 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
                     /* Not respond, send timeout NAK, reqId = 0. */
                     sendTimeout(createRequestTimeoutPacket(challenge));
                     handler.handleServerNotRespond(endpoint);
-                    return null;
+                    return RequestContext.empty();
                 }
 
                 Packet chapAck = response.get();
-                /* Populate 'request id' issued by NAS/BRAS. */
-                extendedInformation.setRequestId(chapAck.getReqId());
-
                 handler.handleChapResponse(chapAck);
                 request = createRequest(RequestType.REQ_AUTH, credentials, chapAck, null, serialNum);
                 response = request(request);
@@ -251,11 +267,6 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
             case PAP:
                 request = createRequest(RequestType.REQ_AUTH, credentials, null, serialNum);
                 response = request(request);
-
-                if (response.isPresent()) {
-                    /* Populate 'request id' issued by NAS/BRAS. */
-                    extendedInformation.setRequestId(response.get().getReqId());
-                }
                 break;
 
             default:
@@ -267,13 +278,13 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
             logger.debug("Handle authentication response.");
             sendAffAck(createRequest(RequestType.AFF_ACK_AUTH, credentials, response.get(), null, serialNum));
             handler.handleAuthenticationResponse(response.get());
+            return createContext(response.get());
         } else {
             logger.debug("Handle authentication timeout.");
             sendTimeout(createRequestTimeoutPacket(request));
             handler.handleServerNotRespond(endpoint);
+            return RequestContext.empty();
         }
-
-        return extendedInformation;
     }
 
     /**
@@ -288,18 +299,19 @@ public abstract class AbstractConnector implements Connector<ExtendedInformation
      * 具体要看是请求Challenge超时还是请求认证超时；
      *
      * @param credentials user credentials.
+     * @param context context.
      * @throws IOException
      * @throws TransportException
      */
     @Override
-    public void logout(Credentials credentials, ExtendedInformation extendedInformation)
+    public void logout(Credentials credentials, RequestContext context)
             throws IOException, TransportException {
         Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
-        Objects.requireNonNull(extendedInformation, "extended information can not be empty.");
+        Objects.requireNonNull(context, "extended information can not be empty.");
 
         int serialNum = nextSerialNum();
         /* Create portal request to logout. */
-        Packet logout = createRequest(RequestType.REQ_LOGOUT, credentials, extendedInformation, serialNum);
+        Packet logout = createRequest(RequestType.REQ_LOGOUT, credentials, context, serialNum);
         Optional<Packet> response = request(logout);
 
         if (!response.isPresent()) {

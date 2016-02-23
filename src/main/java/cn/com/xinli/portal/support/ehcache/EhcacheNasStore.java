@@ -8,6 +8,7 @@ import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.support.persist.NasPersistence;
+import cn.com.xinli.portal.util.AddressUtil;
 import cn.com.xinli.portal.util.Serializer;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -276,12 +277,13 @@ public class EhcacheNasStore implements NasStore {
             throw new IllegalArgumentException("ip, mac and nasIp can not be blank.");
         }
 
+        final String formatted = AddressUtil.formatMac(mac);
         Nas nas = find(nasIp);
         if (nas == null) {
             throw new NasNotFoundException(nasIp);
         }
 
-        final String key = Session.pair(ip, mac);
+        final String key = Session.pair(ip, formatted);
         Element element = new Element(key, nasIp);
         nasMappingCache.put(element);
     }

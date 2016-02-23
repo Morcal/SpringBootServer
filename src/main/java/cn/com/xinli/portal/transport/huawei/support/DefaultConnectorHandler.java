@@ -114,8 +114,10 @@ final class DefaultConnectorHandler implements ConnectorHandler {
                 break;
         }
 
-        logger.info("{}", error.getReason());
-        throw new AuthenticationException(error, Packets.buildText(response));
+        byte[] info = response.getAttribute(AttributeType.TEXT_INFO);
+        throw new AuthenticationException(
+                error,
+                info.length > 0 ? new String(info) : error.getReason());
     }
 
     @Override
@@ -150,7 +152,9 @@ final class DefaultConnectorHandler implements ConnectorHandler {
                 break;
         }
 
-        logger.info("{}", error.getReason());
-        throw new LogoutException(error, error.getReason());
+        byte[] info = response.getAttribute(AttributeType.TEXT_INFO);
+        throw new LogoutException(
+                error,
+                info.length > 0 ? new String(info) : error.getReason());
     }
 }
