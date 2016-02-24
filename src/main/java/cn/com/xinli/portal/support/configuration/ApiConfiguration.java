@@ -47,7 +47,7 @@ public class ApiConfiguration {
     private final Logger logger = LoggerFactory.getLogger(ApiConfiguration.class);
 
     /** API path. */
-    public static final String API_PATH = "api";
+    public static final String API_PATH = "/portal/api";
 
     public static final String API_TYPE = "REST";
     public static final String REST_API_VERSION = "v1.0";

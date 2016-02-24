@@ -98,6 +98,8 @@ public class WebController {
     private String schemeHeaderValue(Scheme scheme) {
         StringJoiner joiner = new StringJoiner(";");
         joiner.add("version=" + scheme.getVersion())
+                .add("header=" + scheme.getHeader())
+                .add("meta=" + scheme.getMeta())
                 .add("apiuri=" + scheme.getUri())
                 .add("server=" + scheme.getServer())
                 .add("host=" + scheme.getHost())
@@ -125,12 +127,15 @@ public class WebController {
         if (sourceIp != null && sourceMac != null && nasIp != null) {
             try {
                 nasLocator.map(sourceIp, sourceMac, nasIp);
-            } catch (NasNotFoundException e) {
-                logger.debug(" Nas not found, not mapped.");
-            }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
+                }
+            } catch (NasNotFoundException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{{}, {}} -> {{}}, Nas not found, not mapped.",
+                            sourceIp, sourceMac, nasIp);
+                }
             }
         }
 
