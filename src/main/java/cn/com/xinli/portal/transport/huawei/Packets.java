@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.transport.AddressUtils;
+import cn.com.xinli.portal.transport.TransportUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,11 +97,11 @@ public final class Packets {
         packet.setAuthType(AuthType.CHAP.code());
         packet.setSerialNum(serialNum);
         packet.setReqId(ack.getReqId());
-        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
+        packet.setIp(TransportUtils.getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
         attrs++;
-        if (StringUtils.isEmpty(credentials.getMac())) {
-            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+        if (!StringUtils.isEmpty(credentials.getMac())) {
+            final byte[] mac = TransportUtils.convertMac(credentials.getMac());
             packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
@@ -135,9 +135,9 @@ public final class Packets {
         packet.setType(RequestType.REQ_CHALLENGE.code());
         packet.setSerialNum(serialNum);
         packet.setAuthType(AuthType.CHAP.code());
-        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
+        packet.setIp(TransportUtils.getIp4Address(credentials.getIp()));
         if (!StringUtils.isEmpty(credentials.getMac())) {
-            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+            final byte[] mac = TransportUtils.convertMac(credentials.getMac());
             packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
@@ -169,13 +169,13 @@ public final class Packets {
         packet.setReserved(0);
         packet.setReqId(0);
         packet.setAuthType(AuthType.PAP.code());
-        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
+        packet.setIp(TransportUtils.getIp4Address(credentials.getIp()));
         packet.addAttribute(AttributeType.USER_NAME, credentials.getUsername().getBytes());
         attrs++;
         packet.addAttribute(AttributeType.PASSWORD, credentials.getPassword().getBytes());
         attrs++;
-        if (StringUtils.isEmpty(credentials.getMac())) {
-            final byte[] mac = AddressUtils.convertMac(credentials.getMac());
+        if (!StringUtils.isEmpty(credentials.getMac())) {
+            final byte[] mac = TransportUtils.convertMac(credentials.getMac());
             packet.addAttribute(AttributeType.USER_MAC, mac);
             attrs++;
         }
@@ -214,7 +214,7 @@ public final class Packets {
         packet.setAuthType(authType.code());
         packet.setSerialNum(serialNum);
         packet.setReqId(context.getRequestId());
-        packet.setIp(AddressUtils.getIp4Address(credentials.getIp()));
+        packet.setIp(TransportUtils.getIp4Address(credentials.getIp()));
         packet.setPort(0);
         packet.setError(LogoutRequestError.REQUEST.code());
         packet.setAttrs(0);
@@ -395,7 +395,7 @@ public final class Packets {
         ntf.setAuthType(authType.code());
         ntf.setSerialNum(0);
         ntf.setReqId(reqId);
-        ntf.setIp(AddressUtils.getIp4Address(ip));
+        ntf.setIp(TransportUtils.getIp4Address(ip));
         ntf.setPort(0);
         ntf.setReserved(0);
         ntf.setError(LogoutRequestError.REQUEST.code());

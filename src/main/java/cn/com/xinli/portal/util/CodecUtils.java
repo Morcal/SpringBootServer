@@ -70,19 +70,4 @@ public class CodecUtils {
             return new byte[0];
         }
     }
-
-    /**
-     * Convert bytes to hex string.
-     * @param bytes input bytes.
-     * @return hex string.
-     */
-    public static String bytesToHexString(byte[] bytes) {
-        String hex = Hex.encodeHexString(bytes);
-        StringJoiner joiner = new StringJoiner(" ");
-        for (int i = 0; i < hex.length(); i = i + 2) {
-            joiner.add(hex.substring(i, i + 2));
-        }
-
-        return joiner.toString();
-    }
 }

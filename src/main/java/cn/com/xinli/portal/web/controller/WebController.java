@@ -73,6 +73,8 @@ public class WebController {
     private String schemeHeaderValue(Scheme scheme) {
         StringJoiner joiner = new StringJoiner(";");
         joiner.add("version=" + scheme.getVersion())
+                .add("header=" + scheme.getHeader())
+                .add("meta=" + scheme.getMeta())
                 .add("apiuri=" + scheme.getUri())
                 .add("server=" + scheme.getServer())
                 .add("host=" + scheme.getHost())

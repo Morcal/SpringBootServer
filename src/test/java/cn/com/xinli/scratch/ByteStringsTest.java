@@ -1,6 +1,6 @@
 package cn.com.xinli.scratch;
 
-import cn.com.xinli.portal.util.CodecUtils;
+import cn.com.xinli.portal.transport.TransportUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +17,6 @@ public class ByteStringsTest {
     @Test
     public void testByteStrings() {
         byte[] values = { 68, 76, 12, -79, 106, 77 };
-        logger.debug("value: {}", CodecUtils.bytesToHexString(values));
+        logger.debug("value: {}", TransportUtils.bytesToHexString(values));
     }
 }

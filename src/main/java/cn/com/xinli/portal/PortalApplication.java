@@ -14,9 +14,6 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan
 public class PortalApplication {
-//    /** Logger. */
-//    private final Logger logger = LoggerFactory.getLogger(PortalApplication.class);
-
     public static void main(String[] args) throws Exception {
         SpringApplication.run(PortalApplication.class, args);
     }

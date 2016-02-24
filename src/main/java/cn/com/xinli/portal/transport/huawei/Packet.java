@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.transport.huawei;
 
+import cn.com.xinli.portal.transport.TransportUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -117,7 +119,7 @@ public final class Packet {
             return "AttributeType{" +
                     "length=" + length +
                     ", type=" + type +
-                    ", value=" + Arrays.toString(value) +
+                    ", value=" + TransportUtils.bytesToHexString(value) +
                     '}';
         }
     }
@@ -227,11 +229,11 @@ public final class Packet {
                 ", reserved=" + reserved +
                 ", serialNum=" + serialNum +
                 ", reqId=" + reqId +
-                ", ip=" + Arrays.toString(ip) +
+                ", ip=" + TransportUtils.bytesToHexString(ip) +
                 ", port=" + port +
                 ", error=" + error +
                 ", attrs=" + attrs +
-                ", authenticator=" + Arrays.toString(authenticator) +
+                ", authenticator=" + TransportUtils.bytesToHexString(authenticator) +
                 ", attributes=" + attributes +
                 '}';
     }
