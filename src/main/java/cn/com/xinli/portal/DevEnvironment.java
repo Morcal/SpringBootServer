@@ -50,13 +50,14 @@ public class DevEnvironment {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(DevEnvironment.class);
 
-    @Value("{nas.host}") private String nasHost;
-    @Value("{nas.name}") private String nasName;
-    @Value("{nas.port}") private int nasPort;
-    @Value("{nas.shared-secret}") private String nasSharedSecret;
-    @Value("{nas.version}") private String nasVersion;
-    @Value("{nas.auth-type}") private String nasAuthType;
-    @Value("{nas.mock.enable}") private boolean enableMock;
+    @Value("${nas.host}") private String nasHost;
+    @Value("${nas.name}") private String nasName;
+    @Value("${nas.port}") private int nasPort;
+    @Value("${nas.shared-secret}") private String nasSharedSecret;
+    @Value("${nas.version}") private String nasVersion;
+    @Value("${nas.auth-type}") private String nasAuthType;
+    @Value("${nas.ipv4.range}") private String nasIpv4Ranges;
+    @Value("${nas.mock.enable}") private boolean enableMock;
 
     @Autowired
     private NasService nasService;
@@ -173,8 +174,15 @@ public class DevEnvironment {
         } catch (NasNotFoundException e) {
             logger.debug("NAS not found, name: {}", nasName);
             Nas nas = createNas(nasName);
-            nasManager.createNasIpv4RangeRule(nas, "10.177.0.2", "10.177.63.254");
-            nasManager.createNasIpv4RangeRule(nas, "111.37.0.1", "111.37.0.254");
+            if (!StringUtils.isEmpty(nasIpv4Ranges)) {
+                for (String range : nasIpv4Ranges.split(",")) {
+                    String[] value = range.trim().split("-");
+                    if (value.length == 2) {
+                        nasManager.createNasIpv4RangeRule(nas, value[0], value[1]);
+                    }
+                }
+            }
+
             nasService.reload();
         }
     }

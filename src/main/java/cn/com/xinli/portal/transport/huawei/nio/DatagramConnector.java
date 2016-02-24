@@ -52,7 +52,8 @@ public final class DatagramConnector extends AbstractConnector {
             socket.send(out);
 
             if (logger.isTraceEnabled()) {
-                logger.trace("SEND {{}}", TransportUtils.bytesToHexString(out.getData()));
+                logger.debug("portal request: {}", request);
+                logger.trace("SEND {{}}", TransportUtils.bytesToHexString(out.getData(), buffer.remaining()));
             }
 
             /* Try to receive from remote. */
@@ -69,8 +70,7 @@ public final class DatagramConnector extends AbstractConnector {
                     .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from endpoint timeout, endpoint: {}, request: {}",
-                    endpoint, request);
+            logger.warn("* Receive from endpoint timeout, endpoint: {}", endpoint);
             return Optional.empty();
         } finally {
             if (socket != null) {

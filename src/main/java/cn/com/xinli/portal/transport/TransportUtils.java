@@ -68,6 +68,16 @@ public class TransportUtils {
         }
     }
 
+
+    /**
+     * Convert bytes to hex string.
+     * @param bytes input bytes.
+     * @return hex string.
+     */
+    public static String bytesToHexString(byte[] bytes, int length) {
+        return bytesToHexString(Arrays.copyOf(bytes, length));
+    }
+
     /**
      * Convert bytes to hex string.
      * @param bytes input bytes.
