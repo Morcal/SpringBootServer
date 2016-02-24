@@ -2,10 +2,11 @@ package cn.com.xinli.portal.transport.huawei.nio;
 
 import cn.com.xinli.nio.CodecFactory;
 import cn.com.xinli.portal.transport.TransportException;
-import cn.com.xinli.portal.transport.huawei.support.AbstractConnector;
+import cn.com.xinli.portal.transport.TransportUtils;
 import cn.com.xinli.portal.transport.huawei.ConnectorHandler;
 import cn.com.xinli.portal.transport.huawei.Endpoint;
 import cn.com.xinli.portal.transport.huawei.Packet;
+import cn.com.xinli.portal.transport.huawei.support.AbstractConnector;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -50,6 +51,10 @@ public final class DatagramConnector extends AbstractConnector {
                     buffer.array(), buffer.remaining(), endpoint.getAddress(), endpoint.getPort());
             socket.send(out);
 
+            if (logger.isTraceEnabled()) {
+                logger.trace("SEND {{}}", TransportUtils.bytesToHexString(out.getData()));
+            }
+
             /* Try to receive from remote. */
             int capacity = 1024;
             byte[] buf = new byte[capacity];
@@ -64,7 +69,8 @@ public final class DatagramConnector extends AbstractConnector {
                     .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
             return Optional.ofNullable(responsePacket);
         } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from endpoint timeout, endpoint: {}, request: {}", endpoint, request);
+            logger.warn("* Receive from endpoint timeout, endpoint: {}, request: {}",
+                    endpoint, request);
             return Optional.empty();
         } finally {
             if (socket != null) {

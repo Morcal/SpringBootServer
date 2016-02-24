@@ -2,7 +2,7 @@ package cn.com.xinli.portal.transport.huawei.support;
 
 import cn.com.xinli.nio.support.AbstractDatagramServer;
 import cn.com.xinli.portal.core.credentials.Credentials;
-import cn.com.xinli.portal.transport.AddressUtils;
+import cn.com.xinli.portal.transport.TransportUtils;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.UnsupportedAuthenticationTypeException;
 import cn.com.xinli.portal.transport.huawei.*;
@@ -304,7 +304,7 @@ final class HuaweiPortalServer implements PortalServer {
         // BAS_IP is mandatory.
         byte[] nas = request.getAttribute(AttributeType.BAS_IP);
         if (nas.length > 0) {
-            String nasIp = AddressUtils.getIp4Address(nas);
+            String nasIp = TransportUtils.getIp4Address(nas);
             LogoutError error = handler.ntfLogout(nasIp, userIp);
             Packet ack = Packets.newNtfLogoutAck(InetAddress.getByAddress(nas), request, error);
             ByteBuffer buf = codecFactory.getEncoder()

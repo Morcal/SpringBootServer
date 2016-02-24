@@ -122,7 +122,6 @@ public class WebController {
         final String sourceIp = getParameter(REDIRECT_USER_IP, request),
                 sourceMac = getParameter(REDIRECT_USER_MAC, request),
                 nasIp = getParameter(REDIRECT_NAS_IP, request);
-
         if (sourceIp != null && sourceMac != null && nasIp != null) {
             try {
                 nasLocator.map(sourceIp, sourceMac, nasIp);
@@ -137,54 +136,6 @@ public class WebController {
 
         return mainPageView;
     }
-
-//    /**
-//     * Handle redirect.
-//     *
-//     * @param sourceIp source ip.
-//     * @param sourceMac source mac.
-//     * @param nasIp nas ip.
-//     * @param basIp bas ip.
-//     * @return springframework mvc result.
-//     */
-//    @RequestMapping(value = "/portal", method = RequestMethod.GET)
-//    public View main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
-//                       @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
-//                       @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
-//                       @RequestParam(value="nas-ip", defaultValue = "") String nasIp,
-//                       @RequestParam(value="basIp", defaultValue = "") String basIp,
-//                       HttpServletRequest request) {
-//        /* TODO check logic here. */
-//        String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
-//
-//        do {
-//            if (StringUtils.isEmpty(deviceIp)
-//                    || StringUtils.isEmpty(sourceIp)
-//                    || StringUtils.isEmpty(sourceMac)) {
-//                /* Invalid redirection, forward to main page. */
-//                break;
-//            }
-//
-//            if (!AddressUtil.validateIp(realIp, sourceIp, request.getRemoteAddr())) {
-//                if (logger.isDebugEnabled()) {
-//                    logger.debug("invalid ip: {}.", sourceIp);
-//                }
-//                break;
-//            }
-//
-//            try {
-//                nasLocator.map(sourceIp, sourceMac, nasIp);
-//            } catch (NasNotFoundException e) {
-//                logger.debug(" Nas not found, not mapped.");
-//            }
-//
-//            if (logger.isDebugEnabled()) {
-//                logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
-//            }
-//        } while (false);
-//
-//        return mainPageView;
-//    }
 
     @RequestMapping(value = "/portal", method = RequestMethod.POST)
     public View post() {

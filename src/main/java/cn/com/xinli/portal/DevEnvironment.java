@@ -18,8 +18,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 
@@ -43,18 +45,18 @@ import java.util.Collections;
 @Configuration
 @Order(Stage.SERVE)
 @Profile("dev")
+@PropertySource("dev.properties")
 public class DevEnvironment {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(DevEnvironment.class);
 
-    /** Configuration options for Developing, Testing. */
-    public static final String MOCK_NAS_HOST = "223.99.128.144";
-    //public static final String MOCK_NAS_NAME = "mock-huawei-nas";
-    public static final String MOCK_NAS_NAME = "shandong-test-nas";
-    public static final int MOCK_NAS_LISTEN_PORT = 2000;
-    public static final String MOCK_NAS_SHARED_SECRET = "sdyd225";
-    public static final Version MOCK_NAS_VERSION = Version.V2;
-    public static final AuthType MOCK_NAS_AUTH_TYPE = AuthType.PAP;
+    @Value("{nas.host}") private String nasHost;
+    @Value("{nas.name}") private String nasName;
+    @Value("{nas.port}") private int nasPort;
+    @Value("{nas.shared-secret}") private String nasSharedSecret;
+    @Value("{nas.version}") private String nasVersion;
+    @Value("{nas.auth-type}") private String nasAuthType;
+    @Value("{nas.mock.enable}") private boolean enableMock;
 
     @Autowired
     private NasService nasService;
@@ -82,21 +84,23 @@ public class DevEnvironment {
             throws NasNotFoundException, IOException {
         logger.info("PWS environment initialized, {}", event);
         ensureJPortalCertificate();
-        PortalServer huaweiNas = createHuaweiNas();
-        //huaweiNas.start();
+        ensureNasConfiguration(nasName);
+        if (enableMock) {
+            PortalServer huaweiNas = createHuaweiNas();
+            huaweiNas.start();
+        }
     }
 
     PortalServer createHuaweiNas() throws NasNotFoundException, UnknownHostException {
-        ensureNasConfiguration(MOCK_NAS_NAME);
         /* Find nas configuration for mocking. */
-        HuaweiNas nas = (HuaweiNas) nasService.find(MOCK_NAS_NAME);
+        HuaweiNas nas = (HuaweiNas) nasService.find(nasName);
 
         Endpoint endpoint = new Endpoint();
         endpoint.setPort(nas.getListenPort());
         endpoint.setSharedSecret(nas.getSharedSecret());
         endpoint.setVersion(Version.valueOf(nas.getVersion()));
         endpoint.setAddress(nas.getNetworkAddress());
-        endpoint.setAuthType(MOCK_NAS_AUTH_TYPE);
+        endpoint.setAuthType(AuthType.valueOf(nasAuthType));
 
         return HuaweiPortal.createNas(endpoint);
     }
@@ -137,11 +141,11 @@ public class DevEnvironment {
 
         HuaweiNas huaweiNas = new HuaweiNas();
         huaweiNas.setName(nasName);
-        huaweiNas.setAuthType(MOCK_NAS_AUTH_TYPE.name());
-        huaweiNas.setListenPort(MOCK_NAS_LISTEN_PORT);
-        huaweiNas.setIpv4Address(MOCK_NAS_HOST);
-        huaweiNas.setSharedSecret(MOCK_NAS_SHARED_SECRET);
-        huaweiNas.setVersion(MOCK_NAS_VERSION.name());
+        huaweiNas.setAuthType(nasAuthType);
+        huaweiNas.setListenPort(nasPort);
+        huaweiNas.setIpv4Address(nasHost);
+        huaweiNas.setSharedSecret(nasSharedSecret);
+        huaweiNas.setVersion(nasVersion);
         huaweiNas.setTranslation(translation);
         Nas nas = nasManager.create(huaweiNas);
 
