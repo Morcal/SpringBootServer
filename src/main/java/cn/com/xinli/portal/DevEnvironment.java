@@ -54,7 +54,7 @@ public class DevEnvironment {
     public static final int MOCK_NAS_LISTEN_PORT = 2000;
     public static final String MOCK_NAS_SHARED_SECRET = "s3cr3t";
     public static final Version MOCK_NAS_VERSION = Version.V2;
-    public static final AuthType MOCK_NAS_AUTH_TYPE = AuthType.CHAP;
+    public static final AuthType MOCK_NAS_AUTH_TYPE = AuthType.PAP;
 
     @Autowired
     private NasService nasService;

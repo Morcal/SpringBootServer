@@ -3,8 +3,6 @@ package cn.com.xinli.portal.web.controller;
 import cn.com.xinli.portal.core.nas.NasLocator;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.web.rest.Scheme;
-import cn.com.xinli.portal.web.util.AddressUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +72,21 @@ public class WebController {
     @Autowired
     private View mainPageView;
 
+    private static final String[] REDIRECT_USER_IP = {
+            "userip", "user-ip", "user_ip", "user-ip-address", "user_ip_address", "wlanuserip",
+            "sourceip", "source-ip", "source_ip"
+    };
+
+    private static final String[] REDIRECT_USER_MAC = {
+            "usermac", "user-mac", "user_mac", "user-mac-address", "user_mac_address", "wlanusermac",
+            "sourcemac", "source-mac", "source_mac"
+    };
+
+    private static final String[] REDIRECT_NAS_IP = {
+            "nasip", "nas_ip", "nas-ip", "mscg", "basip", "bas-ip", "basip"
+    };
+
+
     /**
      * The PWS scheme header value.
      *
@@ -93,40 +106,24 @@ public class WebController {
         return joiner.toString();
     }
 
-    /**
-     * Handle redirect.
-     *
-     * @param sourceIp source ip.
-     * @param sourceMac source mac.
-     * @param nasIp nas ip.
-     * @param basIp bas ip.
-     * @return springframework mvc result.
-     */
+    String getParameter(String[] names, HttpServletRequest request) {
+        for (String name : names) {
+            String value = request.getParameter(name);
+            if (value != null) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
     @RequestMapping(value = "/portal", method = RequestMethod.GET)
-    public View main(@RequestHeader(value="X-Real-Ip", defaultValue = "") String realIp,
-                       @RequestParam(value="source-ip", defaultValue = "") String sourceIp,
-                       @RequestParam(value="source-mac", defaultValue = "") String sourceMac,
-                       @RequestParam(value="nas-ip", defaultValue = "") String nasIp,
-                       @RequestParam(value="basIp", defaultValue = "") String basIp,
-                       HttpServletRequest request) {
-        /* TODO check logic here. */
-        String deviceIp = StringUtils.isEmpty(nasIp) ? basIp : nasIp;
+    public View main(HttpServletRequest request) {
+        final String sourceIp = getParameter(REDIRECT_USER_IP, request),
+                sourceMac = getParameter(REDIRECT_USER_MAC, request),
+                nasIp = getParameter(REDIRECT_NAS_IP, request);
 
-        do {
-            if (StringUtils.isEmpty(deviceIp)
-                    || StringUtils.isEmpty(sourceIp)
-                    || StringUtils.isEmpty(sourceMac)) {
-                /* Invalid redirection, forward to main page. */
-                break;
-            }
-
-            if (!AddressUtil.validateIp(realIp, sourceIp, request.getRemoteAddr())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("invalid ip: {}.", sourceIp);
-                }
-                break;
-            }
-
+        if (sourceIp != null && sourceMac != null && nasIp != null) {
             try {
                 nasLocator.map(sourceIp, sourceMac, nasIp);
             } catch (NasNotFoundException e) {
@@ -136,7 +133,7 @@ public class WebController {
             if (logger.isDebugEnabled()) {
                 logger.debug("mapping {{}, {}} -> {{}}.", sourceIp, sourceMac, nasIp);
             }
-        } while (false);
+        }
 
         return mainPageView;
     }

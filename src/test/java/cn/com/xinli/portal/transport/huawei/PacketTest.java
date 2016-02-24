@@ -2,6 +2,7 @@ package cn.com.xinli.portal.transport.huawei;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.transport.TransportException;
+import cn.com.xinli.portal.transport.TransportUtils;
 import cn.com.xinli.portal.transport.huawei.nio.ByteBufferCodecFactory;
 import cn.com.xinli.portal.transport.huawei.nio.DatagramConnector;
 import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
@@ -36,7 +37,7 @@ public class PacketTest {
     ByteBufferCodecFactory codecFactory;
 
     String byteBufferToHexString(ByteBuffer buffer) {
-        return CodecUtils.bytesToHexString(Arrays.copyOfRange(buffer.array(), 0, buffer.remaining()));
+        return TransportUtils.bytesToHexString(Arrays.copyOfRange(buffer.array(), 0, buffer.remaining()));
     }
 
     @Before
@@ -115,7 +116,7 @@ public class PacketTest {
         System.arraycopy(sharedSecret.getBytes(), 0, content, i.length, sharedSecret.getBytes().length);
         final byte[] r = Packets.md5sum(content);
 
-        final String rs = CodecUtils.bytesToHexString(r);
+        final String rs = TransportUtils.bytesToHexString(r);
         logger.debug("result: {}", rs);
         Assert.assertEquals("4e 1f f4 eb 21 57 50 bc 1d 4a a4 e4 8b 25 76 11", rs);
     }
@@ -124,7 +125,7 @@ public class PacketTest {
     public void testChallengeAckPacket() throws IOException, DecoderException {
         final String cbs = "bb 0b cd 57 41 5d 3d b7 b7 cd 5b 39 3f c1 29 e3".replace(" ", "").trim();
         final byte[] chb = Hex.decodeHex(cbs.toCharArray());
-        final String s = CodecUtils.bytesToHexString(chb);
+        final String s = TransportUtils.bytesToHexString(chb);
         logger.debug("challenge: {}", s);
         final String sharedSecret = "1234567890123456";
         final Credentials credentials = Credentials.of("web@default0", "123456", "172.75.100.253", "");
@@ -134,7 +135,7 @@ public class PacketTest {
         // request authenticator: e8 0d a1 b2 79 f3 b5 f2 e8 cb c2 dd 32 4f 56 dd
         assert req != null;
         final byte[] authenticator = req.getAuthenticator();
-        logger.debug("request authenticator: {}", CodecUtils.bytesToHexString(authenticator));
+        logger.debug("request authenticator: {}", TransportUtils.bytesToHexString(authenticator));
 
         Packet ack = Packets.newChallengeAck(
                 InetAddress.getByName(credentials.getIp()),
@@ -157,14 +158,38 @@ public class PacketTest {
     }
 
     @Test
-    public void testChapAuthPacket() throws IOException {
+    public void testChapAuthPacket() throws IOException, DecoderException {
         final String sharedSecret = "1234567890123456";
         final Credentials credentials = Credentials.of("web@default0", "123456", "172.75.100.253", "");
-        Packet req = Packets.newChapReq(Version.V2, credentials, 1);
-        ByteBuffer buffer = codecFactory.getEncoder().encode(req, sharedSecret);
+        final String cbs = "bb 0b cd 57 41 5d 3d b7 b7 cd 5b 39 3f c1 29 e3".replace(" ", "").trim();
+        final byte[] chb = Hex.decodeHex(cbs.toCharArray());
+        final String s = TransportUtils.bytesToHexString(chb);
+        logger.debug("challenge: {}", s);
+
+        Packet req = Packets.newChapReq(Version.V2, credentials, 4);
+        logger.debug("challenge request: {}", req);
+
+        Packet ack = Packets.newChallengeAck(
+                InetAddress.getByName(credentials.getIp()),
+                chb,
+                2,
+                ChallengeError.OK,
+                req);
+        logger.debug("challenge ack: {}", ack);
+
+        Packet auth = Packets.newChapAuth(Version.V2, ack, credentials, 4);
+        logger.debug("chap auth: {}", auth);
+
+        ByteBuffer buffer = codecFactory.getEncoder().encode(auth, sharedSecret);
 
         final String result = byteBufferToHexString(buffer);
         logger.debug("result: {}", result);
 
+        Assert.assertEquals(
+                "02 03 00 00 00 04 00 02 ac 4b 64 fd 00 00 00 02 " +
+                "30 7b ba a5 26 5d f5 28 e7 33 94 97 2c 15 1b 69 " +
+                "04 12 73 cc 87 6a 01 ca 9a b3 98 d7 fc c8 58 36 " +
+                "b5 8b 01 0e 77 65 62 40 64 65 66 61 75 6c 74 30",
+                result);
     }
 }

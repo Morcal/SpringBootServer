@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.StringJoiner;
 
 /**
  * Transport address utilities.
@@ -16,7 +17,7 @@ import java.util.Arrays;
  *
  * @author zhoupeng 2016/2/23.
  */
-public class AddressUtils {
+public class TransportUtils {
     /**
      * Get ipv4 address in bytes.
      *
@@ -65,5 +66,24 @@ public class AddressUtils {
         } catch (DecoderException e) {
             return new byte[0];
         }
+    }
+
+    /**
+     * Convert bytes to hex string.
+     * @param bytes input bytes.
+     * @return hex string.
+     */
+    public static String bytesToHexString(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            return "";
+        }
+
+        String hex = Hex.encodeHexString(bytes);
+        StringJoiner joiner = new StringJoiner(" ");
+        for (int i = 0; i < hex.length(); i = i + 2) {
+            joiner.add(hex.substring(i, i + 2));
+        }
+
+        return joiner.toString();
     }
 }
