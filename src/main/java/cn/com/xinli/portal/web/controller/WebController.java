@@ -73,11 +73,13 @@ public class WebController {
     private View mainPageView;
 
     private static final String[] REDIRECT_USER_IP = {
-            "userip", "user-ip", "user_ip", "user-ip-address", "user_ip_address", "wlanuserip"
+            "userip", "user-ip", "user_ip", "user-ip-address", "user_ip_address", "wlanuserip",
+            "sourceip", "source-ip", "source_ip"
     };
 
     private static final String[] REDIRECT_USER_MAC = {
-            "usermac", "user-mac", "user_mac", "user-mac-address", "user_mac_address", "wlanusermac"
+            "usermac", "user-mac", "user_mac", "user-mac-address", "user_mac_address", "wlanusermac",
+            "sourcemac", "source-mac", "source_mac"
     };
 
     private static final String[] REDIRECT_NAS_IP = {
