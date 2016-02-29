@@ -1,12 +1,15 @@
 package cn.com.xinli.portal.web.auth.token;
 
+import cn.com.xinli.portal.core.Serializer;
+import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.util.DigestUtils;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.util.SecureRandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.core.token.Token;
 import org.springframework.security.core.token.TokenService;
 import org.springframework.security.crypto.codec.Base64;
@@ -14,8 +17,6 @@ import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import java.util.StringJoiner;
 
 /**
  * Abstract Token Service
@@ -42,8 +43,6 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     @Autowired
     private ServerConfiguration serverConfiguration;
 
-    private static final String DELIMITER = "::";
-
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(secureRandomStringGenerator);
@@ -54,6 +53,8 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return token scope.
      */
     protected abstract TokenScope getTokenScope();
+
+    protected abstract Serializer<TokenKey> getTokenKeySerializer();
 
     /**
      * Verify extended information in token.
@@ -69,30 +70,12 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     protected abstract int getTokenTtl();
 
     /**
-     * Create token key content.
-     * @param scope token scope.
-     * @param creationTime token creation time.
-     * @param extendedInformation extended information.
-     * @param random server random string.
-     * @return content string.
-     */
-    private String createContent(TokenScope scope, long creationTime, String extendedInformation, String random) {
-        StringJoiner joiner = new StringJoiner(DELIMITER);
-        joiner.add(scope.name())
-                .add(String.valueOf(creationTime))
-                .add(random)
-                .add(extendedInformation);
-
-        return joiner.toString();
-    }
-
-    /**
      * Create SHA summary.
-     * @param content content to create summary.
+     * @param key token key.
      * @return SHA summary.
      */
-    private String sha(String content) {
-        return Sha512DigestUtils.shaHex(content + DELIMITER + serverConfiguration.getPrivateKey());
+    private String sha(TokenKey key) throws ServerException {
+        return DigestUtils.sha256Hex(key.getContent() + serverConfiguration.getPrivateKey());
     }
 
     @Override
@@ -101,70 +84,70 @@ public abstract class AbstractTokenService implements TokenService, Initializing
             return null;
         }
 
-        long now = System.currentTimeMillis();
-
-        String[] tokens = StringUtils.delimitedListToStringArray(Utf8.decode(Base64.decode(Utf8.encode(key))), DELIMITER);
-
-        if (tokens == null || tokens.length != 5) {
+        final byte[] value = Base64.decode(Utf8.encode(key));
+        /* Verify token key. */
+        TokenKey tokenKey = getTokenKeySerializer().deserialize(value);
+        if (tokenKey == null) {
             return null;
         }
 
-        TokenScope scope;
-        try {
-            scope = TokenScope.valueOf(tokens[0]);
-            if (scope != getTokenScope()) {
-                logger.debug("Invalid token scope.");
-            }
-        } catch (IllegalArgumentException e) {
+        /* Verify scope. */
+        if (tokenKey.getScope() != getTokenScope()) {
             logger.debug("Invalid token scope.");
             return null;
         }
 
-        long creationTime;
-        try {
-            creationTime = Long.decode(tokens[1]);
-        } catch (NumberFormatException e) {
-            logger.debug("Invalid token creation time.");
-            return null;
-        }
-
-        String random = tokens[2];
-        String extendedInformation = tokens[3];
-        String sha512Hex = tokens[4];
-
-        if (StringUtils.isEmpty(extendedInformation)) {
-            logger.debug("Empty token extended information.");
-            return null;
-        }
-
-        if ((now - creationTime) / 1000L > getTokenTtl()) {
+        /* Verify expiration. */
+        if ((System.currentTimeMillis() - tokenKey.getCreationTime()) / 1000L > getTokenTtl()) {
             logger.debug("Token expired.");
             return null;
         }
 
-        String expectedSha512Hex = sha(createContent(scope, creationTime, extendedInformation, random));
+        /* Verify digest. */
+        String expectedShaHex;
+        try {
+            expectedShaHex = sha(tokenKey);
 
-        if (!sha512Hex.equals(expectedSha512Hex)) {
-            logger.debug("Key verification failed.");
+            if (!tokenKey.getDigest().equals(expectedShaHex)) {
+                logger.debug("Key verification failed.");
+                return null;
+            }
+        } catch (ServerException e) {
             return null;
         }
 
-        if (!verifyExtendedInformation(extendedInformation)) {
+        /* Verify extended information. */
+        if (!verifyExtendedInformation(tokenKey.getExtendedInformation())) {
             logger.debug("Token information verification failed.");
             return null;
         }
 
-        return new RestToken(key, creationTime, getTokenScope(), extendedInformation);
+        return new RestToken(key, SecurityConfiguration.TOKEN_TYPE, tokenKey);
     }
 
     @Override
     public final Token allocateToken(String extendedInformation) {
         long creationTime = System.currentTimeMillis();
-        String random = secureRandomStringGenerator.generateUniqueRandomString(32);
-        String content = createContent(getTokenScope(), creationTime, extendedInformation, random);
-        String sha512Hex = sha(content);
-        String keyPayload = content + DELIMITER + sha512Hex;
-        String key = Utf8.decode(Base64.encode(Utf8.encode(keyPayload)));
-        return new RestToken(key, creationTime, getTokenScope(), extendedInformation);
+
+        TokenKey tokenKey = new TokenKey();
+        tokenKey.setRandom(secureRandomStringGenerator.generateUniqueRandomString(32));
+        tokenKey.setScope(getTokenScope());
+        tokenKey.setCreationTime(creationTime);
+        tokenKey.setExtendedInformation(extendedInformation);
+
+        final String shaHex;
+        try {
+            shaHex = DigestUtils.sha256Hex(tokenKey.getContent());
+            tokenKey.setDigest(shaHex);
+        } catch (ServerException e) {
+            logger.warn("Failed to allocate token", e.getMessage());
+        }
+
+        byte[] payload = getTokenKeySerializer().serialize(tokenKey);
+        if (logger.isTraceEnabled()) {
+            logger.trace("allocated token: {}", new String(payload));
+        }
+        String key = Utf8.decode(Base64.encode(payload));
+        return new RestToken(key, SecurityConfiguration.TOKEN_TYPE, tokenKey);
     }
 }

@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.util;
 
+import cn.com.xinli.portal.core.Serializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;

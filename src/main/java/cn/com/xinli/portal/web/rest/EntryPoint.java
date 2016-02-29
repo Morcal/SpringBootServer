@@ -14,21 +14,27 @@ import java.util.StringJoiner;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntryPoint {
+    /** API Entry point scope. */
     @JsonProperty
     private String scope;
 
+    /** API action. */
     @JsonProperty
     private String action;
 
+    /** Target url. */
     @JsonProperty
     private String url;
 
+    /** REST method/HTTP(s) method. */
     @JsonProperty
     private String method;
 
+    /** Response application data type. */
     @JsonProperty
     private String response;
 
+    /** If this entry point is protected by authentication. */
     @JsonProperty("requires_auth")
     private boolean requiresAuth;
 

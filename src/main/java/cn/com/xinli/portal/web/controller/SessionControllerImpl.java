@@ -156,7 +156,6 @@ public class SessionControllerImpl implements SessionController {
             logger.trace("session for {}, {} created: {}", os, version, session);
         }
 
-
         // create session authorization. FIXME session may be removed by other threads.
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
         if (logger.isTraceEnabled()) {
@@ -168,7 +167,7 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session created id: {}", session.getId());
 
         context.setSession(String.valueOf(session.getId()));
-        Token ctx = contextTokenService.allocateToken(context.encode());
+        Token ctx = contextTokenService.allocateToken(contextTokenService.encode(context));
 
         RestResponse rs = buildResponse(session, authentication, true, ctx);
 
@@ -249,12 +248,23 @@ public class SessionControllerImpl implements SessionController {
         return rs;
     }
 
-    Optional<Session> findSession(Token context, String ip, String mac) throws SessionNotFoundException {
+    /**
+     * Find session.
+     *
+     * @param context context.
+     * @param ip ip address.
+     * @param mac mac address.
+     * @return session.
+     * @throws SessionNotFoundException
+     * @throws RemoteException
+     */
+    Optional<Session> findSession(Token context, String ip, String mac)
+            throws SessionNotFoundException, RemoteException {
         if (context == null) {
             /* Without context, can only find session by ip and mac. */
             return sessionService.find(ip, mac);
         } else {
-            Context ctx = Context.parse(context.getExtendedInformation());
+            Context ctx = contextTokenService.parse(context.getExtendedInformation());
             if (!ctx.isValid() || StringUtils.isEmpty(ctx.getSession())) {
                 return Optional.empty();
             }
@@ -276,7 +286,8 @@ public class SessionControllerImpl implements SessionController {
 
         Token ctx = contextTokenService.verifyToken(context);
         if (ctx != null) {
-            Context c = Context.parse(context);
+            /* context token is not null only if token is valid and session exists. */
+            Context c = contextTokenService.parse(context);
             if (!StringUtils.equals(c.getIp(), ip)) {
                 throw new RemoteException(PortalError.NETWORK_CHANGED);
             }

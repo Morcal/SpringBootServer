@@ -6,7 +6,7 @@ import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionStore;
 import cn.com.xinli.portal.support.persist.SessionPersistence;
-import cn.com.xinli.portal.util.Serializer;
+import cn.com.xinli.portal.core.Serializer;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;

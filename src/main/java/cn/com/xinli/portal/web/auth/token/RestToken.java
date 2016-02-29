@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.web.auth.token;
 
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import org.springframework.security.core.token.Token;
 
 /**
@@ -17,24 +16,14 @@ public final class RestToken implements Token {
     /** Rest Token key. */
     private final String key;
 
-    /** Rest Token creation time. */
-    private final long creationTime;
-
-    /** Rest Token scope. */
-    private final TokenScope scope;
-
-    /** Rest Token type. */
     private final String type;
 
-    /** Extended information. */
-    private final String extendedInformation;
+    private final TokenKey tokenKey;
 
-    public RestToken(String key, long creationTime, TokenScope scope, String extendedInformation) {
+    public RestToken(String key, String type, TokenKey tokenKey) {
         this.key = key;
-        this.creationTime = creationTime;
-        this.scope = scope;
-        this.type = SecurityConfiguration.TOKEN_TYPE;
-        this.extendedInformation = extendedInformation;
+        this.type = type;
+        this.tokenKey = tokenKey;
     }
 
     @Override
@@ -44,16 +33,16 @@ public final class RestToken implements Token {
 
     @Override
     public final long getKeyCreationTime() {
-        return creationTime;
+        return tokenKey.getCreationTime();
     }
 
     @Override
     public String getExtendedInformation() {
-        return extendedInformation;
+        return tokenKey.getExtendedInformation();
     }
 
     public TokenScope getScope() {
-        return scope;
+        return tokenKey.getScope();
     }
 
     public String getType() {
@@ -63,11 +52,9 @@ public final class RestToken implements Token {
     @Override
     public String toString() {
         return "RestToken{" +
-                "creationTime=" + creationTime +
-                ", key='" + key + '\'' +
-                ", scope=" + scope +
+                "key='" + key + '\'' +
                 ", type='" + type + '\'' +
-                ", extendedInformation='" + extendedInformation + '\'' +
+                ", tokenKey=" + tokenKey +
                 '}';
     }
 }

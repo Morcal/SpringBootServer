@@ -9,7 +9,7 @@ import java.net.URLEncoder;
 /**
  * Codec utility.
  *
- * Project: rest-api-rest-api
+ * <p>Project: xpws.
  *
  * @author zhoupeng 2015/12/13.
  */

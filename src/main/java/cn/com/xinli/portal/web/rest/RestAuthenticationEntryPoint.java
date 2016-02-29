@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * <p>This function will return a HTTP 401 status with
      * a {@link Error} JSON inside http response body.
      *
-     * @param response            rest response.
+     * @param response rest response.
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
@@ -60,6 +61,8 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         if (logger.isDebugEnabled()) {
             logger.debug("authentication commence {}", response);
         }
+
+        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
         httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
         httpServletResponse.getWriter().print(
                 mapper.writeValueAsString(response));
@@ -80,8 +83,8 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * }
      * </pre>
      *
-     * @param token               invalid token.
-     * @param error               portal error.
+     * @param token invalid token.
+     * @param error portal error.
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
@@ -100,7 +103,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * <p>Other authentication exceptions besides "token" exceptions do not need
      * to provide a token key inside error response.
      *
-     * @param error               portal error.
+     * @param error portal error.
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
@@ -120,9 +123,9 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * {@link ChallengeNotFoundException}s are thrown when client respond challenge with
      * invalid answers.
      *
-     * @param httpServletRequest  http request.
+     * @param httpServletRequest http request.
      * @param httpServletResponse http response.
-     * @param e                   authentication exception.
+     * @param e authentication exception.
      * @throws IOException
      * @throws ServletException
      */

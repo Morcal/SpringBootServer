@@ -1,9 +1,9 @@
 package cn.com.xinli.portal.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
-import java.util.StringJoiner;
 
 /**
  * Portal context.
@@ -12,11 +12,26 @@ import java.util.StringJoiner;
  *
  * @author zhoupeng 2016/2/21.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Context {
+    /** ip address. */
+    @JsonProperty
     private String ip;
+
+    /** Mac address. */
+    @JsonProperty
     private String mac;
+
+    /** nas ip. */
+    @JsonProperty("nas_ip")
     private String nasIp;
+
+    /** Extended information. */
+    @JsonProperty("extended_information")
     private String extendedInformation;
+
+    /** Session id. */
+    @JsonProperty("session")
     private String session;
 
     public String getIp() {
@@ -59,54 +74,13 @@ public class Context {
         this.session = session;
     }
 
-    public static Context parse(String value) {
-        if (StringUtils.isEmpty(value)) {
-            throw new IllegalArgumentException("context value can not be blank.");
-        }
-
-        final Context context = new Context();
-
-        Arrays.stream(value.split("&"))
-                .forEach(pair -> {
-                    String[] values = pair.split("=");
-                    if (values.length > 1) {
-                        switch (values[0]) {
-                            case "session":
-                                context.session = values[1];
-                                break;
-                            case "ip":
-                                context.ip = values[1];
-                                break;
-                            case "mac":
-                                context.mac = values[1];
-                                break;
-                            case "nas_ip":
-                                context.nasIp = values[1];
-                                break;
-                            case "extended_information":
-                                context.extendedInformation = values[1];
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                });
-
-        return context;
-    }
-
+    /**
+     * Check if context is valid.
+     * @return true if valid.
+     */
+    @JsonIgnore
     public boolean isValid() {
         return !StringUtils.isEmpty(ip);
-    }
-
-    public String encode() {
-        StringJoiner joiner = new StringJoiner("&");
-        joiner.add("session=" + session)
-                .add("ip=" + ip)
-                .add("mac=" + mac)
-                .add("nas_ip=" + nasIp)
-                .add("extended_information=" + extendedInformation);
-        return joiner.toString();
     }
 
     @Override

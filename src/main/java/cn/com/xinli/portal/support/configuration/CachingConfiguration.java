@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support.configuration;
 
+import cn.com.xinli.portal.core.Context;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
@@ -7,9 +8,11 @@ import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
 import cn.com.xinli.portal.support.ehcache.SessionSearchable;
-import cn.com.xinli.portal.util.Serializer;
+import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.util.SerializerAdapter;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.auth.token.DelimitedTokeKeySerializer;
+import cn.com.xinli.portal.web.auth.token.TokenKey;
 import net.sf.ehcache.Ehcache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -83,12 +86,20 @@ public class CachingConfiguration {
     /** {@link Ehcache} element version. */
     public static final long EHCACHE_VERSION = 1L;
 
+    /** Token key delimiter. */
+    private static final String TOKEN_KEY_DELIMITER = "::";
+
     @Autowired
     private ServerConfiguration serverConfiguration;
 
     @Bean
     public Serializer<Session> sessionSerializer() {
         return new SerializerAdapter<>(Session.class);
+    }
+
+    @Bean
+    public Serializer<Context> contextSerializer() {
+        return new SerializerAdapter<>(Context.class);
     }
 
     @Bean
@@ -99,6 +110,16 @@ public class CachingConfiguration {
     @Bean
     public Serializer<NasRule> nasRuleSerializer() {
         return new SerializerAdapter<>(NasRule.class);
+    }
+
+    @Bean(name = "delimiterTokenKeySerializer")
+    public Serializer<TokenKey> delimiterTokenKeySerializer() {
+        return new DelimitedTokeKeySerializer(TOKEN_KEY_DELIMITER);
+    }
+
+    @Bean(name = "jsonTokenKeySerializer")
+    public Serializer<TokenKey> jsonTokenKeySerializer() {
+        return new SerializerAdapter<>(TokenKey.class);
     }
 
     @Bean

@@ -1,9 +1,10 @@
-package cn.com.xinli.portal.util;
+package cn.com.xinli.portal.core;
 
 /**
  * Serializer.
  *
  * <p>Project: xpws
+ *
  * @param <T> target type.
  *
  * @author zhoupeng 2016/1/30.

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.FilterChain;
@@ -50,7 +51,7 @@ public class RateLimitingFilter extends AbstractRestFilter {
     private final Logger logger = LoggerFactory.getLogger(RateLimitingFilter.class);
 
     /** Json factory. */
-    private static final JsonFactory factory = new JsonFactory();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     /** Fallback error string. */
     private static final String RATE_LIMITING_REACHED_ERROR =
@@ -77,13 +78,13 @@ public class RateLimitingFilter extends AbstractRestFilter {
 
         String errorText;
         try {
-            errorText = new ObjectMapper(factory).writeValueAsString(error);
+            errorText = mapper.writeValueAsString(error);
         } catch (JsonProcessingException e) {
             errorText = RATE_LIMITING_REACHED_ERROR;
         }
 
         try {
-            response.setHeader("Content-Type", "application/json");
+            response.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.getWriter().write(errorText);
             response.getWriter().flush();

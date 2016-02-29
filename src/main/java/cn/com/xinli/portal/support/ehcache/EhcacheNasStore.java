@@ -9,7 +9,7 @@ import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.support.persist.NasPersistence;
 import cn.com.xinli.portal.util.AddressUtil;
-import cn.com.xinli.portal.util.Serializer;
+import cn.com.xinli.portal.core.Serializer;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
