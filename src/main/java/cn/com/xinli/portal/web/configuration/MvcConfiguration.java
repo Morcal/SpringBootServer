@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  *     "/css/**" with "classpath:/WEB-INF/static/css/"
  * </ul>
  * <p>
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/15.
  */

@@ -36,7 +36,7 @@ import java.util.Collection;
 /**
  * Authentication Provider.
  *
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -165,10 +165,10 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
                                    HttpDigestCredentials credentials,
                                    Collection<GrantedAuthority> authorities) {
         /* Credentials contains access token. */
-        Token verified = accessTokenService.verifyToken(
-                credentials.getParameter(HttpDigestCredentials.CLIENT_TOKEN));
+        final String key = credentials.getParameter(HttpDigestCredentials.CLIENT_TOKEN);
+        Token verified = accessTokenService.verifyToken(key);
         if (verified == null) {
-            throw new InvalidAccessTokenException("invalid client token.");
+            throw new InvalidAccessTokenException(key);
         }
         logger.debug("Access token verified.");
         authentication.setAuthenticated(true);

@@ -56,9 +56,9 @@ public class RedirectServiceSupport implements RedirectService {
             throw new RemoteException(PortalError.INVALID_REQUEST, "redirect url user ip missing");
         }
 
-        if (!StringUtils.equals(userIp, ip) ||
+        if (!StringUtils.equals(userIp, ip) /*||
                 (!StringUtils.isEmpty(userMac) && !StringUtils.isEmpty(mac) &&
-                !StringUtils.equals(userMac, AddressUtil.formatMac(mac)))) {
+                !StringUtils.equals(userMac, AddressUtil.formatMac(mac)))*/) {
             throw new RemoteException(PortalError.NAT_NOT_ALLOWED);
         }
 

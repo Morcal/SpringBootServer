@@ -54,6 +54,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      */
     protected abstract TokenScope getTokenScope();
 
+    /**
+     * Get token serializer.
+     * @return token serializer.
+     */
     protected abstract Serializer<TokenKey> getTokenKeySerializer();
 
     /**
@@ -104,11 +108,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         }
 
         /* Verify digest. */
-        String expectedShaHex;
         try {
-            expectedShaHex = sha(tokenKey);
+            String digest = sha(tokenKey);
 
-            if (!tokenKey.getDigest().equals(expectedShaHex)) {
+            if (!tokenKey.getDigest().equals(digest)) {
                 logger.debug("Key verification failed.");
                 return null;
             }
@@ -135,10 +138,10 @@ public abstract class AbstractTokenService implements TokenService, Initializing
         tokenKey.setCreationTime(creationTime);
         tokenKey.setExtendedInformation(extendedInformation);
 
-        final String shaHex;
+        final String digest;
         try {
-            shaHex = DigestUtils.sha256Hex(tokenKey.getContent());
-            tokenKey.setDigest(shaHex);
+            digest = sha(tokenKey);
+            tokenKey.setDigest(digest);
         } catch (ServerException e) {
             logger.warn("Failed to allocate token", e.getMessage());
         }

@@ -2,6 +2,7 @@ package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;

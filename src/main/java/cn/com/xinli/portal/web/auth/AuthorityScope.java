@@ -3,7 +3,7 @@ package cn.com.xinli.portal.web.auth;
 /**
  * System authority scope.
  *
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/29.
  */

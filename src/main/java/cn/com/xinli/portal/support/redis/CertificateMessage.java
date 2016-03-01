@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/31.
  */

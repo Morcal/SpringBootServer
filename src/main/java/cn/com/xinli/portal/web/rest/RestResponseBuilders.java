@@ -297,8 +297,8 @@ public class RestResponseBuilders {
             RestError error = new RestError();
             error.setError(this.error.getValue());
             error.setDescription(StringUtils.defaultString(description, error.getDescription()));
-            error.setUrl(StringUtils.defaultString(url));
-            error.setToken(StringUtils.defaultString(token));
+            error.setUrl(url);
+            error.setToken(token);
             return error;
         }
     }

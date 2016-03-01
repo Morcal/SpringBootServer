@@ -79,14 +79,14 @@ public class TokenKey {
      */
     @JsonIgnore
     public String getContent() {
-        return scope.name() + creationTime + random + extendedInformation;
+        return scope.alias() + creationTime + random + extendedInformation;
     }
 
     @Override
     public String toString() {
         return "TokenKey{" +
                 "creationTime=" + creationTime +
-                ", scope=" + scope +
+                ", scope=" + scope.alias() +
                 ", random='" + random + '\'' +
                 ", extendedInformation='" + extendedInformation + '\'' +
                 ", digest='" + digest + '\'' +

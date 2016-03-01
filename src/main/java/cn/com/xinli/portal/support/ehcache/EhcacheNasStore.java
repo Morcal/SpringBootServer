@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.support.ehcache;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
@@ -9,10 +9,10 @@ import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.support.persist.NasPersistence;
 import cn.com.xinli.portal.util.AddressUtil;
-import cn.com.xinli.portal.core.Serializer;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,9 +255,9 @@ public class EhcacheNasStore implements NasStore {
     }
 
     @Override
-    public Nas locate(Credentials credentials) throws NasNotFoundException {
-        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
-        final String key = Session.pair(credentials.getIp(), credentials.getMac());
+    public Nas locate(Pair<String, String> pair) throws NasNotFoundException {
+        Objects.requireNonNull(pair, "locate nas pair can not be null");
+        final String key = Session.pair(pair.getKey(), pair.getValue());
         Element element = nasMappingCache.get(key);
         if (element != null) {
             Nas nas = find((String) element.getObjectValue());

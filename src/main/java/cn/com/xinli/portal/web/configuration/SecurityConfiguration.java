@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  *     <li>Rate limiting filter</li>
  *     <li>{@link AuthenticationProvider}</li>
  * </ul>
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/10.
  */

@@ -16,8 +16,10 @@ public final class RestToken implements Token {
     /** Rest Token key. */
     private final String key;
 
+    /** Token type. */
     private final String type;
 
+    /** Internal token key. */
     private final TokenKey tokenKey;
 
     public RestToken(String key, String type, TokenKey tokenKey) {

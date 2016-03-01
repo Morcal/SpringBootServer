@@ -11,12 +11,13 @@ import java.util.Calendar;
 /**
  * Authentication success event handler.
  *
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/11.
  */
 @Component
-public class AuthenticationSuccessEventHandler implements ApplicationListener<AuthenticationSuccessEvent> {
+public class AuthenticationSuccessEventHandler
+        implements ApplicationListener<AuthenticationSuccessEvent> {
     @Autowired
     private ActivityService activityService;
 

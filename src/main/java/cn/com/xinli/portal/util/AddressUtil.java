@@ -42,7 +42,7 @@ public class AddressUtil {
     }
 
     /**
-     * Format mac address.
+     * Format mac address in format "xx:xx:xx:xx:xx:xx".
      * @param mac original mac.
      * @return formatted mac.
      */

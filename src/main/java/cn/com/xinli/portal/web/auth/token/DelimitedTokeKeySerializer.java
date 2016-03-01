@@ -3,11 +3,10 @@ package cn.com.xinli.portal.web.auth.token;
 import cn.com.xinli.portal.core.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.codec.Base64;
-import org.springframework.security.crypto.codec.Utf8;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -38,6 +37,11 @@ public class DelimitedTokeKeySerializer implements Serializer<TokenKey> {
         Objects.requireNonNull(tokenKey);
 
         StringJoiner joiner = new StringJoiner(delimiter);
+        joiner.add(tokenKey.getScope().alias())
+                .add(String.valueOf(tokenKey.getCreationTime()))
+                .add(tokenKey.getRandom())
+                .add(tokenKey.getExtendedInformation())
+                .add(tokenKey.getDigest());
         return joiner.toString().getBytes();
     }
 
@@ -49,7 +53,7 @@ public class DelimitedTokeKeySerializer implements Serializer<TokenKey> {
 
         String key = new String(bytes);
 
-        String[] tokens = StringUtils.delimitedListToStringArray(Utf8.decode(Base64.decode(Utf8.encode(key))), delimiter);
+        String[] tokens = StringUtils.delimitedListToStringArray(key, delimiter);
 
         if (tokens == null || tokens.length != 5) {
             return null;
@@ -57,8 +61,8 @@ public class DelimitedTokeKeySerializer implements Serializer<TokenKey> {
 
         TokenScope scope;
         try {
-            scope = TokenScope.valueOf(tokens[0]);
-        } catch (IllegalArgumentException e) {
+            scope = TokenScope.of(tokens[0]).get();
+        } catch (IllegalArgumentException | NoSuchElementException e) {
             logger.debug("Invalid token scope.");
             return null;
         }
@@ -73,7 +77,7 @@ public class DelimitedTokeKeySerializer implements Serializer<TokenKey> {
 
         String random = tokens[2];
         String extendedInformation = tokens[3];
-        String sha512Hex = tokens[4];
+        String digest = tokens[4];
 
         if (StringUtils.isEmpty(extendedInformation)) {
             logger.debug("Empty token extended information.");
@@ -85,7 +89,7 @@ public class DelimitedTokeKeySerializer implements Serializer<TokenKey> {
         tokenKey.setCreationTime(creationTime);
         tokenKey.setRandom(random);
         tokenKey.setExtendedInformation(extendedInformation);
-        tokenKey.setDigest(sha512Hex);
+        tokenKey.setDigest(digest);
 
         return tokenKey;
     }

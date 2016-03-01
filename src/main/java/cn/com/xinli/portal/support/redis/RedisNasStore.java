@@ -7,6 +7,7 @@ import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.support.configuration.ClusterConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +78,8 @@ public class RedisNasStore implements NasStore {
     String keyFor(String ip, String mac) {
         return "nas:" + ip + ":" + mac;
     }
-    String keyFor(Credentials credentials) {
-        return keyFor(credentials.getIp(), credentials.getMac());
+    String keyFor(Pair<String, String> pair) {
+        return keyFor(pair.getKey(), pair.getValue());
     }
 
     void ensureId(Nas nas) {
@@ -194,11 +195,11 @@ public class RedisNasStore implements NasStore {
     }
 
     @Override
-    public Nas locate(Credentials credentials) throws NasNotFoundException {
-        Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
-        Nas nas = redisNasTemplate.opsForValue().get(keyFor(credentials));
+    public Nas locate(Pair<String, String> pair) throws NasNotFoundException {
+        Objects.requireNonNull(pair, "locate nas pair can not be null");
+        Nas nas = redisNasTemplate.opsForValue().get(keyFor(pair));
         if (nas == null) {
-            throw new NasNotFoundException(credentials.toString());
+            throw new NasNotFoundException(pair.toString());
         }
         return nas;
     }

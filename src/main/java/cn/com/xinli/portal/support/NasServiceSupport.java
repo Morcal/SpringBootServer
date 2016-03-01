@@ -3,6 +3,7 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.nas.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -115,7 +116,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
         Objects.requireNonNull(credentials, Credentials.EMPTY_CREDENTIALS);
 
         try {
-            return nasStore.locate(credentials);
+            return nasStore.locate(Pair.of(credentials.getIp(), credentials.getMac()));
         } catch (NasNotFoundException e) {
             if (logger.isTraceEnabled()) {
                 logger.trace("incoming request not mapped (through web redirect), trying rules.");

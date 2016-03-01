@@ -62,7 +62,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             logger.debug("authentication commence {}", response);
         }
 
-        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
+        httpServletResponse.setContentType(MediaType.APPLICATION_JSON_UTF8.toString());
         httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
         httpServletResponse.getWriter().print(
                 mapper.writeValueAsString(response));
@@ -94,6 +94,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         respond(RestResponseBuilders.errorBuilder()
                 .setToken(token)
                 .setError(error)
+                .setDescription(error.getReason())
                 .build(), httpServletResponse);
     }
 
@@ -111,6 +112,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             throws IOException {
         respond(RestResponseBuilders.errorBuilder()
                 .setError(error)
+                .setDescription(error.getReason())
                 .build(), httpServletResponse);
     }
 

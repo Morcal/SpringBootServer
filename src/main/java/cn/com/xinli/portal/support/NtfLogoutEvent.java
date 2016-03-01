@@ -3,7 +3,7 @@ package cn.com.xinli.portal.support;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/31.
  */

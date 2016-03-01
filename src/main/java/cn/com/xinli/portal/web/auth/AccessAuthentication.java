@@ -13,7 +13,7 @@ import java.util.Collection;
  * <p>Newly created {@link AccessAuthentication} has no any
  * of {@link GrantedAuthority}s.</p>
  *
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/16.
  */
@@ -80,5 +80,15 @@ public class AccessAuthentication extends AbstractAuthenticationToken {
     @Override
     public String getPrincipal() {
         return principal;
+    }
+
+    @Override
+    public String toString() {
+        return "AccessAuthentication{" +
+                "principal='" + principal + '\'' +
+                ", credentials=[PROTECTED]" +
+                ", sessionToken=" + sessionToken +
+                ", accessToken=" + accessToken +
+                '}';
     }
 }

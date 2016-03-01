@@ -76,6 +76,14 @@ public class SessionControllerImpl implements SessionController {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
+    /**
+     * Build session response.
+     * @param session session.
+     * @param authentication authentication.
+     * @param grantToken should response contains token.
+     * @param context session context.
+     * @return rest response.
+     */
     private RestResponse buildResponse(Session session,
                                        AccessAuthentication authentication,
                                        boolean grantToken,
@@ -95,20 +103,31 @@ public class SessionControllerImpl implements SessionController {
                 .build();
     }
 
-    Context createContext(Credentials credentials,
-                          String redirectUrl,
-                          String ip,
-                          String mac) throws RemoteException, NasNotFoundException {
+    /**
+     * Create session context.
+     * @param credentials credentials.
+     * @param redirectUrl redirect url.
+     * @return session context.
+     * @throws RemoteException
+     * @throws NasNotFoundException
+     */
+    Context createContext(Credentials credentials, String redirectUrl) throws RemoteException, NasNotFoundException {
 
         Redirection input = Redirection.parse(redirectUrl);
-        Redirection redirection = redirectService.verify(input, ip, mac);
+        Redirection redirection = redirectService.verify(input, credentials.getIp(), credentials.getMac());
         if (logger.isDebugEnabled()) {
             logger.debug("redirection: {}", redirection);
         }
 
+        final String ip = redirection.getParameter(Redirection.USER_IP),
+                mac = redirection.getParameter(Redirection.USER_MAC);
+
         Context context = new Context();
         context.setIp(ip);
         context.setMac(mac);
+
+        /* Update credentials' mac to redirect url mac. */
+        credentials.setMac(mac);
 
         String nasIp = redirection.getParameter(Redirection.NAS_IP);
         if (!StringUtils.isEmpty(nasIp)) {
@@ -149,7 +168,7 @@ public class SessionControllerImpl implements SessionController {
         String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
         Certificate certificate = certificateService.loadCertificate(app);
 
-        Context context = createContext(credentials, redirectUrl, ip, mac);
+        Context context = createContext(credentials, redirectUrl);
 
         Session session = sessionManager.createSession(certificate, credentials);
         if (logger.isTraceEnabled()) {
@@ -293,7 +312,8 @@ public class SessionControllerImpl implements SessionController {
             }
         }
 
-        Optional<Session> opt = findSession(ctx, ip, mac);
+        String formatted = AddressUtil.formatMac(mac);
+        Optional<Session> opt = findSession(ctx, ip, formatted);
 
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.successBuilder()

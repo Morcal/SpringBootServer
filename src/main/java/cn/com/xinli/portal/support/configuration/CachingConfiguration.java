@@ -87,7 +87,7 @@ public class CachingConfiguration {
     public static final long EHCACHE_VERSION = 1L;
 
     /** Token key delimiter. */
-    private static final String TOKEN_KEY_DELIMITER = "::";
+    private static final String TOKEN_KEY_DELIMITER = ":";
 
     @Autowired
     private ServerConfiguration serverConfiguration;

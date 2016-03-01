@@ -25,7 +25,7 @@ public class SessionBean {
     private long tokenExpiresIn;
 
     /** If server requires client to keep alive. */
-    @JsonProperty
+    @JsonProperty("keepalive")
     private boolean keepAlive;
 
     /** UNIX epoch time this session started at. */

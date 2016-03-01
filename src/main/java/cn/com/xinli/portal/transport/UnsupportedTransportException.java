@@ -3,7 +3,7 @@ package cn.com.xinli.portal.transport;
 /**
  * Portal protocol not supported exception.
  *
- * Project: xpws
+  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/22.
  */
