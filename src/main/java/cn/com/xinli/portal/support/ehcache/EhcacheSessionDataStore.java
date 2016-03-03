@@ -93,9 +93,9 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Scheduled(fixedDelay = 10_000L)
     public void evictExpiredSessions() {
         if (serverConfiguration.getSessionConfiguration().isEnableTtl()) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Evicting expired sessions.");
-            }
+//            if (logger.isTraceEnabled()) {
+//                logger.trace("Evicting expired sessions.");
+//            }
             sessionCache.evictExpiredElements();
         }
     }

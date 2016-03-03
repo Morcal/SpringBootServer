@@ -52,6 +52,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
     public static final String SESSION_HEARTBEAT_ENABLED = "session.heartbeat.enabled";
     public static final String SESSION_HEARTBEAT_INTERVAL = "session.heartbeat.interval";
     public static final String SESSION_UPDATE_MIN_INTERVAL = "session.update.min-interval";
+    public static final String SESSION_REMOVE_QUEUE_MAX_LENGTH = "session.remove.queue.max-length";
     /** Rate-limiting configurations. */
     public static final String RATE_LIMITING_ENABLED = "rate-limiting.enabled";
     public static final String RATE_LIMITING_RATE = "rate-limiting.rate";
@@ -95,6 +96,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         SessionConfiguration session = new SessionConfiguration();
         session.setEnableHeartbeat(config.valueOf(SESSION_HEARTBEAT_ENABLED));
         session.setTokenTtl(config.valueOf(SESSION_TOKEN_TTL));
+        session.setRemoveQueueMaxLength(config.valueOf(SESSION_REMOVE_QUEUE_MAX_LENGTH));
         if (session.isEnableHeartbeat()) {
             session.setHeartbeatInterval(config.valueOf(SESSION_HEARTBEAT_INTERVAL));
         }
@@ -184,6 +186,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 Entry.of(SESSION_HEARTBEAT_ENABLED, ValueType.BOOLEAN),
                 Entry.of(SESSION_HEARTBEAT_INTERVAL, ValueType.INTEGER),
                 Entry.of(SESSION_UPDATE_MIN_INTERVAL, ValueType.INTEGER),
+                Entry.of(SESSION_REMOVE_QUEUE_MAX_LENGTH, ValueType.INTEGER),
                 /* Rate-limiting configurations. */
                 Entry.of(RATE_LIMITING_ENABLED, ValueType.BOOLEAN),
                 Entry.of(RATE_LIMITING_RATE, ValueType.INTEGER),

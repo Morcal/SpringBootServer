@@ -24,9 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Session Service Support.
@@ -71,14 +69,25 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     private NasLocator nasLocator;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
-
-    @Autowired
     private List<SessionProvider> sessionProviders;
 
-    /** Remover executor. */
-    private ExecutorService executor = Executors.newFixedThreadPool(
-            2, r -> new Thread(r, "session-service-remover"));
+    /** Session update minimum interval. */
+    private int updateMinInterval;
+
+    /** Remove queue. */
+    private final BlockingQueue<Session> removeQueue;
+
+    @Autowired
+    public SessionServiceSupport(ServerConfiguration serverConfiguration) {
+        updateMinInterval = serverConfiguration.getSessionConfiguration().getMinUpdateInterval();
+        removeQueue = new ArrayBlockingQueue<>(
+                serverConfiguration.getSessionConfiguration().getRemoveQueueMaxLength());
+        /* Remover executor. */
+        ExecutorService executor = Executors.newFixedThreadPool(
+                2,
+                r -> new Thread(r, "session-service-remover"));
+        executor.submit((Runnable) this::removeSessionFromQueue);
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -90,18 +99,32 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         return sessionStore.exists(id);
     }
 
-    @Override
-    public Future<?> removeSessionInFuture(Session session) {
-        Objects.requireNonNull(session);
-        return executor.submit(() -> {
+    /**
+     * Remove session from queue.
+     */
+    private void removeSessionFromQueue() {
+        logger.info("starting session removing task.");
+        while (true) {
             try {
+                Session session = removeQueue.take();
+                Objects.requireNonNull(session);
                 removeSessionInternal(session);
             } catch (PortalException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("remove session error, {}", e.getMessage());
-                }
+                logger.info("remove session error, {}", e.getMessage());
+            } catch (InterruptedException e) {
+                logger.info("Session service interrupted.");
+                break;
             }
-        });
+        }
+    }
+
+    @Override
+    public boolean removeSessionInFuture(Session session) {
+        boolean ret = removeQueue.offer(session);
+        if (!ret) {
+            logger.error("failed to add session remove queue, {}", session);
+        }
+        return ret;
     }
 
     @Override
@@ -284,8 +307,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         logger.trace("session last update time: {}, current update time: {}",
                 lastUpdateTime, timestamp);
 
-        if (Math.abs(lastUpdateTime - timestamp) <=
-                serverConfiguration.getSessionConfiguration().getMinUpdateInterval()) {
+        if (Math.abs(lastUpdateTime - timestamp) <= updateMinInterval) {
             /* Assume it's a replay attack. */
             throw new RemoteException(PortalError.INVALID_UPDATE_TIMESTAMP);
         }

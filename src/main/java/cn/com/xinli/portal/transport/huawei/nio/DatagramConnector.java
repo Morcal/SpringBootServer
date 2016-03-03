@@ -40,37 +40,44 @@ public final class DatagramConnector extends AbstractConnector {
     @Override
     public Optional<Packet> request(Packet request) throws IOException {
         DatagramSocket socket = null;
+        int retry = 3;
 
         try {
             /* Send request to remote. */
             socket = new DatagramSocket();
-            socket.setSoTimeout(10_000);
+            socket.setSoTimeout(3_000);
             ByteBuffer buffer = codecFactory.getEncoder().encode(request, endpoint.getSharedSecret());
 
             DatagramPacket out = new DatagramPacket(
                     buffer.array(), buffer.remaining(), endpoint.getAddress(), endpoint.getPort());
-            socket.send(out);
 
-            if (logger.isTraceEnabled()) {
-                logger.debug("portal request: {}", request);
-                logger.trace("SEND {{}}", TransportUtils.bytesToHexString(out.getData(), buffer.remaining()));
-            }
+            do {
+                try {
+                    socket.send(out);
 
-            /* Try to receive from remote. */
-            int capacity = 1024;
-            byte[] buf = new byte[capacity];
-            DatagramPacket response = new DatagramPacket(buf, buf.length);
-            socket.receive(response);
+                    if (logger.isTraceEnabled()) {
+                        logger.debug("{}portal request: {}", (retry < 3 ? "Retry " : ""), request);
+                        logger.trace("SEND {{}}", TransportUtils.bytesToHexString(out.getData(), buffer.remaining()));
+                    }
 
-            /* Decode response. */
-            buffer.clear();
-            buffer.put(response.getData(), 0, response.getLength());
-            buffer.flip();
-            Packet responsePacket = codecFactory.getDecoder()
-                    .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
-            return Optional.ofNullable(responsePacket);
-        } catch (SocketTimeoutException e) {
-            logger.warn("* Receive from endpoint timeout, endpoint: {}", endpoint);
+                    /* Try to receive from remote. */
+                    int capacity = 1024;
+                    byte[] buf = new byte[capacity];
+                    DatagramPacket response = new DatagramPacket(buf, buf.length);
+                    socket.receive(response);
+
+                    /* Decode response. */
+                    buffer.clear();
+                    buffer.put(response.getData(), 0, response.getLength());
+                    buffer.flip();
+                    Packet responsePacket = codecFactory.getDecoder()
+                            .decode(request.getAuthenticator(), buffer, endpoint.getSharedSecret());
+                    return Optional.ofNullable(responsePacket);
+                } catch (SocketTimeoutException e) {
+                    logger.warn("* Receive from endpoint timeout, endpoint: {}", endpoint);
+                }
+            } while (--retry > 0);
+
             return Optional.empty();
         } finally {
             if (socket != null) {

@@ -37,5 +37,5 @@ public interface SessionManager {
      * @param session session.
      * @return future.
      */
-    Future<?> removeSessionInFuture(Session session);
+    boolean removeSessionInFuture(Session session);
 }

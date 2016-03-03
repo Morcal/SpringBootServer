@@ -32,6 +32,9 @@ public class SessionConfiguration {
     /** Session token time to live in seconds. */
     private int tokenTtl;
 
+    /** Remove queue max length. */
+    private int removeQueueMaxLength;
+
     public boolean isEnableTtl() {
         return enableTtl;
     }
@@ -80,15 +83,24 @@ public class SessionConfiguration {
         this.tokenTtl = tokenTtl;
     }
 
+    public int getRemoveQueueMaxLength() {
+        return removeQueueMaxLength;
+    }
+
+    public void setRemoveQueueMaxLength(int removeQueueMaxLength) {
+        this.removeQueueMaxLength = removeQueueMaxLength;
+    }
+
     @Override
     public String toString() {
         return "SessionConfiguration{" +
                 "enableTtl=" + enableTtl +
                 ", ttl=" + ttl +
-                ", tokenTtl=" + tokenTtl +
                 ", enableHeartbeat=" + enableHeartbeat +
                 ", heartbeatInterval=" + heartbeatInterval +
                 ", minUpdateInterval=" + minUpdateInterval +
+                ", tokenTtl=" + tokenTtl +
+                ", removeQueueMaxLength=" + removeQueueMaxLength +
                 '}';
     }
 }
