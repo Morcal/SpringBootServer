@@ -115,6 +115,8 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                                             HttpServletResponse response,
                                             Authentication authentication,
                                             AuthenticationException failed) {
+        request.setAttribute(AccessAuthentication.FAILED_AUTHENTICATION, authentication);
+
         SecurityContextHolder.clearContext();
         if (logger.isTraceEnabled()) {
             logger.trace("* Cleared security context due to exception, {}", failed.getMessage());
@@ -159,6 +161,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                  * Only start authentication when request access protected resources
                  * and there's credentials inside the request.
                  */
+                AccessAuthentication authentication = AccessAuthentication.empty();
                 try {
                     if (logger.isTraceEnabled()) {
                         logger.trace("Checking secure context authentication: {}",
@@ -171,7 +174,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                         throw new BadCredentialsException("principal not found.");
                     }
 
-                    AccessAuthentication authentication = new AccessAuthentication(principal, credentials);
+                    authentication = new AccessAuthentication(principal, credentials);
                     authentication.setDetails(createRestRequest(request, credentials));
 
                     Authentication result = authenticationManager.authenticate(authentication);
@@ -181,7 +184,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                         logger.trace("authorities: {}.", result.getAuthorities());
                     }
                 } catch (AuthenticationException e) {
-                    unsuccessfulAuthentication(request, response, AccessAuthentication.empty(), e);
+                    unsuccessfulAuthentication(request, response, authentication, e);
                     if (!continueFilterChainOnUnsuccessful) {
                         authenticationEntryPoint.commence(request, response, e);
                         return; // skip filter china on unsuccessful.

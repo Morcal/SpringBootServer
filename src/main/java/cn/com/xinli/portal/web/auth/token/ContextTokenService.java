@@ -51,11 +51,11 @@ public class ContextTokenService extends AbstractTokenService {
     }
 
     /**
-     * Parse a string to a context.
+     * Decode a string to a context.
      * @param value context string.
      * @return context.
      */
-    public Context parse(String value) throws RemoteException {
+    public Context decode(String value) throws RemoteException {
         if (StringUtils.isEmpty(value)) {
             throw new RemoteException(PortalError.INVALID_REQUEST, "context value can not be blank.");
         }
@@ -85,7 +85,7 @@ public class ContextTokenService extends AbstractTokenService {
     protected boolean verifyExtendedInformation(String extendedInformation) {
         Context context;
         try {
-            context = parse(extendedInformation);
+            context = decode(extendedInformation);
 
             return context.isValid() &&
                     sessionService.exists(Long.valueOf(context.getSession()));

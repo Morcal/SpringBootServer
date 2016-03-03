@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.token.Token;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -230,6 +231,8 @@ public class RestAuthenticationProvider implements AuthenticationProvider, Initi
         } else {
             throw new BadCredentialsException("invalid digest credentials.");
         }
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         /* Now we handle session token if present. */
         if (HttpDigestCredentials.containsSessionToken(credentials)) {

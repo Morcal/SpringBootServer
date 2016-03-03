@@ -18,6 +18,9 @@ import java.util.Collection;
  * @author zhoupeng 2015/12/16.
  */
 public class AccessAuthentication extends AbstractAuthenticationToken {
+    /** request failed authentication attribute name. */
+    public static final String FAILED_AUTHENTICATION = ".AUTHENTICATION.FILTER.FAILED";
+
     /** Authentication principal. */
     private final String principal;
 

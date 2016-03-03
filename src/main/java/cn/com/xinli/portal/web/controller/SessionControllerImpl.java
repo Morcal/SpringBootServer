@@ -277,18 +277,17 @@ public class SessionControllerImpl implements SessionController {
      * @throws SessionNotFoundException
      * @throws RemoteException
      */
-    Optional<Session> findSession(Token context, String ip, String mac)
+    Optional<Session> findSession(Context context, String ip, String mac)
             throws SessionNotFoundException, RemoteException {
         if (context == null) {
             /* Without context, can only find session by ip and mac. */
             return sessionService.find(ip, mac);
         } else {
-            Context ctx = contextTokenService.parse(context.getExtendedInformation());
-            if (!ctx.isValid() || StringUtils.isEmpty(ctx.getSession())) {
+            if (!context.isValid() || StringUtils.isEmpty(context.getSession())) {
                 return Optional.empty();
             }
 
-            return Optional.of(sessionService.getSession(Long.valueOf(ctx.getSession())));
+            return Optional.of(sessionService.getSession(Long.valueOf(context.getSession())));
         }
     }
 
@@ -303,17 +302,18 @@ public class SessionControllerImpl implements SessionController {
             throws PortalException {
         RestResponse rs;
 
+        Context c = null;
         Token ctx = contextTokenService.verifyToken(context);
         if (ctx != null) {
             /* context token is not null only if token is valid and session exists. */
-            Context c = contextTokenService.parse(context);
+            c = contextTokenService.decode(ctx.getExtendedInformation());
             if (!StringUtils.equals(c.getIp(), ip)) {
                 throw new RemoteException(PortalError.NETWORK_CHANGED);
             }
         }
 
         String formatted = AddressUtil.formatMac(mac);
-        Optional<Session> opt = findSession(ctx, ip, formatted);
+        Optional<Session> opt = findSession(c, ip, formatted);
 
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.successBuilder()

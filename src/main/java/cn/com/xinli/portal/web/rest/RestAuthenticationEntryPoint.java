@@ -1,7 +1,9 @@
 package cn.com.xinli.portal.web.rest;
 
+import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.BadRestCredentialsException;
 import cn.com.xinli.portal.web.auth.challenge.ChallengeNotFoundException;
+import cn.com.xinli.portal.web.auth.token.RestToken;
 import cn.com.xinli.portal.web.auth.token.TokenContainer;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalErrorContainer;
@@ -11,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.*;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
@@ -56,10 +58,15 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
-    private void respond(RestResponse response, HttpServletResponse httpServletResponse)
+    private void respond(RestToken accessToken, RestResponse response, HttpServletResponse httpServletResponse)
             throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug("authentication commence {}", response);
+        }
+
+        /* Respond access token if presents. */
+        if (accessToken != null) {
+            response.setAuthorization(RestResponseBuilders.authorizationBuilder(accessToken).build());
         }
 
         httpServletResponse.setContentType(MediaType.APPLICATION_JSON_UTF8.toString());
@@ -88,14 +95,16 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
-    private void commenceToken(String token,
+    private void commenceToken(RestToken accessToken,
+                               String token,
                                PortalError error,
                                HttpServletResponse httpServletResponse) throws IOException {
-        respond(RestResponseBuilders.errorBuilder()
-                .setToken(token)
-                .setError(error)
-                .setDescription(error.getReason())
-                .build(), httpServletResponse);
+        respond(accessToken,
+                RestResponseBuilders.errorBuilder()
+                        .setToken(token)
+                        .setError(error)
+                        .setDescription(error.getReason())
+                        .build(), httpServletResponse);
     }
 
     /**
@@ -108,12 +117,13 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
      * @param httpServletResponse servlet http response.
      * @throws IOException
      */
-    private void commence(PortalError error, HttpServletResponse httpServletResponse)
+    private void commence(RestToken accessToken, PortalError error, HttpServletResponse httpServletResponse)
             throws IOException {
-        respond(RestResponseBuilders.errorBuilder()
-                .setError(error)
-                .setDescription(error.getReason())
-                .build(), httpServletResponse);
+        respond(accessToken,
+                RestResponseBuilders.errorBuilder()
+                        .setError(error)
+                        .setDescription(error.getReason())
+                        .build(), httpServletResponse);
     }
 
     /**
@@ -137,19 +147,24 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException e) throws IOException, ServletException {
         assert e != null;
 
+        AccessAuthentication authentication = (AccessAuthentication) httpServletRequest.getAttribute(
+                AccessAuthentication.FAILED_AUTHENTICATION);
+
+        RestToken accessToken = authentication.getAccessToken();
+
         if (e instanceof PortalErrorContainer) {
             /* System defined exceptions. */
             PortalError error = PortalErrorContainer.class.cast(e).getPortalError();
 
             if (e instanceof TokenContainer) {
                 String token = TokenContainer.class.cast(e).getToken();
-                commenceToken(token, error, httpServletResponse);
+                commenceToken(accessToken, token, error, httpServletResponse);
             } else {
-                commence(error, httpServletResponse);
+                commence(accessToken, error, httpServletResponse);
             }
         } else {
             /* Generic authentication exception thrown by spring-security. */
-            commence(PortalError.REST_AUTHENTICATION_ERROR, httpServletResponse);
+            commence(accessToken, PortalError.REST_AUTHENTICATION_ERROR, httpServletResponse);
         }
     }
 }
