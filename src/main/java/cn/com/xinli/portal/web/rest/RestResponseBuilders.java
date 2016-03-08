@@ -32,7 +32,7 @@ public class RestResponseBuilders {
         private boolean truncated;
 
         /** Server time (UNIX epoch time) when response was created. */
-        private long createdAt;
+        long createdAt;
 
         int sessionTokenTtl;
         int challengeTtl;
@@ -96,14 +96,20 @@ public class RestResponseBuilders {
                 HttpDigestCredentials credentials = accessAuthentication.getCredentials();
                 if (HttpDigestCredentials.containsChallenge(credentials)) {
                     /* Set authorization only when response to challenge. */
-                    response.setAuthorization(authorizationBuilder(accessAuthentication.getAccessToken()).build());
+                    AuthorizationBuilder builder = authorizationBuilder(accessAuthentication.getAccessToken());
+                    builder.setAccessTokenTtl(accessTokenTtl);
+                    response.setAuthorization(builder.build());
                 }
             } else {
                 response.setAuthorization(null);
             }
 
             /* Build authentication if present. */
-            response.setAuthentication(challenge == null ? null : authenticationBuilder(challenge).build());
+            if (challenge != null) {
+                AuthenticationBuilder builder = authenticationBuilder(challenge);
+                builder.setChallengeTtl(challengeTtl);
+                response.setAuthentication(builder.build());
+            }
 
             return target;
         }
@@ -226,19 +232,21 @@ public class RestResponseBuilders {
             if (session == null) {
                 response.setSession(null);
             } else {
-                response.setSession(
-                        sessionBuilder(
-                                session,
-                                accessAuthentication.getSessionToken(),
-                                requiresKeepAlive,
-                                keepAliveInterval,
-                                context)
-                                .build());
+                SessionBuilder builder = sessionBuilder(
+                        session,
+                        accessAuthentication.getSessionToken(),
+                        requiresKeepAlive,
+                        keepAliveInterval,
+                        context);
+                builder.setSessionTokenTtl(sessionTokenTtl);
+                response.setSession(builder.build());
             }
 
             if (accessAuthentication == null || !grantToken) {
-                response.setSession(
-                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval, context).build());
+                SessionBuilder builder =
+                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval, context);
+                builder.setSessionTokenTtl(sessionTokenTtl);
+                response.setSession(builder.build());
             }
 
             return response;
@@ -370,6 +378,8 @@ public class RestResponseBuilders {
                 authentication.setExpiresIn(challengeTtl);
                 authentication.setChallenge(challenge.getChallenge());
                 authentication.setNonce(challenge.getNonce());
+                authentication.setExpiresAt(createdAt + challengeTtl);
+                authentication.setExpiresIn(challengeTtl);
                 return authentication;
             }
         }
@@ -394,6 +404,7 @@ public class RestResponseBuilders {
                 Authorization authorization = new Authorization();
                 authorization.setToken(token.getKey());
                 authorization.setExpiresIn(accessTokenTtl);
+                authorization.setExpiresAt(createdAt + accessTokenTtl);
                 authorization.setScope(token.getScope().alias());
                 authorization.setRefreshToken(""); /* Refresh token not supported yet. */
                 return authorization;

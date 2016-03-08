@@ -72,7 +72,9 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
     @Override
     public void deleteChallenge(Challenge challenge) {
         challengeCache.remove(challenge.getNonce());
-        logger.info("challenge: {} deleted.", challenge);
+        if (logger.isDebugEnabled()) {
+            logger.debug("challenge: {} deleted.", challenge);
+        }
     }
 
     @Override
@@ -81,6 +83,7 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
         if (element == null) {
             throw new ChallengeNotFoundException("nonce: " + nonce + ".");
         }
+
         return (Challenge) element.getObjectValue();
     }
 

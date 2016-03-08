@@ -62,7 +62,7 @@ public class RestError extends RestResponse {
 
     @Override
     public String toString() {
-        return "RestError{" +
+        return super.toString() + " RestError{" +
                 "error=" + error +
                 ", token='" + token + '\'' +
                 ", description='" + description + '\'' +

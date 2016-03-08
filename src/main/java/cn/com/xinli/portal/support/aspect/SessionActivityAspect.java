@@ -8,6 +8,7 @@ import cn.com.xinli.portal.core.session.SessionService;
 import cn.com.xinli.portal.web.admin.ActivityService;
 import cn.com.xinli.portal.web.controller.SessionController;
 import cn.com.xinli.portal.web.rest.RestResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class SessionActivityAspect {
         Activity activity = new Activity();
         activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(severity);
-        activity.setResult(result);
+        activity.setResult(StringUtils.abbreviate(result, 256));
         activity.setRemote(ip);
         activity.setAction(sessionAction.name());
         activity.setFacility(Activity.Facility.PORTAL);

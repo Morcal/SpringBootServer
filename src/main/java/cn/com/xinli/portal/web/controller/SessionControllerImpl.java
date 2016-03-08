@@ -84,7 +84,7 @@ public class SessionControllerImpl implements SessionController {
      * @param context session context.
      * @return rest response.
      */
-    private RestResponse buildResponse(Session session,
+    private RestResponse buildSessionResponse(Session session,
                                        AccessAuthentication authentication,
                                        boolean grantToken,
                                        Token context) {
@@ -188,7 +188,7 @@ public class SessionControllerImpl implements SessionController {
         context.setSession(String.valueOf(session.getId()));
         Token ctx = contextTokenService.allocateToken(contextTokenService.encode(context));
 
-        RestResponse rs = buildResponse(session, authentication, true, ctx);
+        RestResponse rs = buildSessionResponse(session, authentication, true, ctx);
 
         if (logger.isDebugEnabled()) {
             logger.debug("connect -> {} ", rs);
@@ -211,7 +211,7 @@ public class SessionControllerImpl implements SessionController {
 
         logger.info("get session {{}}", session.getId());
 
-        RestResponse rs = buildResponse(session, (AccessAuthentication) principal, false, null);
+        RestResponse rs = buildSessionResponse(session, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("get -> {} ", rs);
@@ -237,7 +237,7 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session {{}} updated", updated.getId());
 
         /* send updated session information. */
-        RestResponse rs = buildResponse(updated, (AccessAuthentication) principal, false, null);
+        RestResponse rs = buildSessionResponse(updated, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("update -> {} ", rs);
@@ -256,9 +256,7 @@ public class SessionControllerImpl implements SessionController {
         sessionManager.removeSession(id);
         logger.info("session removed {}.", id);
 
-        RestResponse rs = RestResponseBuilders.successBuilder()
-                .setAccessAuthentication((AccessAuthentication) principal)
-                .build();
+        RestResponse rs = buildSessionResponse(null, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("disconnect -> {} ", rs);
@@ -316,9 +314,7 @@ public class SessionControllerImpl implements SessionController {
         Optional<Session> opt = findSession(c, ip, formatted);
 
         if (!opt.isPresent()) {
-            rs = RestResponseBuilders.successBuilder()
-                    .setAccessAuthentication((AccessAuthentication) principal)
-                    .build();
+            rs = buildSessionResponse(null, (AccessAuthentication) principal, false, null);
         } else {
             Session session = opt.get();
 
@@ -333,7 +329,7 @@ public class SessionControllerImpl implements SessionController {
 
             logger.info("session found, id: {}", session.getId());
 
-            rs = buildResponse(session, (AccessAuthentication) principal, true, ctx);
+            rs = buildSessionResponse(session, (AccessAuthentication) principal, true, ctx);
         }
 
         if (logger.isDebugEnabled()) {

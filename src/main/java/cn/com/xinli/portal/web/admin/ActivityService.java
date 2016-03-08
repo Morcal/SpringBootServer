@@ -14,12 +14,11 @@ import cn.com.xinli.portal.core.activity.Activity;
 public interface ActivityService {
     /**
      * Log an activity.
-     * <p>
-     * Given activity may be persisted according to its
+     *
+     * <p>Given activity may be persisted according to its
      * {@link Activity.Severity} and(or)
      * {@link Activity.Facility} and(or)
      * {@link Activity.SessionAction}.
-     * </p>
      *
      * @param activity activity to logger.
      */

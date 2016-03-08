@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support.aspect;
 
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.web.admin.ActivityService;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -37,7 +38,7 @@ public class SystemActivityAspect {
         activity.setFacility(Activity.Facility.SYSTEM);
         activity.setAction(Activity.SystemAction.DELETE_OLD_ACTIVITIES.name());
         activity.setRemote("none");
-        activity.setResult(result);
+        activity.setResult(StringUtils.abbreviate(result, 256));
         activity.setSeverity(Activity.Severity.INFO);
         activity.setSourceInfo("system automation");
         activity.setCreated(Calendar.getInstance().getTime());

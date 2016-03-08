@@ -43,11 +43,15 @@ public class RestAuthorizationServer implements AuthorizationServer {
     }
 
     @Override
-    public Challenge createChallenge(String clientId, String scope, boolean requireToken, boolean needRefreshToken) {
+    public Challenge createChallenge(String clientId,
+                                     String scope,
+                                     boolean requireToken,
+                                     boolean needRefreshToken) {
         String nonce = secureRandomGenerator.generateUniqueRandomString(32),
                 challenge = secureRandomGenerator.generateUniqueRandomString(32);
 
-        Challenge cha = challengeManager.createChallenge(nonce, clientId, challenge, scope, requireToken, needRefreshToken);
+        Challenge cha = challengeManager.createChallenge(
+                nonce, clientId, challenge, scope, requireToken, needRefreshToken);
         if (logger.isDebugEnabled()) {
             logger.debug("challenge created: {}.", cha);
         }

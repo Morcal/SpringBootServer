@@ -259,7 +259,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     @Override
     public void removeSession(long id) throws PortalException {
         Session session = sessionStore.get(id);
-        //Session session = sessionRepository.findOne(id);
         if (session == null) {
             throw new SessionNotFoundException(id);
         }

@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.web.controller;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.core.PortalError;
@@ -32,6 +33,9 @@ public class AuthorizeController {
     @Autowired
     private AuthorizationServer authorizationServer;
 
+    @Autowired
+    private ServerConfiguration serverConfiguration;
+
     @ResponseBody
     @RequestMapping("/authorize")
     public RestResponse authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,
@@ -47,12 +51,6 @@ public class AuthorizeController {
             logger.debug("{} ==> http://localhost{}", request.getMethod(), request.getRequestURI());
         }
 
-        /*
-        if (StringUtils.isEmpty(ip) || StringUtils.isEmpty(mac)) {
-            description = "Missing ip address or mac.";
-            break; // missing ip or mac.
-        }
-        */
         if (!authorizationServer.verifyIp(realIp, ip, request.getRemoteAddr())) {
             throw new RemoteException(PortalError.NAT_NOT_ALLOWED);
         }
@@ -67,9 +65,11 @@ public class AuthorizeController {
             } else {
                 Challenge challenge =
                         authorizationServer.createChallenge(clientId, scope, requireToken, needRefreshToken);
-                return RestResponseBuilders.successBuilder()
-                        .setChallenge(challenge)
-                        .build();
+                RestResponseBuilders.SessionResponseBuilder builder =  RestResponseBuilders.successBuilder()
+                        .setChallenge(challenge);
+                builder.setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl());
+
+                return builder.build();
             }
         } else {
             throw new RemoteException(PortalError.UNSUPPORTED_RESPONSE_TYPE);

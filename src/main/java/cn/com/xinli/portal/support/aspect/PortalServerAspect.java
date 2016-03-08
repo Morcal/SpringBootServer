@@ -4,6 +4,7 @@ import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.support.InternalServerHandler;
 import cn.com.xinli.portal.transport.huawei.LogoutError;
 import cn.com.xinli.portal.web.admin.ActivityService;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -50,7 +51,7 @@ public class PortalServerAspect {
         Activity activity = new Activity();
         activity.setCreated(Calendar.getInstance().getTime());
         activity.setSeverity(Activity.Severity.INFO);
-        activity.setResult(result);
+        activity.setResult(StringUtils.abbreviate(result, 256));
         activity.setRemote(ip);
         activity.setAction(Activity.SystemAction.NTF_LOGOUT.name());
         activity.setFacility(Activity.Facility.PORTAL);
