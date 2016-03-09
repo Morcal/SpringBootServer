@@ -22,7 +22,6 @@ import java.util.Properties;
  *
  * @author zhoupeng 2016/1/29.
  */
-//@Component
 public class PropertiesServerConfiguration extends ServerConfiguration {
     /** Server private key. */
     public static final String SERVER_PRIVATE_KEY = "private-key";
@@ -78,6 +77,10 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         loadFromProperties();
     }
 
+    /**
+     * Load configuration from properties.
+     * @throws ServerException
+     */
     private void loadFromProperties() throws ServerException {
         Configuration config = new Configuration();
         config.load(PROPERTIES_RESOURCE);
@@ -204,10 +207,21 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 Entry.of(REDIRECT_NAS_IP, ValueType.STRING),
         };
 
+        /**
+         * Get configuration entry value.
+         * @param entry entry name.
+         * @param <T> value type.
+         * @return entry value.
+         */
         <T>T valueOf(String entry) {
             return getEntry(entry).getValue();
         }
 
+        /**
+         * Get configuration entry.
+         * @param name entry name.
+         * @return configuration enty.
+         */
         public Entry getEntry(String name) {
             for (Entry entry : entries) {
                 if (entry.key.equals(name)) {
@@ -217,12 +231,17 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
             throw new IllegalArgumentException("Entry not found for: " + name);
         }
 
+        /**
+         * Load configuration from resource.
+         * @param resource resource name.
+         * @throws ServerException
+         */
         public void load(String resource) throws ServerException {
             Properties properties;
+            InputStream in = null;
             try {
                 /* Load defaults. */
-//                InputStream in = resourceLoader.getResource("classpath:defaults.properties").getInputStream();
-                InputStream in = getClass().getClassLoader().getResourceAsStream("defaults.properties");
+                in = getClass().getClassLoader().getResourceAsStream("defaults.properties");
                 Properties defaults = new Properties();
                 defaults.load(in);
                 in.close();
@@ -233,20 +252,33 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 properties.load(in);
                 in.close();
             } catch (IOException e) {
-                throw new ServerException(PortalError.MISSING_PWS_CONFIGURATION, "read configuration failed.");
+                throw new ServerException(PortalError.MISSING_PWS_CONFIGURATION,
+                        "read configuration failed.");
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             validate(properties);
         }
 
+        /**
+         * Validate specified {@code properties}.
+         * @param properties properties.
+         * @throws ServerException
+         */
         void validate(Properties properties) throws ServerException {
-
             for (Entry entry : entries) {
                 String value = properties.getProperty(entry.key);
                 if (StringUtils.isEmpty(value)) {
                     continue;
                 }
-                entry.parseValue(value);
+                entry.readValue(value);
             }
         }
     }
@@ -264,13 +296,19 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         }
     }
 
-
+    /**
+     * Configuration entry.
+     */
     public static class Entry {
         String key;
         ValueType valueType;
         Object value;
 
-        void parseValue(String value) {
+        /**
+         * Read value into this entry.
+         * @param value value.
+         */
+        void readValue(String value) {
             switch (valueType) {
                 case BOOLEAN:
                     this.value = Boolean.parseBoolean(value);
@@ -279,6 +317,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
                 case INTEGER:
                     this.value = Integer.parseInt(value);
                     break;
+
                 case STRING:
                     this.value = value;
                     break;
@@ -289,11 +328,22 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
             }
         }
 
+        /**
+         * Get entry value.
+         * @param <T> value type.
+         * @return entry value.
+         */
         @SuppressWarnings("unchecked")
         <T> T getValue() {
             return (T) valueType.cls.cast(value);
         }
 
+        /**
+         * Create entry from key and value type.
+         * @param key entry key.
+         * @param valueType entry value type.
+         * @return entry.
+         */
         static Entry of(String key, ValueType valueType) {
             Entry entry = new Entry();
             entry.key = key;

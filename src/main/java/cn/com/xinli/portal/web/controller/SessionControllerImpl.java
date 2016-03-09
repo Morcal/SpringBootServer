@@ -111,10 +111,12 @@ public class SessionControllerImpl implements SessionController {
      * @throws RemoteException
      * @throws NasNotFoundException
      */
-    Context createContext(Credentials credentials, String redirectUrl) throws RemoteException, NasNotFoundException {
+    Context createContext(Credentials credentials, String redirectUrl)
+            throws RemoteException, NasNotFoundException {
 
         Redirection input = Redirection.parse(redirectUrl);
-        Redirection redirection = redirectService.verify(input, credentials.getIp(), credentials.getMac());
+        Redirection redirection = redirectService.verify(
+                input, credentials.getIp(), credentials.getMac());
         if (logger.isDebugEnabled()) {
             logger.debug("redirection: {}", redirection);
         }
