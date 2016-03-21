@@ -61,14 +61,14 @@ public class RestRequestSupport implements RestRequest {
      */
     @Override
     public void sign(String privateKey) {
-        credentials.removeParameter(HttpDigestCredentials.SIGNATURE);
+        credentials.removeAttribute(HttpDigestCredentials.SIGNATURE);
 
         String joined;
         try {
             StringJoiner joiner = new StringJoiner("&");
             joiner.add(method.toUpperCase())
                     .add(CodecUtils.urlEncode(uri))
-                    .add(credentials.getCredentialsWithoutSignature())
+                    .add(credentials.asString(false))
                     .add(collect());
             joined = joiner.toString();
         } catch (UnsupportedEncodingException e) {
@@ -76,7 +76,7 @@ public class RestRequestSupport implements RestRequest {
             StringJoiner joiner = new StringJoiner("&");
             joiner.add(method.toUpperCase())
                     .add(uri)
-                    .add(credentials.getCredentialsWithoutSignature())
+                    .add(credentials.asString(false))
                     .add(collect());
             joined = joiner.toString();
         }
@@ -88,8 +88,8 @@ public class RestRequestSupport implements RestRequest {
         String signature = SignatureUtil.sign(
                 joined.getBytes(),
                 privateKey,
-                credentials.getParameter(HttpDigestCredentials.SIGNATURE_METHOD));
-        credentials.setParameter(HttpDigestCredentials.SIGNATURE, signature);
+                credentials.getAttribute(HttpDigestCredentials.SIGNATURE_METHOD));
+        credentials.setAttribute(HttpDigestCredentials.SIGNATURE, signature);
 
         if (logger.isTraceEnabled()) {
             logger.trace("> signature: {{}}", signature);
@@ -114,7 +114,7 @@ public class RestRequestSupport implements RestRequest {
 
     @Override
     public RestRequest setAuthParameter(String key, String value) {
-        credentials.setParameter(key, value);
+        credentials.setAttribute(key, value);
         return this;
     }
 

@@ -4,7 +4,7 @@ import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityStore;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.support.aspect.SystemActivityAspect;
-import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

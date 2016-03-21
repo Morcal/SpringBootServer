@@ -9,6 +9,7 @@ import cn.com.xinli.portal.web.rest.RestAuthenticationEntryPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
  *     <li>Rate limiting filter</li>
  *     <li>{@link AuthenticationProvider}</li>
  * </ul>
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/10.
  */
@@ -60,7 +61,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
     @Autowired
-    private Provider provider;
+    @Qualifier("rest-api-provider")
+    private Provider restApiProvider;
 
     @Autowired
     private RestAuthenticationProvider authenticationProvider;
@@ -105,7 +107,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         allowedUrls.add( "/portal");
         allowedUrls.add("/portal/api");
 
-        for (Registration registration : provider.getRegistrations()) {
+        for (Registration registration : restApiProvider.getRegistrations()) {
             allowedUrls.addAll(registration.getApis().stream()
                     .filter(entryPoint -> !entryPoint.requiresAuth())
                     .map(EntryPoint::getUrl)

@@ -50,4 +50,6 @@ public interface NasStore extends RoutingMapper, Locatable<Pair<String, String>,
     Stream<Nas> devices();
 
     void reload();
+
+    Stream<Nas> search(String value);
 }

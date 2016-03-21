@@ -143,7 +143,7 @@ public class HttpDigestCredentialsTest {
         for (String credentials : BadAccessTokenCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
             Assert.assertNotNull(cred);
-            Assert.assertFalse(HttpDigestCredentials.containsAccessToken(cred));
+            Assert.assertFalse(cred.containsAccessToken());
             i++;
             logger.debug("Bad access token: {}", credentials);
         }
@@ -157,7 +157,7 @@ public class HttpDigestCredentialsTest {
         for (String credentials : GoodAccessTokenCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
             Assert.assertNotNull(cred);
-            Assert.assertTrue(HttpDigestCredentials.containsAccessToken(cred));
+            Assert.assertTrue(cred.containsAccessToken());
             i++;
         }
 
@@ -169,7 +169,7 @@ public class HttpDigestCredentialsTest {
         int i = 0, len = GoodSessionTokenCredentials.length;
         for (String credentials : GoodSessionTokenCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
-            Assert.assertTrue(HttpDigestCredentials.containsSessionToken(cred));
+            Assert.assertTrue(cred.containsSessionToken());
             i++;
         }
 
@@ -181,7 +181,7 @@ public class HttpDigestCredentialsTest {
         int i = 0, len = BadSessionTokenCredentials.length;
         for (String credentials : BadSessionTokenCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
-            Assert.assertFalse(HttpDigestCredentials.containsSessionToken(cred));
+            Assert.assertFalse(cred.containsSessionToken());
             i++;
         }
 
@@ -193,7 +193,7 @@ public class HttpDigestCredentialsTest {
         int i = 0, len = GoodChallengeCredentials.length;
         for (String credentials : GoodChallengeCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
-            Assert.assertTrue(HttpDigestCredentials.containsChallenge(cred));
+            Assert.assertTrue(cred.containsChallengeResponse());
             i++;
         }
 
@@ -206,7 +206,7 @@ public class HttpDigestCredentialsTest {
         for (String credentials : BadChallengeCredentials) {
             try {
                 HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
-                Assert.assertFalse(HttpDigestCredentials.containsChallenge(cred));
+                Assert.assertFalse(cred.containsChallengeResponse());
                 i++;
             } catch (Exception e) {
                 i++;
@@ -222,9 +222,9 @@ public class HttpDigestCredentialsTest {
         int i = 0, len = GoodAccessAndSessionTokenCredentials.length;
         for (String credentials : GoodAccessAndSessionTokenCredentials) {
             HttpDigestCredentials cred = HttpDigestCredentials.of(credentials);
-            Assert.assertTrue(HttpDigestCredentials.containsSessionToken(cred));
-            Assert.assertTrue(HttpDigestCredentials.containsAccessToken(cred));
-            Assert.assertNotEquals(0, cred.getParameters().size());
+            Assert.assertTrue(cred.containsSessionToken());
+            Assert.assertTrue(cred.containsAccessToken());
+            Assert.assertFalse(cred.isEmpty());
             i++;
         }
 
@@ -235,15 +235,15 @@ public class HttpDigestCredentialsTest {
     public void testCopyCredentials() {
         HttpDigestCredentials cred = HttpDigestCredentials.of(GoodAccessAndSessionTokenCredentials[0]);
         Assert.assertNotNull(cred);
-        Assert.assertTrue(HttpDigestCredentials.containsSessionToken(cred));
-        Assert.assertTrue(HttpDigestCredentials.containsAccessToken(cred));
+        Assert.assertTrue(cred.containsSessionToken());
+        Assert.assertTrue(cred.containsAccessToken());
 
         HttpDigestCredentials copy = new HttpDigestCredentials();
         copy.copy(cred);
 
         Assert.assertNotNull(copy);
-        Assert.assertTrue(HttpDigestCredentials.containsSessionToken(copy));
-        Assert.assertTrue(HttpDigestCredentials.containsAccessToken(copy));
+        Assert.assertTrue(cred.containsSessionToken());
+        Assert.assertTrue(cred.containsAccessToken());
 
         Assert.assertEquals(copy.toString(), cred.toString());
     }

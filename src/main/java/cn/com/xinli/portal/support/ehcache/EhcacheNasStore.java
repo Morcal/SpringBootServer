@@ -96,6 +96,11 @@ public class EhcacheNasStore implements NasStore {
         return new Element(key, value);
     }
 
+    /**
+     * Transfer nas into a cache element.
+     * @param rule nas rule.
+     * @return cache element.
+     */
     private Element toElement(NasRule rule) {
         final byte[] value = nasRuleSerializer.serialize(rule);
         return new Element(rule.getId(), value);
@@ -201,6 +206,11 @@ public class EhcacheNasStore implements NasStore {
         }
         nasPersistence.delete(name);
         return nasCache.remove(name);
+    }
+
+    @Override
+    public Stream<Nas> search(String value) {
+        return nasPersistence.search(value);
     }
 
     @Override

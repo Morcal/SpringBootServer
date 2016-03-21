@@ -13,6 +13,12 @@ import java.util.Optional;
  */
 public interface SessionService {
     /**
+     * Get current online session count.
+     * @return current session count.
+     */
+    int currentSessions();
+    
+    /**
      * Initialize session service.
      */
     void init();

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * NAS/BRAS device persistence.
@@ -52,6 +53,10 @@ public class NasPersistence {
     public NasRule save(NasRule rule) {
         Objects.requireNonNull(rule, NasRule.EMPTY_RULE);
         return nasRuleRepository.save(rule);
+    }
+
+    public Stream<Nas> search(String value) {
+        return nasRepository.search(value);
     }
 
     public Nas save(Nas nas) {

@@ -3,7 +3,7 @@ package cn.com.xinli.portal.support.aspect;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.support.InternalServerHandler;
 import cn.com.xinli.portal.transport.huawei.LogoutError;
-import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityService;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;

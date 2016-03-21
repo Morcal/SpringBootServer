@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 /**
  * Portal Spring-Boot Application.
  *
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/11/30.
  */

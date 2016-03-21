@@ -1,6 +1,4 @@
-package cn.com.xinli.portal.web.admin;
-
-import cn.com.xinli.portal.core.activity.Activity;
+package cn.com.xinli.portal.core.activity;
 
 /**
  * Portal web server activity service.

@@ -23,6 +23,13 @@ public class ServerConfiguration {
     /** Server enabled rate-limiting. */
     private boolean enableRateLimiting;
 
+    /** Server should check redirect url when user request to connect. */
+    private boolean checkRedirectUrl;
+
+    private String defaultAdminUsername;
+
+    private String defaultAdminPassword;
+
     private ActivityConfiguration activityConfiguration;
     private ClusterConfiguration clusterConfiguration;
     private PortalServerConfiguration portalServerConfiguration;
@@ -41,6 +48,14 @@ public class ServerConfiguration {
 
     public boolean isEnableRateLimiting() {
         return enableRateLimiting;
+    }
+
+    public boolean isCheckRedirectUrl() {
+        return checkRedirectUrl;
+    }
+
+    public void setCheckRedirectUrl(boolean checkRedirectUrl) {
+        this.checkRedirectUrl = checkRedirectUrl;
     }
 
     public void setEnableRateLimiting(boolean enableRateLimiting) {
@@ -127,6 +142,22 @@ public class ServerConfiguration {
         this.redirectConfiguration = redirectConfiguration;
     }
 
+    public String getDefaultAdminPassword() {
+        return defaultAdminPassword;
+    }
+
+    public void setDefaultAdminPassword(String defaultAdminPassword) {
+        this.defaultAdminPassword = defaultAdminPassword;
+    }
+
+    public String getDefaultAdminUsername() {
+        return defaultAdminUsername;
+    }
+
+    public void setDefaultAdminUsername(String defaultAdminUsername) {
+        this.defaultAdminUsername = defaultAdminUsername;
+    }
+
     @Override
     public String toString() {
         return "ServerConfiguration{" +
@@ -135,6 +166,9 @@ public class ServerConfiguration {
                 ", allowNat=" + allowNat +
                 ", enableCluster=" + enableCluster +
                 ", enableRateLimiting=" + enableRateLimiting +
+                ", checkRedirectUrl=" + checkRedirectUrl +
+                ", defaultAdminUsername='" + defaultAdminUsername + '\'' +
+                ", defaultAdminPasswordMd5='" + defaultAdminPassword + '\'' +
                 ", activityConfiguration=" + activityConfiguration +
                 ", clusterConfiguration=" + clusterConfiguration +
                 ", portalServerConfiguration=" + portalServerConfiguration +

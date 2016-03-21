@@ -5,7 +5,7 @@ import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionService;
-import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityService;
 import cn.com.xinli.portal.web.controller.SessionController;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import org.apache.commons.lang3.StringUtils;

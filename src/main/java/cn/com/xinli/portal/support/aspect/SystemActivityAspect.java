@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.support.aspect;
 
 import cn.com.xinli.portal.core.activity.Activity;
-import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityService;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -49,7 +49,7 @@ public class SystemActivityAspect {
      * Define method pointcut for
      * {@link ActivityService#deleteOldActivities()}.
      */
-    @Pointcut("execution(* cn.com.xinli.portal.web.admin.ActivityService.deleteOldActivities(..))")
+    @Pointcut("execution(* cn.com.xinli.portal.core.activity.ActivityService.deleteOldActivities(..))")
     public void deleteOldActivities() {
     }
 

@@ -45,12 +45,12 @@ public class RedirectServiceSupport implements RedirectService {
                 userMac = getParameter(redirection, configuration.getUserMac()),
                 nasIp = getParameter(redirection, configuration.getNasIp());
 
+        userMac = StringUtils.isEmpty(userMac) ? "" : AddressUtil.formatMac(userMac);
+
         if (logger.isTraceEnabled()) {
             logger.trace("redirection ip: {}, mac: {}, nasIp: {}",
                     userIp, userMac, nasIp);
         }
-
-        userMac = StringUtils.isEmpty(userMac) ? "" : AddressUtil.formatMac(userMac);
 
         if (StringUtils.isEmpty(userIp)) {
             throw new RemoteException(PortalError.INVALID_REQUEST, "redirect url user ip missing");

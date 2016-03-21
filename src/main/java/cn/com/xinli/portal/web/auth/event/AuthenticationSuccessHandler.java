@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.web.admin.auth;
+package cn.com.xinli.portal.web.auth.event;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
-  * <p>Project: xpws
+ * Authentication Success Handler.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/15.
  */

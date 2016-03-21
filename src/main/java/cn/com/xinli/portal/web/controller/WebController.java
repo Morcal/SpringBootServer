@@ -2,6 +2,7 @@ package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.web.rest.Scheme;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,6 +63,10 @@ public class WebController {
     @Autowired
     private View mainPageView;
 
+    @Autowired
+    @Qualifier("admin-page")
+    private View adminPageView;
+
     /**
      * The PWS scheme header value.
      *
@@ -91,6 +96,11 @@ public class WebController {
     @RequestMapping("/")
     public View root() {
         return mainPageView;
+    }
+
+    @RequestMapping(value = "/portal/admin")
+    public View admin() {
+        return adminPageView;
     }
 
     @ModelAttribute

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Loading overlay modal. -->
+<div id="loading" class="modal" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Loading...</h4>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error overlay modal. -->
+<div id="error-dialog" class="modal collapse" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Error</h4>
+            </div>
+            <div class="modal-body">
+                <span></span>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation top bar. -->
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="javascript:void(0);">Xinli Portal Server</a>
+            <!--<a class="navbar-brand navbar-path" href="javascript:void(0);">Dashboard</a>-->
+            <span class="navbar-brand hidden-sm hidden-lg hidden-md" href="javascript:void(0);">Dashboard</span>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li id="navbar-dashboard" class="active">
+                    <a href="javascript:void(0);" onclick="$.application.switchTo('Dashboard');">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                        Dashboard
+                    </a>
+                </li>
+                <li id="navbar-configuration" >
+                    <a href="javascript:void(0);" onclick="$.application.switchTo('Configuration');">
+                    <!--<a aria-label="Left Align" href="#">-->
+                        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                        Configuration
+                    </a>
+                </li>
+                <li id="navbar-management" >
+                    <a href="javascript:void(0);" onclick="$.application.switchTo('Management');">
+                    <!--<a aria-label="Left Align" href="#">-->
+                        <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                        Management
+                    </a>
+                </li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<!-- Login modal dialog. -->
+<!--<div id="login-dialog" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">-->
+<div id="login-dialog" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span-->
+                <!--aria-hidden="true">&times;</span></button>-->
+                <h4 class="modal-title">Login Required</h4>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <div class="username">
+                            <label for="login-username" class="control-label">Username:</label>
+                            <input type="text" id="login-username" name="username" value="admin"
+                                   class="form-control" placeholder="Username" data-toggle="tooltip" data-container="body"
+                                   data-title="Username can not be empty."/>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password" class="control-label">Password:</label>
+                            <input id="login-password" name="password" type="password" value="s3cr3t"
+                                   class="form-control" placeholder="Password"
+                                   data-toggle="tooltip" data-container="body"
+                                   data-title="Password can not be empty."/>
+                        </div>
+                        <div class="form-group collapse">
+                            <span class="h4"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="login" type="button" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="doc">
+    <div class="container">
+        <div class="row">
+            <!-- navigation sidebar. -->
+            <div id="nav-sidebar" class="col-md-3">
+                <!-- configuration navigation. -->
+                <nav id="nav-configuration" class="sidebar-content collapse">
+                    <ul class="nav">
+                        <li class="active">
+                            <a id="configuration-nas" href="javascript:void(0);">
+                                NAS<span class="badge">3</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="configuration-system" href="javascript:void(0);">
+                                System<span class="badge">1</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- management navigation. -->
+                <nav id="nav-management" class="sidebar-content collapse">
+                    <ul class="nav">
+                        <li class="active">
+                            <a id="management-session" href="javascript:void(0);">
+                                Session<span class="badge">1</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="management-activity" href="javascript:void(0);">
+                                Activity<span class="badge">3</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Dashboard. -->
+            <div id="dashboard" class="col-md-9">
+            </div>
+
+            <!-- Configurations. -->
+            <div id="configuration" class="col-md-9 collapse">
+                <!-- NAS configuration, content. -->
+                <div id="configuration-nas-block" class="module-content">
+                    <div class="row bottom-spacing">
+                        <div id="configuration-nas-search">
+                            <div class="input-group">
+                                <input id="nas-search" type="text" class="form-control" placeholder="Search for...">
+                                <span class="input-group-btn">
+                                    <button id="nas-search-btn" class="btn btn-primary" type="button">Search</button>
+                                </span>
+                            </div><!-- /input-group -->
+                        </div><!-- /.col-lg-6 -->
+                    </div><!-- /.row -->
+
+                    <div class="row bottom-spacing">
+                        <div>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>name</th>
+                                    <th>type</th>
+                                    <th>ip</th>
+                                    <th>action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>HUAWEI</td>
+                                    <td>192.168.3.2</td>
+                                    <td><button type="button" class="btn btn-info">Edit</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>HUAWEI</td>
+                                    <td>192.168.3.2</td>
+                                    <td><button type="button" class="btn btn-info">Edit</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>HUAWEI</td>
+                                    <td>192.168.3.2</td>
+                                    <td><button type="button" class="btn btn-info">Edit</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>HUAWEI</td>
+                                    <td>192.168.3.2</td>
+                                    <td><button type="button" class="btn btn-info">Edit</button></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System configuration, content. -->
+                <div id="configuration-system-block" class="module-content collapse">
+                </div>
+            </div>
+
+            <!-- Management. -->
+            <div id="management" class="col-md-9 collapse">
+                <!-- Session management, content. -->
+                <div id="sessions" class="module-content">
+                    <div class="row bottom-spacing">
+                        <div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search for...">
+                            <span class="input-group-btn">
+                                <button id="session-search" class="btn btn-default" type="button">Search</button>
+                            </span>
+                            </div><!-- /input-group -->
+                        </div><!-- /.col-lg-6 -->
+                    </div><!-- /.row -->
+
+                    <div class="row bottom-spacing">
+                        <div>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>NAS</th>
+                                    <th>username</th>
+                                    <th>start time</th>
+                                    <th>action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>foobar</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>102</td>
+                                    <td>nas-001</td>
+                                    <td>foobar1</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>103</td>
+                                    <td>nas-001</td>
+                                    <td>foobar3</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>foobar</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>102</td>
+                                    <td>nas-001</td>
+                                    <td>foobar1</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>103</td>
+                                    <td>nas-001</td>
+                                    <td>foobar3</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>foobar</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>102</td>
+                                    <td>nas-001</td>
+                                    <td>foobar1</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>103</td>
+                                    <td>nas-001</td>
+                                    <td>foobar3</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>foobar</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>102</td>
+                                    <td>nas-001</td>
+                                    <td>foobar1</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>103</td>
+                                    <td>nas-001</td>
+                                    <td>foobar3</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>101</td>
+                                    <td>nas-001</td>
+                                    <td>foobar</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>102</td>
+                                    <td>nas-001</td>
+                                    <td>foobar1</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                <tr>
+                                    <td>103</td>
+                                    <td>nas-001</td>
+                                    <td>foobar3</td>
+                                    <td>2016-3-20 22:00:00</td>
+                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity management, content. -->
+                <div id="activities" class="module-content collapse">
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- /container -->
+
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="../js/jquery-2.2.1.js"></script>
+<script src="../js/bootstrap.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/md5.js"></script>
+<script src="../js/logging.js"></script>
+<script src="../js/portal/portal.js"></script>
+<script src="../js/portal/connector.js"></script>
+<script src="../js/portal/login.js"></script>
+<script src="../js/portal/configuration.js"></script>
+<script src="../js/portal/application.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+//        $('#configuration').find('.module-nav').affix(15);
+//        $('#management').find('.module-nav').affix(15);
+        $('#configuration-nas-search').affix();
+
+        $('#configuration-nas').click(function () {
+            $.portal.configuration.switchTo('nas');
+        });
+
+        $('#configuration-system').click(function () {
+            $.portal.configuration.switchTo('system');
+        });
+
+        $('#session-search').click(function () {
+            $.portal.management.searchSession();
+        });
+
+        $('#nas-search-btn').click(function () {
+            $.application.load({
+                function: $.configuration.searchNasDevices,
+                object: $.configuration,
+                args: { query: $('nas-search').val() }
+            });
+        });
+
+        $('#login').click(function () {
+            $.application.login($('#login-dialog'));
+        });
+
+        $.application.init();
+//
+//        $('#loading').modal('show');
+//
+//        $.application.init().done(function () {
+//            $('#loading').modal('hide');
+//            $('#login-dialog').modal('show');
+//        });
+    });
+</script>
+</body>
+</html>

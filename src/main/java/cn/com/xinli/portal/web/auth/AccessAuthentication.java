@@ -13,7 +13,7 @@ import java.util.Collection;
  * <p>Newly created {@link AccessAuthentication} has no any
  * of {@link GrantedAuthority}s.</p>
  *
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/16.
  */

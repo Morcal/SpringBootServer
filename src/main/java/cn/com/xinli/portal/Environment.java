@@ -20,6 +20,7 @@ import cn.com.xinli.portal.web.rest.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
@@ -50,7 +51,8 @@ public class Environment implements ApplicationEventPublisherAware {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(Environment.class);
 
-    ApplicationEventPublisher applicationEventPublisher;
+    /** Application event publisher. */
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     private NasService nasService;
@@ -65,7 +67,12 @@ public class Environment implements ApplicationEventPublisherAware {
     private ServerConfiguration serverConfiguration;
 
     @Autowired
+    @Qualifier("rest-api-provider")
     private Provider restApiProvider;
+
+    @Autowired
+    @Qualifier("admin-api-provider")
+    private Provider adminRestApiProvider;
 
     @Bean
     public Activity.Severity minimalSeverity() {
@@ -81,6 +88,16 @@ public class Environment implements ApplicationEventPublisherAware {
                                 .map(EntryPoint::getUrl)
                                 .collect(Collectors.toList()))
                 .collect(Collectors.toList());
+
+        List<List<String>> admins = adminRestApiProvider.getRegistrations().stream()
+                .map(registration ->
+                        registration.getApis().stream()
+                                .filter(EntryPoint::requiresAuth)
+                                .map(EntryPoint::getUrl)
+                                .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+
+        list.addAll(admins);
 
         Set<String> urls = new HashSet<>();
         list.forEach(strings -> strings.forEach(urls::add));

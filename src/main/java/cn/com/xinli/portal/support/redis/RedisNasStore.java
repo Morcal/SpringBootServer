@@ -103,6 +103,11 @@ public class RedisNasStore implements NasStore {
     }
 
     @Override
+    public Stream<Nas> search(String value) {
+        return Stream.empty();
+    }
+
+    @Override
     public Nas find(String ip) throws NasNotFoundException {
         String name = redisQueryTemplate.opsForValue().get(keyFor(ip));
         if (name != null) {

@@ -48,23 +48,32 @@ public class ApiConfiguration {
 
     /** API path. */
     public static final String API_PATH = "/portal/api";
-
+    public static final String ADMIN_API_PATH = "/portal/admin/api";
     public static final String API_TYPE = "REST";
+    public static final String ADMIN_API_TYPE = "ADMIN";
     public static final String REST_API_VERSION = "v1.0";
-    public static final String REST_API_SESSION = "session";
-    public static final String REST_API_SESSIONS = "sessions";
+    public static final String REST_API_SESSION = "sessions";
     public static final String REST_API_FIND = "sessions/find";
     public static final String REST_API_AUTHORIZE = "authorize";
+    public static final String REST_ADMIN_API_AUTHORIZE = "authorize";
+    public static final String REST_ADMIN_API_LOGIN = "login";
+    public static final String ADMIN_API_VERSION = "v1.0";
+    public static final String ADMIN_API_NAS = "nas";
+    public static final String ADMIN_API_TRANSLATION = "translations";
+    public static final String ADMIN_API_MODIFIER = "modifiers";
+    public static final String ADMIN_API_ACTIVITY = "activity";
 
     /**
      * Create portal api end point url.
+     * @param root api root path.
+     * @param version api version.
      * @param api api end point.
      * @return url.
      */
-    private String url(String api) {
+    private String url(String root, String version, String api) {
         StringJoiner joiner = new StringJoiner("/");
-        joiner.add("/portal")
-                .add(REST_API_VERSION)
+        joiner.add(root)
+                .add(version)
                 .add(api);
         return joiner.toString();
     }
@@ -75,12 +84,141 @@ public class ApiConfiguration {
      * @return portal REST api provider.
      * @throws ServerException
      */
-    @Bean
+    @Bean(name = "rest-api-provider")
     public Provider restApiProvider() throws ServerException {
         Provider provider = new Provider();
         provider.setVendor("Xinli Software Technology ltd., co.");
         provider.addRegistration(restApiRegistration());
         return provider;
+    }
+
+    /**
+     * Define portal REST admin api provider.
+     *
+     * @return portal REST admin api provider.
+     * @throws ServerException
+     */
+    @Bean(name = "admin-api-provider")
+    public Provider adminRestApiProvider() throws ServerException {
+        Provider provider = new Provider();
+        provider.setVendor("Xinli Software Technology ltd., co.");
+        provider.addRegistration(adminRestApiRegistration());
+        return provider;
+    }
+
+    /**
+     * Define REST api registration.
+     * @return REST api registration.
+     * @throws ServerException
+     */
+    private Registration adminRestApiRegistration() throws ServerException {
+        Registration registration = new Registration(ADMIN_API_TYPE, ADMIN_API_VERSION);
+        logger.info("Creating: {}.", registration);
+
+        registration.registerApi(adminLogin());
+        registration.registerApi(adminAuthorize());
+        registration.registerApi(findSession());
+        registration.registerApi(deleteSession());
+        registration.registerApi(listNas());
+        registration.registerApi(listActivity());
+
+        return registration;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint adminLogin() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.AdminAction.LOGIN.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, REST_ADMIN_API_LOGIN),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint adminAuthorize() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.AdminAction.AUTHORIZE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, REST_ADMIN_API_AUTHORIZE),
+                RequestMethod.GET.name(),
+                "JSON",
+                false);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint findSession() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.SessionAction.FIND_SESSION.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, REST_API_SESSION),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint deleteSession() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.SessionAction.DELETE_SESSION.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, REST_API_SESSION),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint listNas() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.NasAction.LIST.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize end point.
+     * @return authorize end point.
+     */
+    private EntryPoint listActivity() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.LoggingAction.LIST.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_ACTIVITY),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
     }
 
     /**
@@ -110,7 +248,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_ACCESS_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.AUTHENTICATE.alias(),
-                url(REST_API_AUTHORIZE),
+                url("/portal", REST_API_VERSION, REST_API_AUTHORIZE),
                 RequestMethod.GET.name(),
                 "JSON",
                 false);
@@ -126,7 +264,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.CREATE_SESSION.alias(),
-                url(REST_API_SESSIONS),
+                url("/portal", REST_API_VERSION, REST_API_SESSION),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
@@ -142,7 +280,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.DELETE_SESSION.alias(),
-                url(REST_API_SESSION),
+                url("/portal", REST_API_VERSION, REST_API_SESSION),
                 RequestMethod.DELETE.name(),
                 "JSON",
                 true);
@@ -158,7 +296,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.GET_SESSION.alias(),
-                url(REST_API_SESSION),
+                url("/portal", REST_API_VERSION, REST_API_SESSION),
                 RequestMethod.GET.name(),
                 "JSON",
                 true);
@@ -174,7 +312,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.UPDATE_SESSION.alias(),
-                url(REST_API_SESSION),
+                url("/portal", REST_API_VERSION, REST_API_SESSION),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
@@ -190,7 +328,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.PORTAL_SESSION_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.FIND_SESSION.alias(),
-                url(REST_API_FIND),
+                url("/portal", REST_API_VERSION, REST_API_FIND),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);

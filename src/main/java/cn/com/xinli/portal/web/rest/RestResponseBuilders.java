@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.web.rest;
 
 import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
@@ -17,6 +18,91 @@ import org.springframework.security.core.token.Token;
  * @author zhoupeng 2015/12/8.
  */
 public class RestResponseBuilders {
+    /**
+     * Acquire a success builder.
+     *
+     * @return builder.
+     */
+    public static SessionResponseBuilder successBuilder() {
+        return new SessionResponseBuilder();
+    }
+
+    /**
+     * Acquire a error builder.
+     *
+     * @return builder.
+     */
+    public static ErrorBuilder errorBuilder() {
+        return new ErrorBuilder();
+    }
+
+    /**
+     * Acquire an authentication builder.
+     *
+     * @param challenge challenge.
+     * @return builder.
+     */
+    public static AuthenticationBuilder authenticationBuilder(Challenge challenge) {
+        return new AuthenticationBuilder(challenge);
+    }
+
+    /**
+     * Acquire a session builder.
+     *
+     * @param session session.
+     * @param token session token.
+     * @param requiresKeepAlive session requires Keep Alive.
+     * @param keepAliveInterval session keep Alive Interval.
+     * @param context session context token.
+     * @return builder
+     */
+    private static SessionBuilder sessionBuilder(Session session,
+                                                 Token token,
+                                                 boolean requiresKeepAlive,
+                                                 int keepAliveInterval,
+                                                 Token context) {
+        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval, context);
+    }
+
+    /**
+     * Acquire an authorization builder.
+     *
+     * @param token access token.
+     * @return builder.
+     */
+    public static AuthorizationBuilder authorizationBuilder(RestToken token) {
+        return new AuthorizationBuilder(token);
+    }
+
+    /**
+     * Build session response.
+     * @param serverConfiguration server Configuration.
+     * @param session session.
+     * @param authentication authentication.
+     * @param grantToken should response contains token.
+     * @param context session context.
+     * @return rest response.
+     */
+    public static RestResponse buildSessionResponse(ServerConfiguration serverConfiguration,
+                                                    Session session,
+                                                    AccessAuthentication authentication,
+                                                    boolean grantToken,
+                                                    Token context) {
+        RestResponseBuilders.SessionResponseBuilder builder = RestResponseBuilders.successBuilder();
+
+        builder.setAccessTokenTtl(serverConfiguration.getRestConfiguration().getTokenTtl())
+                .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
+                .setSessionTokenTtl(serverConfiguration.getSessionConfiguration().getTokenTtl());
+
+        return builder.setSession(session)
+                .setAccessAuthentication(authentication)
+                .setRequiresKeepAlive(serverConfiguration.getSessionConfiguration().isEnableHeartbeat())
+                .setKeepAliveInterval(serverConfiguration.getSessionConfiguration().getHeartbeatInterval())
+                .setGrantToken(grantToken)
+                .setContext(context)
+                .build();
+    }
+
     /**
      * Response builder.
      *
@@ -94,7 +180,7 @@ public class RestResponseBuilders {
             /* Build authorization if challenge response in credentials. */
             if (accessAuthentication != null) {
                 HttpDigestCredentials credentials = accessAuthentication.getCredentials();
-                if (HttpDigestCredentials.containsChallenge(credentials)) {
+                if (credentials.containsChallengeResponse()) {
                     /* Set authorization only when response to challenge. */
                     AuthorizationBuilder builder = authorizationBuilder(accessAuthentication.getAccessToken());
                     builder.setAccessTokenTtl(accessTokenTtl);
@@ -113,62 +199,6 @@ public class RestResponseBuilders {
 
             return target;
         }
-    }
-
-    /**
-     * Acquire a success builder.
-     *
-     * @return builder.
-     */
-    public static SessionResponseBuilder successBuilder() {
-        return new SessionResponseBuilder();
-    }
-
-    /**
-     * Acquire a error builder.
-     *
-     * @return builder.
-     */
-    public static ErrorBuilder errorBuilder() {
-        return new ErrorBuilder();
-    }
-
-    /**
-     * Acquire an authentication builder.
-     *
-     * @param challenge challenge.
-     * @return builder.
-     */
-    public static AuthenticationBuilder authenticationBuilder(Challenge challenge) {
-        return new AuthenticationBuilder(challenge);
-    }
-
-    /**
-     * Acquire a session builder.
-     *
-     * @param session session.
-     * @param token session token.
-     * @param requiresKeepAlive session requires Keep Alive.
-     * @param keepAliveInterval session keep Alive Interval.
-     * @param context session context token.
-     * @return builder
-     */
-    private static SessionBuilder sessionBuilder(Session session,
-                                                 Token token,
-                                                 boolean requiresKeepAlive,
-                                                 int keepAliveInterval,
-                                                 Token context) {
-        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval, context);
-    }
-
-    /**
-     * Acquire an authorization builder.
-     *
-     * @param token access token.
-     * @return builder.
-     */
-    public static AuthorizationBuilder authorizationBuilder(RestToken token) {
-        return new AuthorizationBuilder(token);
     }
 
     /**

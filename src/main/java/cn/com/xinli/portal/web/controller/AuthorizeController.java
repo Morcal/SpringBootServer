@@ -1,11 +1,11 @@
 package cn.com.xinli.portal.web.controller;
 
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
-import cn.com.xinli.portal.web.auth.challenge.Challenge;
-import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.web.auth.AuthorizationServer;
+import cn.com.xinli.portal.web.auth.challenge.Challenge;
+import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import org.slf4j.Logger;
@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 
 /**
-  * <p>Project: xpws
+ * Authorize controller.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/8.
  */
@@ -35,6 +37,7 @@ public class AuthorizeController {
 
     @Autowired
     private ServerConfiguration serverConfiguration;
+
 
     @ResponseBody
     @RequestMapping("/authorize")
@@ -65,8 +68,8 @@ public class AuthorizeController {
             } else {
                 Challenge challenge =
                         authorizationServer.createChallenge(clientId, scope, requireToken, needRefreshToken);
-                RestResponseBuilders.SessionResponseBuilder builder =  RestResponseBuilders.successBuilder()
-                        .setChallenge(challenge);
+                RestResponseBuilders.SessionResponseBuilder builder =
+                        RestResponseBuilders.successBuilder().setChallenge(challenge);
                 builder.setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl());
 
                 return builder.build();
@@ -75,4 +78,5 @@ public class AuthorizeController {
             throw new RemoteException(PortalError.UNSUPPORTED_RESPONSE_TYPE);
         }
     }
+
 }

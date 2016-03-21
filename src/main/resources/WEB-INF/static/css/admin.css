@@ -1,0 +1,86 @@
+
+/*#loading {*/
+    /*position: fixed;*/
+    /*width: 100%;*/
+    /*height: 100%;*/
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*top: 0;*/
+/*}*/
+
+/*#loading.plus {*/
+    /*display: flex;*/
+    /*margin: 0 auto;*/
+/*}*/
+
+body>div.doc {
+    padding-top: 60px;
+}
+
+/*body>div.doc>div.container {*/
+    /*margin-left: 220px;*/
+    /*margin-top: 15px;*/
+/*}*/
+
+#nav-sidebar {
+    width: 250px;
+    /*position: fixed;*/
+}
+
+#nav-sidebar .sidebar-content {
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+#nav-sidebar>nav>ul>li:not(active)>a:focus, #nav-sidebar>nav>ul>li:not(active)>a:hover {
+    background-color: transparent;
+    color: #900;
+    border-left: 2px solid #900;
+}
+
+#nav-sidebar>nav>ul>li>a>span {
+    z-index: 2;
+    color: #fff;
+    background-color: #999;
+    border-color: #999;
+}
+
+#nav-sidebar>nav>ul>li.active>a>span {
+    background-color: #900;
+    border-color: #900;
+}
+
+#nav-sidebar>nav>ul>li:not(active)>a:focus>span, #nav-sidebar>nav>ul>li:not(active)>a:hover>span {
+    background-color: #900;
+    border-color: #900;
+}
+
+#nav-sidebar>nav>ul>li>a>span.badge {
+    float: right;
+}
+
+#nav-sidebar a {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 30px;
+    /*font-size: 12px;*/
+    /*font-weight: 400;*/
+    color: #777;
+}
+
+#nav-sidebar .active a {
+    border-left: 2px solid #900;
+    color: #900;
+}
+
+.bottom-spacing {
+    margin-bottom: 20px;
+}
+
+.navbar-icon {
+    font-size: 24px;
+}
+
+.module-content {
+    padding-left: 35px;
+}

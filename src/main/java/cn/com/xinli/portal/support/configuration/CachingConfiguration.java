@@ -6,6 +6,7 @@ import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
+import cn.com.xinli.portal.support.admin.AdminCredentials;
 import cn.com.xinli.portal.support.ehcache.EhcacheManagerAdapter;
 import cn.com.xinli.portal.support.ehcache.SessionSearchable;
 import cn.com.xinli.portal.core.Serializer;
@@ -100,6 +101,11 @@ public class CachingConfiguration {
     @Bean
     public Serializer<Context> contextSerializer() {
         return new SerializerAdapter<>(Context.class);
+    }
+
+    @Bean
+    public Serializer<AdminCredentials> adminCredentialsSerializer() {
+        return new SerializerAdapter<>(AdminCredentials.class);
     }
 
     @Bean

@@ -88,6 +88,8 @@ public enum PortalError {
     UNPROCESSABLE_ENTITY(143, "unprocessable entity"),
     REST_REQUEST_RATE_LIMITED(151, "rest request rate limited"),
     INVALID_ENVIRONMENT(152, "not in a portal environment"),
+    REST_LOGIN_REQUIRED(160, "login required"),
+    REST_LOGIN_FAILED(161, "login failed"),
 
     /* Portal service errors. */
     INVALID_AUTHENTICATE_CREDENTIALS(201, "invalid authenticate credentials"),

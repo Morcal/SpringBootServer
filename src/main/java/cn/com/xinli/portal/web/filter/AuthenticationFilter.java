@@ -1,8 +1,9 @@
 package cn.com.xinli.portal.web.filter;
 
-import cn.com.xinli.portal.web.admin.auth.AuthenticationFailureEvent;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.auth.HttpDigestCredentials;
+import cn.com.xinli.portal.web.auth.event.AuthenticationFailureEvent;
+import cn.com.xinli.portal.web.auth.event.AuthenticationSuccessEvent;
 import cn.com.xinli.portal.web.rest.RestRequest;
 import cn.com.xinli.portal.web.rest.RestRequestSupport;
 import cn.com.xinli.portal.web.util.CredentialsUtils;
@@ -14,7 +15,6 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -92,7 +92,9 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
      * Handle successful authentication.
      * @param authentication authentication authenticated.
      */
-    private void successfulAuthentication(Authentication authentication) {
+    private void successfulAuthentication(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          Authentication authentication) {
         if (logger.isTraceEnabled()) {
             logger.trace("Authentication success: {}", authentication);
         }
@@ -100,7 +102,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
         SecurityContextHolder.getContext().setAuthentication(authentication);
         if (applicationEventPublisher != null) {
             applicationEventPublisher.publishEvent(
-                    new InteractiveAuthenticationSuccessEvent(authentication, this.getClass()));
+                    new AuthenticationSuccessEvent(request, response, authentication));
         }
     }
 
@@ -169,7 +171,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
                     }
 
                     HttpDigestCredentials credentials = opt.get();
-                    String principal = credentials.getParameter(HttpDigestCredentials.CLIENT_ID);
+                    String principal = credentials.getAttribute(HttpDigestCredentials.CLIENT_ID);
                     if (principal == null) {
                         throw new BadCredentialsException("principal not found.");
                     }
@@ -179,7 +181,7 @@ public class AuthenticationFilter extends AbstractRestFilter implements Applicat
 
                     Authentication result = authenticationManager.authenticate(authentication);
                     SecurityContextHolder.getContext().setAuthentication(result);
-                    successfulAuthentication(result);
+                    successfulAuthentication(request, response, result);
                     if (logger.isTraceEnabled()) {
                         logger.trace("authorities: {}.", result.getAuthorities());
                     }

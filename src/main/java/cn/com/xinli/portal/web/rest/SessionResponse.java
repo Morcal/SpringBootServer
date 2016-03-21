@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Portal Session REST response bean.
  *
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2016/1/4.
  */

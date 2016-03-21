@@ -1,7 +1,7 @@
-package cn.com.xinli.portal.web.admin.auth;
+package cn.com.xinli.portal.web.auth.event;
 
 import cn.com.xinli.portal.core.activity.Activity;
-import cn.com.xinli.portal.web.admin.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import java.util.Calendar;
 /**
  * Authentication success event handler.
  *
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/11.
  */

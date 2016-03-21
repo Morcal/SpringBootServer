@@ -12,9 +12,9 @@ import java.util.Date;
  *
  * <p>This class represents auditing information for system.
  * Any portal business (requests and responses) will be saved
- * as an auditing-logging activity.
+ * as an auditing-logging entry.
  *
-  * <p>Project: xpws
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/19.
  */
@@ -200,6 +200,70 @@ public class Activity {
     public enum SystemAction {
         DELETE_OLD_ACTIVITIES,
         NTF_LOGOUT
+    }
+
+    public enum AdminAction {
+        AUTHORIZE("authorize"),
+        LOGIN("login");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        AdminAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
+
+    }
+
+    public enum LoggingAction {
+        LIST("list-log"),
+        FIND("find-log");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        LoggingAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
+    }
+
+    /** Activity sessionAction. */
+    public enum NasAction {
+        LIST("list-nas"),
+        ADD("add-nas"),
+        UPDATE("update-nas"),
+        ENABLE("enable-nas"),
+        DISABLE("update-nas"),
+        DELETE("delete-nas"),
+        UNKNOWN("unknown");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        NasAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
     }
 
     /** Activity sessionAction. */

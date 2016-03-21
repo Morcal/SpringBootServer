@@ -77,30 +77,15 @@ public class SessionControllerImpl implements SessionController {
     private ServerConfiguration serverConfiguration;
 
     /**
-     * Build session response.
-     * @param session session.
-     * @param authentication authentication.
-     * @param grantToken should response contains token.
-     * @param context session context.
-     * @return rest response.
+     * Create default context for empty redirect url.
+     * @return context.
      */
-    private RestResponse buildSessionResponse(Session session,
-                                       AccessAuthentication authentication,
-                                       boolean grantToken,
-                                       Token context) {
-        RestResponseBuilders.SessionResponseBuilder builder = RestResponseBuilders.successBuilder();
-
-        builder.setAccessTokenTtl(serverConfiguration.getRestConfiguration().getTokenTtl())
-                .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
-                .setSessionTokenTtl(serverConfiguration.getSessionConfiguration().getTokenTtl());
-
-        return builder.setSession(session)
-                .setAccessAuthentication(authentication)
-                .setRequiresKeepAlive(serverConfiguration.getSessionConfiguration().isEnableHeartbeat())
-                .setKeepAliveInterval(serverConfiguration.getSessionConfiguration().getHeartbeatInterval())
-                .setGrantToken(grantToken)
-                .setContext(context)
-                .build();
+    Context createDefaultContext(String ip, String mac) {
+        Context context = new Context();
+        context.setIp(ip);
+        context.setMac(mac);
+        context.setNasIp("0.0.0.0");
+        return context;
     }
 
     /**
@@ -113,7 +98,6 @@ public class SessionControllerImpl implements SessionController {
      */
     Context createContext(Credentials credentials, String redirectUrl)
             throws RemoteException, NasNotFoundException {
-
         Redirection input = Redirection.parse(redirectUrl);
         Redirection redirection = redirectService.verify(
                 input, credentials.getIp(), credentials.getMac());
@@ -160,22 +144,26 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(name = "user_mac") String mac,
                                 @RequestParam(defaultValue = "") String os,
                                 @RequestParam(defaultValue = "") String version,
-                                @RequestParam(name = "redirect_url") String redirectUrl,
+                                @RequestParam(name = "redirect_url", defaultValue = "") String redirectUrl,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
         final String formatted = AddressUtil.formatMac(mac);
         Credentials credentials = Credentials.of(username, password, ip, formatted);
 
         AccessAuthentication authentication = (AccessAuthentication) principal;
-        String app = authentication.getCredentials().getParameter(HttpDigestCredentials.CLIENT_ID);
+        String app = authentication.getCredentials().getAttribute(HttpDigestCredentials.CLIENT_ID);
         Certificate certificate = certificateService.loadCertificate(app);
 
-        Context context = createContext(credentials, redirectUrl);
+        Context context;
+        if (serverConfiguration.isCheckRedirectUrl()) {
+            context = createContext(credentials, redirectUrl);
+        } else {
+            context = createDefaultContext(ip, mac);
+        }
 
         Session session = sessionManager.createSession(certificate, credentials);
-        if (logger.isTraceEnabled()) {
-            logger.trace("session for {}, {} created: {}", os, version, session);
-        }
+        logger.info("session {} for ip:{}, mac:{}, os:{}, version:{} created.",
+                session.getId(), ip, mac, os, version);
 
         // create session authorization. FIXME session may be removed by other threads.
         RestToken token = (RestToken) sessionTokenService.allocateToken(String.valueOf(session.getId()));
@@ -185,12 +173,11 @@ public class SessionControllerImpl implements SessionController {
 
         authentication.setSessionToken(token);
 
-        logger.info("session created id: {}", session.getId());
-
         context.setSession(String.valueOf(session.getId()));
         Token ctx = contextTokenService.allocateToken(contextTokenService.encode(context));
 
-        RestResponse rs = buildSessionResponse(session, authentication, true, ctx);
+        RestResponse rs = RestResponseBuilders.buildSessionResponse(
+                serverConfiguration, session, authentication, true, ctx);
 
         if (logger.isDebugEnabled()) {
             logger.debug("connect -> {} ", rs);
@@ -201,19 +188,15 @@ public class SessionControllerImpl implements SessionController {
 
     @Override
     @ResponseBody
-    @RequestMapping(value = "/session/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/sessions/{id}", method = RequestMethod.GET)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestResponse get(@P("session") @PathVariable long id,
                  @AuthenticationPrincipal Principal principal) throws SessionNotFoundException {
         Session session = sessionService.getSession(id);
+        logger.trace("get session {{}}.", session.getId());
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("get session, {}", session);
-        }
-
-        logger.info("get session {{}}", session.getId());
-
-        RestResponse rs = buildSessionResponse(session, (AccessAuthentication) principal, false, null);
+        RestResponse rs = RestResponseBuilders.buildSessionResponse(
+                serverConfiguration, session, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("get -> {} ", rs);
@@ -224,22 +207,18 @@ public class SessionControllerImpl implements SessionController {
 
     @Override
     @ResponseBody
-    @RequestMapping(value = "/session/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/sessions/{id}", method = RequestMethod.POST)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestResponse update(@P("session") @PathVariable long id,
                     @RequestParam long timestamp,
                     @AuthenticationPrincipal Principal principal)
             throws PortalException {
         Session updated = sessionService.update(id, timestamp);
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("session updated, {}", updated);
-        }
-
-        logger.info("session {{}} updated", updated.getId());
+        logger.info("session {{}} updated.", updated.getId());
 
         /* send updated session information. */
-        RestResponse rs = buildSessionResponse(updated, (AccessAuthentication) principal, false, null);
+        RestResponse rs = RestResponseBuilders.buildSessionResponse(
+                serverConfiguration, updated, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("update -> {} ", rs);
@@ -250,7 +229,7 @@ public class SessionControllerImpl implements SessionController {
 
     @Override
     @ResponseBody
-    @RequestMapping(value = "/session/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/sessions/{id}", method = RequestMethod.DELETE)
     @PreAuthorize("(hasRole('USER') and hasAuthority(#session)) or hasRole('ADMIN')")
     public RestResponse disconnect(@P("session") @PathVariable long id,
                                    @AuthenticationPrincipal Principal principal)
@@ -258,7 +237,8 @@ public class SessionControllerImpl implements SessionController {
         sessionManager.removeSession(id);
         logger.info("session removed {}.", id);
 
-        RestResponse rs = buildSessionResponse(null, (AccessAuthentication) principal, false, null);
+        RestResponse rs = RestResponseBuilders.buildSessionResponse(
+                serverConfiguration, null, (AccessAuthentication) principal, false, null);
 
         if (logger.isDebugEnabled()) {
             logger.debug("disconnect -> {} ", rs);
@@ -316,7 +296,8 @@ public class SessionControllerImpl implements SessionController {
         Optional<Session> opt = findSession(c, ip, formatted);
 
         if (!opt.isPresent()) {
-            rs = buildSessionResponse(null, (AccessAuthentication) principal, false, null);
+            rs = RestResponseBuilders.buildSessionResponse(
+                    serverConfiguration, null, (AccessAuthentication) principal, false, null);
         } else {
             Session session = opt.get();
 
@@ -331,7 +312,8 @@ public class SessionControllerImpl implements SessionController {
 
             logger.info("session found, id: {}", session.getId());
 
-            rs = buildSessionResponse(session, (AccessAuthentication) principal, true, ctx);
+            rs = RestResponseBuilders.buildSessionResponse(
+                    serverConfiguration, session, (AccessAuthentication) principal, true, ctx);
         }
 
         if (logger.isDebugEnabled()) {

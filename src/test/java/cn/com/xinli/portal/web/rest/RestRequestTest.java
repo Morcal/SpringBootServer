@@ -64,7 +64,7 @@ public class RestRequestTest {
         Assert.assertFalse(request.getParameters().isEmpty());
         Assert.assertTrue(request.getParameter("account").equals(name));
 
-        String credentials = request.getCredentials().getCredentials();
+        String credentials = request.getCredentials().asString(true);
         Assert.assertTrue(credentials.endsWith("\""));
         Assert.assertTrue(credentials.startsWith(HttpDigestCredentials.SCHEME));
         logger.debug(credentials);
@@ -74,7 +74,7 @@ public class RestRequestTest {
         Assert.assertNotNull(digest);
         logger.debug("digest: {}", digest);
 
-        Assert.assertEquals(credentials, digest.getCredentials());
+        Assert.assertEquals(credentials, digest.asString(true));
 
         logger.debug("request: {}", request);
     }

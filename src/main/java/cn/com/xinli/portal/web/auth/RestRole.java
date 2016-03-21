@@ -14,6 +14,7 @@ public enum RestRole {
      * REST APIs requires this role.
      */
     USER,
+    PRE_AUTH,
     /** System administration role. */
     ADMIN
 }

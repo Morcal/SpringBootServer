@@ -24,7 +24,10 @@ import java.util.Properties;
  */
 public class PropertiesServerConfiguration extends ServerConfiguration {
     /** Server private key. */
-    public static final String SERVER_PRIVATE_KEY = "private-key";
+    public static final String SERVER_PRIVATE_KEY = "server.private-key";
+    public static final String SERVER_CHECK_REDIRECT_URL = "server.check-redirect-url";
+    public static final String SERVER_ADMIN_DEFAULT_USERNAME = "server.admin.default.username";
+    public static final String SERVER_ADMIN_DEFAULT_PASSWORD = "server.admin.default.password.md5";
     /** Main page redirect url. */
     public static final String MAIN_PAGE_REDIRECT_URL = "main-page.redirect.url";
     /** Allow nat. */
@@ -86,8 +89,11 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         config.load(PROPERTIES_RESOURCE);
 
         setPrivateKey(config.valueOf(SERVER_PRIVATE_KEY));
+        setCheckRedirectUrl(config.valueOf(SERVER_CHECK_REDIRECT_URL));
         setMainPageRedirectUrl(config.valueOf(MAIN_PAGE_REDIRECT_URL));
         setAllowNat(config.valueOf(NAT_ALLOWED));
+        setDefaultAdminUsername(config.valueOf(SERVER_ADMIN_DEFAULT_USERNAME));
+        setDefaultAdminPassword(config.valueOf(SERVER_ADMIN_DEFAULT_PASSWORD));
 
         /* Create activity configuration. */
         ActivityConfiguration activity = new ActivityConfiguration();
@@ -163,6 +169,9 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         Entry[] entries = {
                 /* Server private key. */
                 Entry.of(SERVER_PRIVATE_KEY, ValueType.STRING),
+                Entry.of(SERVER_CHECK_REDIRECT_URL, ValueType.BOOLEAN),
+                Entry.of(SERVER_ADMIN_DEFAULT_USERNAME, ValueType.STRING),
+                Entry.of(SERVER_ADMIN_DEFAULT_PASSWORD, ValueType.STRING),
                 /* Main page redirect url. */
                 Entry.of(MAIN_PAGE_REDIRECT_URL, ValueType.STRING),
                 /* Allow nat. */

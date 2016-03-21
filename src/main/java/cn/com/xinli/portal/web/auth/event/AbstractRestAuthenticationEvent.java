@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.web.admin.auth;
+package cn.com.xinli.portal.web.auth.event;
 
 import cn.com.xinli.portal.core.activity.Activity;
 import org.springframework.security.authentication.event.AbstractAuthenticationEvent;
@@ -8,13 +8,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
-  * <p>Project: xpws
+ * Abstract REST authentication event.
+ *
+ * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/11.
  */
 public abstract class AbstractRestAuthenticationEvent extends AbstractAuthenticationEvent {
+    /** Source request. */
     protected final HttpServletRequest request;
+
+    /** Response. */
     protected final HttpServletResponse response;
+
+    /** Severity. */
     protected final Activity.Severity severity;
 
     public AbstractRestAuthenticationEvent(HttpServletRequest request,
