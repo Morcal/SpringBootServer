@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.web.admin;
+package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
@@ -13,9 +13,9 @@ import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.AdminTokenService;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
+import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
 import cn.com.xinli.portal.web.rest.Provider;
 import cn.com.xinli.portal.web.rest.RestResponse;
-import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +33,15 @@ import java.security.Principal;
 
 /**
  * System administration controller.
+ *
  * @author zhoupeng, created on 2016/3/20.
  */
 @Controller
 @RequestMapping("/portal/admin")
 public class AdminController {
-    /** Logger. */
+    /**
+     * Logger.
+     */
     private final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired
@@ -81,11 +84,11 @@ public class AdminController {
         if (SecurityConfiguration.CHALLENGE_RESPONSE_TYPE.equals(responseType)) {
             Challenge challenge =
                     authorizationServer.createChallenge("0", scope, requireToken, needRefreshToken);
-            RestResponseBuilders.SessionResponseBuilder builder =  RestResponseBuilders.successBuilder()
-                    .setChallenge(challenge);
-            builder.setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl());
 
-            return builder.build();
+            return AdminResponseBuilders.restResponseBuilder()
+                    .setChallenge(challenge)
+                    .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
+                    .build();
         } else {
             throw new RemoteException(PortalError.UNSUPPORTED_RESPONSE_TYPE);
         }
@@ -114,8 +117,9 @@ public class AdminController {
         AdminCredentials credentials = new AdminCredentials();
         credentials.setUsername(username);
         credentials.setPassword(password);
+        credentials.setChallenge(challenge);
 
-        credentials = adminService.verify(challenge, credentials);
+        credentials = adminService.verify(credentials);
         /* reallocate a new session token. */
         RestToken token =
                 (RestToken) adminTokenService.allocateToken(adminTokenService.encode(credentials));
@@ -125,7 +129,8 @@ public class AdminController {
             logger.trace("login success, user: {}", username);
         }
 
-        return RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, null, authentication, false, null);
+        return AdminResponseBuilders.restResponseBuilder()
+                .setToken(token)
+                .build();
     }
 }

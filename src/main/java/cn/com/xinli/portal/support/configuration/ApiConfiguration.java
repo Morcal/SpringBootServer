@@ -64,10 +64,10 @@ public class ApiConfiguration {
     public static final String ADMIN_API_ACTIVITY = "activity";
 
     /**
-     * Create portal api end point url.
+     * Create portal api entry point url.
      * @param root api root path.
      * @param version api version.
-     * @param api api end point.
+     * @param api api entry point.
      * @return url.
      */
     private String url(String root, String version, String api) {
@@ -119,15 +119,16 @@ public class ApiConfiguration {
         registration.registerApi(adminAuthorize());
         registration.registerApi(findSession());
         registration.registerApi(deleteSession());
-        registration.registerApi(listNas());
+        registration.registerApi(searchNas());
+        registration.registerApi(getNas());
         registration.registerApi(listActivity());
 
         return registration;
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint adminLogin() {
         EntryPoint api = new EntryPoint(
@@ -142,8 +143,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint adminAuthorize() {
         EntryPoint api = new EntryPoint(
@@ -158,8 +159,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint findSession() {
         EntryPoint api = new EntryPoint(
@@ -174,8 +175,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint deleteSession() {
         EntryPoint api = new EntryPoint(
@@ -190,13 +191,13 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
-    private EntryPoint listNas() {
+    private EntryPoint getNas() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
-                Activity.NasAction.LIST.alias(),
+                Activity.NasAction.GET.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
                 RequestMethod.GET.name(),
                 "JSON",
@@ -206,8 +207,24 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define get nas entry point.
+     * @return authorize entry point.
+     */
+    private EntryPoint searchNas() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.NasAction.LIST.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint listActivity() {
         EntryPoint api = new EntryPoint(
@@ -241,8 +258,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define authorize end point.
-     * @return authorize end point.
+     * Define authorize entry point.
+     * @return authorize entry point.
      */
     private EntryPoint authorize() {
         EntryPoint api = new EntryPoint(
@@ -257,8 +274,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define connect end point.
-     * @return connect end point.
+     * Define connect entry point.
+     * @return connect entry point.
      */
     private EntryPoint connect() {
         EntryPoint api = new EntryPoint(
@@ -273,8 +290,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define disconnect end point.
-     * @return disconnect end point.
+     * Define disconnect entry point.
+     * @return disconnect entry point.
      */
     private EntryPoint disconnect() {
         EntryPoint api = new EntryPoint(
@@ -289,8 +306,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define get end point.
-     * @return get end point.
+     * Define get entry point.
+     * @return get entry point.
      */
     private EntryPoint get() {
         EntryPoint api = new EntryPoint(
@@ -305,8 +322,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define update end point.
-     * @return update end point.
+     * Define update entry point.
+     * @return update entry point.
      */
     private EntryPoint update() {
         EntryPoint api = new EntryPoint(
@@ -321,8 +338,8 @@ public class ApiConfiguration {
     }
 
     /**
-     * Define find end point.
-     * @return find end point.
+     * Define find entry point.
+     * @return find entry point.
      */
     private EntryPoint find() {
         EntryPoint api = new EntryPoint(

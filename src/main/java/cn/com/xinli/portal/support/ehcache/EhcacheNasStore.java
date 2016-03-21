@@ -88,12 +88,24 @@ public class EhcacheNasStore implements NasStore {
 
     /**
      * Transfer nas into a cache element.
+     * @param id nas id.
      * @param nas nas.
      * @return cache element.
      */
-    private Element toElement(String key, Nas nas) {
+    private Element toElement(Long id, Nas nas) {
         final byte[] value = nasSerializer.serialize(nas);
-        return new Element(key, value);
+        return new Element(id, value);
+    }
+
+    /**
+     * Transfer nas into a cache element.
+     * @param ip nas ip.
+     * @param nas nas.
+     * @return cache element.
+     */
+    private Element toElement(String ip, Nas nas) {
+        final byte[] value = nasSerializer.serialize(nas);
+        return new Element(ip, value);
     }
 
     /**
@@ -155,19 +167,17 @@ public class EhcacheNasStore implements NasStore {
      * @param nas NAS/BRAS device.
      */
     private void addDevice(Nas nas) {
-        nasCache.put(toElement(nas.getName(), nas));
+        nasCache.put(toElement(nas.getId(), nas));
         nasSearchCache.put(toElement(nas.getIp(), nas));
     }
 
     @Override
-    public Nas get(String name) throws NasNotFoundException {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("NAS name can not be blank.");
-        }
+    public Nas get(Long id) throws NasNotFoundException {
+        Objects.requireNonNull(id, Nas.EMPTY_NAS);
 
-        Element element = nasCache.get(name);
+        Element element = nasCache.get(id);
         if (element == null) {
-            throw new NasNotFoundException(name);
+            throw new NasNotFoundException(id);
         }
 
         return toNas(element);
@@ -187,25 +197,21 @@ public class EhcacheNasStore implements NasStore {
     }
 
     @Override
-    public boolean exists(String name) {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("NAS name can not be blank.");
-        }
+    public boolean exists(Long id) {
+        Objects.requireNonNull(id, Nas.EMPTY_NAS);
 
-        return nasCache.get(name) != null;
+        return nasCache.get(id) != null;
     }
 
     @Override
-    public boolean delete(String name) throws NasNotFoundException {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("NAS name can not be blank.");
-        }
+    public boolean delete(Long id) throws NasNotFoundException {
+        Objects.requireNonNull(id, Nas.EMPTY_NAS);
 
-        if (!exists(name)) {
-            throw new NasNotFoundException(name);
+        if (!exists(id)) {
+            throw new NasNotFoundException(id);
         }
-        nasPersistence.delete(name);
-        return nasCache.remove(name);
+        nasPersistence.delete(id);
+        return nasCache.remove(id);
     }
 
     @Override

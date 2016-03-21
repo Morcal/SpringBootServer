@@ -30,7 +30,13 @@ public interface NasService {
      */
     void reload();
 
-    Nas get(String ip) throws NasNotFoundException;
+    /**
+     * Get NAS device by id.
+     * @param id nas id.
+     * @return nas.
+     * @throws NasNotFoundException
+     */
+    Nas get(Long id) throws NasNotFoundException;
 
     Nas find(String name) throws NasNotFoundException;
 }

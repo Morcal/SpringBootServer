@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author zhoupeng 2015/12/9.
  */
-public abstract class RestResponse {
+public class RestResponse {
 
     /** If response been truncated. */
     @JsonProperty

@@ -1,6 +1,5 @@
 package cn.com.xinli.portal.support.redis;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasRule;
@@ -57,9 +56,9 @@ public class RedisNasStore implements NasStore {
     @Qualifier("redisQueryTemplate")
     private StringRedisTemplate redisQueryTemplate;
 
-    @Autowired
-    @Qualifier("redisIdTemplate")
-    private RedisTemplate<String, Long> redisIdTemplate;
+//    @Autowired
+//    @Qualifier("redisIdTemplate")
+//    private RedisTemplate<String, Long> redisIdTemplate;
 
     /**
      * Generate a REDIS value key as "nas:name" and "nas:ip" so
@@ -74,7 +73,9 @@ public class RedisNasStore implements NasStore {
     String keyFor(Nas nas) {
         return keyFor(nas.getName());
     }
-
+    String keyFor(Long id) {
+        return "nas:" + id;
+    }
     String keyFor(String ip, String mac) {
         return "nas:" + ip + ":" + mac;
     }
@@ -82,10 +83,10 @@ public class RedisNasStore implements NasStore {
         return keyFor(pair.getKey(), pair.getValue());
     }
 
-    void ensureId(Nas nas) {
-        long id = redisIdTemplate.opsForValue().increment(ID, 1);
-        nas.setId(id);
-    }
+//    void ensureId(Nas nas) {
+//        long id = redisIdTemplate.opsForValue().increment(ID, 1);
+//        nas.setId(id);
+//    }
 
     @Override
     public void reload() {
@@ -94,7 +95,7 @@ public class RedisNasStore implements NasStore {
     }
 
     @Override
-    public Nas get(String id) throws NasNotFoundException {
+    public Nas get(Long id) throws NasNotFoundException {
         Nas nas = redisNasTemplate.opsForValue().get(keyFor(id));
         if (nas == null) {
             throw new NasNotFoundException(id);
@@ -170,16 +171,16 @@ public class RedisNasStore implements NasStore {
     }
 
     @Override
-    public boolean exists(String id) {
+    public boolean exists(Long id) {
         return redisNasTemplate.opsForValue().get(keyFor(id)) != null;
     }
 
     @Override
-    public boolean delete(String id) throws NasNotFoundException {
+    public boolean delete(Long id) throws NasNotFoundException {
         Nas nas = get(id);
         redisNasTemplate.delete(keyFor(nas));
         redisQueryTemplate.delete(keyFor(nas.getIp()));
-        boolean removed = !exists(nas.getName());
+        boolean removed = !exists(nas.getId());
 
         if (logger.isTraceEnabled()) {
             logger.trace("session removed: {}, {}", id, removed);

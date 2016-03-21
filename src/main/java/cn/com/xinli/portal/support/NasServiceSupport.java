@@ -2,7 +2,6 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.nas.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +68,9 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     }
 
     @Override
-    public Nas get(String ip) throws NasNotFoundException {
-        if (StringUtils.isEmpty(ip)) {
-            throw new IllegalArgumentException("nas ip can not be empty.");
-        }
-        return nasStore.get(ip);
+    public Nas get(Long id) throws NasNotFoundException {
+        Objects.requireNonNull(id, Nas.EMPTY_NAS);
+        return nasStore.get(id);
     }
 
     @Override
@@ -93,7 +90,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
 
     @Override
     public void delete(Nas nas) throws NasNotFoundException {
-        nasStore.delete(nas.getIp());
+        nasStore.delete(nas.getId());
     }
 
     @Override

@@ -243,7 +243,8 @@ public class Activity {
 
     /** Activity sessionAction. */
     public enum NasAction {
-        LIST("list-nas"),
+        LIST("search-nas"),
+        GET("get-nas"),
         ADD("add-nas"),
         UPDATE("update-nas"),
         ENABLE("enable-nas"),

@@ -57,7 +57,7 @@ public class DigestCredentials implements RestCreadentials {
 
     /** All attribute names within credentials. */
     public static final String[] ATTRIBUTE_NAMES = {
-            NONCE, RESPONSE, CLIENT_TOKEN, CLIENT_ID,
+            NONCE, RESPONSE, CLIENT_TOKEN, CLIENT_ID, ADMIN_TOKEN,
             SIGNATURE, SIGNATURE_METHOD, TIMESTAMP, SESSION_TOKEN, VERSION
     };
 

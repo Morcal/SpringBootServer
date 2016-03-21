@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.web.admin;
+package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.web.rest.RestResponse;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @author zhoupeng 2015/12/19.
  */
 @RestController
-@RequestMapping("/portal/admin/users")
-public class UserController {
+@RequestMapping("/portal/admin/activities")
+public class ActivityController {
 
     @RequestMapping
     public ResponseEntity<RestResponse> summary() {

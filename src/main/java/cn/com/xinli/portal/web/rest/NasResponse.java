@@ -28,7 +28,7 @@ public class NasResponse extends RestResponse {
         this.stream = stream;
     }
 
-    @JsonProperty
+    @JsonProperty("devices")
     public List<Nas> getDevices() {
         return stream.collect(Collectors.toList());
     }

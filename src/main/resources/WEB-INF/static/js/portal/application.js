@@ -7,8 +7,12 @@
     var Application = function () {};
 
     Application.prototype = {
+        /** Internal modules. */
         pages: ['Dashboard', 'Configuration', 'Management'],
 
+        /**
+         * Initialize web application.
+         */
         init: function () {
             this.load({
                 function: $.portal.connector.create,
@@ -19,6 +23,13 @@
             });
         },
 
+        /**
+         * Display a loading spin when loading, after loading finished hide
+         * the loading spin.
+         *
+         * @param runnable
+         * @returns {*}
+         */
         load: function (runnable) {
             var args, obj;
 
@@ -32,10 +43,14 @@
 
             return runnable.function.call(obj, args).done(function () {
                 $('#loading').modal('hide');
-                $('#login-dialog').modal('show');
             });
         },
 
+        /**
+         * Perform administration login.
+         * @param modal login modal.
+         * @returns {boolean}
+         */
         login: function(modal) {
             var promise,
                 login = $.portal.login,
@@ -50,8 +65,15 @@
                 $.logging.debug('login finished, result: ', response);
                 modal.modal('hide');
             });
+
+            return true;
         },
 
+        /**
+         * Switch to a module with module name.
+         * @param target module name.
+         * @returns {boolean}
+         */
         switchTo: function (target) {
             var index, module, toggle;
 

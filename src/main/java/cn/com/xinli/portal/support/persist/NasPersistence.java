@@ -81,7 +81,7 @@ public class NasPersistence {
         return nasRepository.save(nas);
     }
 
-    public void delete(String name) {
-        nasRepository.delete(name);
+    public void delete(Long id) {
+        nasRepository.delete(id);
     }
 }

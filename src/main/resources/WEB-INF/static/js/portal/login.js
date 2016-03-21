@@ -66,7 +66,7 @@
                     password: that.md5password(password.val(), $.portal.connector.state.challenge)
                 }).done(function (response) {
                     $.logging.debug('login result: ', response);
-                    $.portal.connector.state.token = response['token'];
+                    $.portal.connector.handleLogin(response);
                 }).fail(function (response, status, err) {
                     $.portal.ajaxError(response, status, err);
                     //TODO add alert.

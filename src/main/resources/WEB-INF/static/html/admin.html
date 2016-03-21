@@ -11,7 +11,8 @@
 <body>
 
 <!-- Loading overlay modal. -->
-<div id="loading" class="modal" data-backdrop="static" data-keyboard="false">
+<!--<div id="loading" class="modal" data-backdrop="static" data-keyboard="false">-->
+<div id="loading" class="modal">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -96,27 +97,81 @@
             <div class="modal-body">
                 <form id="login-form">
                     <div class="form-group">
-                        <div class="username">
-                            <label for="login-username" class="control-label">Username:</label>
-                            <input type="text" id="login-username" name="username" value="admin"
-                                   class="form-control" placeholder="Username" data-toggle="tooltip" data-container="body"
-                                   data-title="Username can not be empty."/>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password" class="control-label">Password:</label>
-                            <input id="login-password" name="password" type="password" value="s3cr3t"
-                                   class="form-control" placeholder="Password"
-                                   data-toggle="tooltip" data-container="body"
-                                   data-title="Password can not be empty."/>
-                        </div>
-                        <div class="form-group collapse">
-                            <span class="h4"></span>
+                        <label for="login-username" class="control-label">Username:</label>
+                        <input type="text" id="login-username" name="username" value="admin"
+                               class="form-control" placeholder="Username" data-toggle="tooltip" data-container="body"
+                               data-title="Username can not be empty."/>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password" class="control-label">Password:</label>
+                        <input id="login-password" name="password" type="password" value="s3cr3t"
+                               class="form-control" placeholder="Password"
+                               data-toggle="tooltip" data-container="body"
+                               data-title="Password can not be empty."/>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="login" type="button" class="btn btn-primary" style="width: 200px;">Login</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAS Device dialog. -->
+<div id="nas-dialog" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <form id="nas-form">
+                    <div class="form-group">
+                        <label for="nas-name" class="control-label">NAS Name:</label>
+                        <input type="text" id="nas-name" name="nas-name"
+                               class="form-control" placeholder="NAS name" data-toggle="tooltip" data-container="body"
+                               data-title="NAS name can not be empty."/>
+                    </div>
+                    <div class="form-group">
+                        <label for="nas-type" class="control-label">NAS Type:</label>
+                        <select id="nas-type" class="form-control">
+                            <option>HUAWEI</option>
+                            <option>CMCC</option>
+                            <option>RADIUS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nas-ipv4" class="control-label">IPv4 Address:</label>
+                        <input id="nas-ipv4" name="nas-ipv4"
+                               class="form-control" placeholder="IPv4 Address"
+                               data-toggle="tooltip" data-container="body"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="nas-ipv6" class="control-label">IPv6 Address:</label>
+                        <input id="nas-ipv6" name="nas-ipv4"
+                               class="form-control" placeholder="IPv6 Address"
+                               data-toggle="tooltip" data-container="body"/>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="nas-auth-with-domain" name="nas-auth-with-domain">Authenticate with domain
+                            </label>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="login" type="button" class="btn btn-primary">Login</button>
+                <button id="save-nas" type="button" class="btn btn-primary" aria-label="Left Align" style="width: 150px;">
+                    <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
+                </button>
+                <button id="nas-open-translation" type="button" class="btn btn-default" aria-label="Left Align"
+                        onclick="$.portal.configuration.openTranslation();">
+                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Check Translation
+                </button>
             </div>
         </div>
     </div>
@@ -132,7 +187,7 @@
                     <ul class="nav">
                         <li class="active">
                             <a id="configuration-nas" href="javascript:void(0);">
-                                NAS<span class="badge">3</span>
+                                NAS<span class="badge">0</span>
                             </a>
                         </li>
                         <li>
@@ -173,7 +228,9 @@
                             <div class="input-group">
                                 <input id="nas-search" type="text" class="form-control" placeholder="Search for...">
                                 <span class="input-group-btn">
-                                    <button id="nas-search-btn" class="btn btn-primary" type="button">Search</button>
+                                    <button id="nas-search-btn" class="btn btn-danger" type="button" aria-label="Left Align">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                                    </button>
                                 </span>
                             </div><!-- /input-group -->
                         </div><!-- /.col-lg-6 -->
@@ -188,38 +245,10 @@
                                     <th>name</th>
                                     <th>type</th>
                                     <th>ip</th>
-                                    <th>action</th>
+                                    <th>actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>HUAWEI</td>
-                                    <td>192.168.3.2</td>
-                                    <td><button type="button" class="btn btn-info">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>HUAWEI</td>
-                                    <td>192.168.3.2</td>
-                                    <td><button type="button" class="btn btn-info">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>HUAWEI</td>
-                                    <td>192.168.3.2</td>
-                                    <td><button type="button" class="btn btn-info">Edit</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>HUAWEI</td>
-                                    <td>192.168.3.2</td>
-                                    <td><button type="button" class="btn btn-info">Edit</button></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -240,7 +269,9 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" placeholder="Search for...">
                             <span class="input-group-btn">
-                                <button id="session-search" class="btn btn-default" type="button">Search</button>
+                                <button id="session-search" class="btn btn-danger" type="button">
+                                    <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                                </button>
                             </span>
                             </div><!-- /input-group -->
                         </div><!-- /.col-lg-6 -->
@@ -264,105 +295,105 @@
                                     <td>nas-001</td>
                                     <td>foobar</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>102</td>
                                     <td>nas-001</td>
                                     <td>foobar1</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>103</td>
                                     <td>nas-001</td>
                                     <td>foobar3</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>101</td>
                                     <td>nas-001</td>
                                     <td>foobar</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>102</td>
                                     <td>nas-001</td>
                                     <td>foobar1</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>103</td>
                                     <td>nas-001</td>
                                     <td>foobar3</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>101</td>
                                     <td>nas-001</td>
                                     <td>foobar</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>102</td>
                                     <td>nas-001</td>
                                     <td>foobar1</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>103</td>
                                     <td>nas-001</td>
                                     <td>foobar3</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>101</td>
                                     <td>nas-001</td>
                                     <td>foobar</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>102</td>
                                     <td>nas-001</td>
                                     <td>foobar1</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>103</td>
                                     <td>nas-001</td>
                                     <td>foobar3</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>101</td>
                                     <td>nas-001</td>
                                     <td>foobar</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>102</td>
                                     <td>nas-001</td>
                                     <td>foobar1</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 <tr>
                                     <td>103</td>
                                     <td>nas-001</td>
                                     <td>foobar3</td>
                                     <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger">Stop</button></td>
+                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -388,13 +419,14 @@
 <script src="../js/portal/connector.js"></script>
 <script src="../js/portal/login.js"></script>
 <script src="../js/portal/configuration.js"></script>
+<script src="../js/portal/management.js"></script>
 <script src="../js/portal/application.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {
 //        $('#configuration').find('.module-nav').affix(15);
 //        $('#management').find('.module-nav').affix(15);
-        $('#configuration-nas-search').affix();
+//        $('#configuration-nas-search').affix();
 
         $('#configuration-nas').click(function () {
             $.portal.configuration.switchTo('nas');
@@ -410,9 +442,9 @@
 
         $('#nas-search-btn').click(function () {
             $.application.load({
-                function: $.configuration.searchNasDevices,
-                object: $.configuration,
-                args: { query: $('nas-search').val() }
+                function: $.portal.configuration.searchNasDevices,
+                object: $.portal.configuration,
+                args: $('#nas-search').val()
             });
         });
 

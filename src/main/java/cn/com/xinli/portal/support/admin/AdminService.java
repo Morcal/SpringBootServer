@@ -29,18 +29,16 @@ public class AdminService {
     /**
      * Perform CHAP authentication.
      * @param challenge challenge.
-     * @param credentials credentials.
+     * @param username username.
+     * @param password password.
      * @return full populated {@link AdminCredentials}.
      * @throws PortalException
      */
-    public AdminCredentials verify(String challenge, AdminCredentials credentials) throws PortalException {
-        Objects.requireNonNull(credentials, AdminCredentials.EMPTY_CREDENTIALS);
+    private boolean verify(String challenge, String username, String password) throws PortalException {
         Asserts.notBlank(challenge);
 
-        final String username = credentials.getUsername(),
-                password = credentials.getPassword();
         if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
-            throw new RemoteException(PortalError.REST_LOGIN_FAILED);
+            return false;
         }
 
         final String expectUsername = serverConfiguration.getDefaultAdminUsername(),
@@ -53,11 +51,11 @@ public class AdminService {
         if (!StringUtils.isEmpty(expectUsername) && !StringUtils.isEmpty(expectPasswordMd5)) {
             if (StringUtils.equals(expectUsername, username) &&
                     StringUtils.equals(expectPasswordMd5, password)) {
-                return credentials;
+                return true;
             }
         }
 
-        throw new RemoteException(PortalError.REST_LOGIN_FAILED);
+        return false;
     }
 
     /**
@@ -69,22 +67,11 @@ public class AdminService {
     public AdminCredentials verify(AdminCredentials credentials) throws PortalException {
         Objects.requireNonNull(credentials, AdminCredentials.EMPTY_CREDENTIALS);
 
-        final String username = credentials.getUsername(),
-                password = credentials.getPassword();
-        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
+        if (!verify(credentials.getChallenge(), credentials.getUsername(), credentials.getPassword())) {
             throw new RemoteException(PortalError.REST_LOGIN_REQUIRED);
         }
 
-        final String expectUsername = serverConfiguration.getDefaultAdminUsername(),
-                expectPassword = serverConfiguration.getDefaultAdminPassword();
-
-        if (!StringUtils.isEmpty(expectUsername) && !StringUtils.isEmpty(expectPassword)) {
-            if (StringUtils.equals(expectUsername, username) &&
-                    StringUtils.equals(expectPassword, password)) {
-                return credentials;
-            }
-        }
-
-        throw new RemoteException(PortalError.REST_LOGIN_REQUIRED);
+        /* Don't need to populate anything. */
+        return credentials;
     }
 }

@@ -1,16 +1,16 @@
-package cn.com.xinli.portal.web.admin;
+package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasStore;
+import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
 import cn.com.xinli.portal.web.rest.NasResponse;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Stream;
 
@@ -33,9 +33,10 @@ public class SystemController {
         return null;
     }
 
-    @RequestMapping("/nas")
+    @RequestMapping(value = "/nas", method = RequestMethod.POST)
     @ResponseBody
-    public RestResponse searchNas(@RequestParam(defaultValue = "") String query) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public NasResponse searchNas(@RequestParam(defaultValue = "") String query) {
         final Stream<Nas> stream;
         if (StringUtils.isEmpty(query)) {
             stream = nasStore.devices();
@@ -43,9 +44,14 @@ public class SystemController {
             stream = nasStore.search(query);
         }
 
-        NasResponse response = new NasResponse();
-        response.setStream(stream);
-        return response;
+        return AdminResponseBuilders.nasResponseBuilder(stream).build();
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/nas/{id}", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ADMIN')")
+    public NasResponse getNas(@PathVariable("id") Long id) throws NasNotFoundException {
+        Nas nas = nasStore.get(id);
+        return AdminResponseBuilders.nasResponseBuilder(Stream.of(nas)).build();
+    }
 }

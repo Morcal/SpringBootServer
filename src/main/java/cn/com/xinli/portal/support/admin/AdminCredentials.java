@@ -19,6 +19,9 @@ public class AdminCredentials {
     @JsonProperty
     private String username;
 
+    @JsonProperty
+    private String challenge;
+
     /** user password. */
     @JsonProperty
     private String password;
@@ -39,10 +42,19 @@ public class AdminCredentials {
         this.username = username;
     }
 
+    public String getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(String challenge) {
+        this.challenge = challenge;
+    }
+
     @Override
     public String toString() {
         return "AdminCredentials{" +
                 "username='" + username + '\'' +
+                ", challenge='" + challenge + '\'' +
                 ", password='" + password + '\'' +
                 '}';
     }

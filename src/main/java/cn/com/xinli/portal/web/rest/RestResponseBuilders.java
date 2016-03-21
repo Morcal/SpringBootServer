@@ -103,17 +103,8 @@ public class RestResponseBuilders {
                 .build();
     }
 
-    /**
-     * Response builder.
-     *
-     * @param <T> rest response bean type.
-     */
-    interface Builder<T> {
-        T build();
-    }
-
     /** Abstract server response builder. */
-    public static abstract class ServerResponseBuilder<T> implements Builder<T> {
+    public static abstract class ServerResponseBuilder<T> {
         /** If server truncated response. */
         private boolean truncated;
 
@@ -163,7 +154,6 @@ public class RestResponseBuilders {
             return this;
         }
 
-        @Override
         public final T build() {
             T target = buildInternal();
 

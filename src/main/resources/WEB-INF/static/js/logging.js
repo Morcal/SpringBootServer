@@ -89,7 +89,9 @@
 			for (i = 0; i < record.entries.length; i += 1) {
 				message.push(this.formatEntry(record.entries[i]));
 			}
+
 			context.message = message.join('');
+
 			for (i = 0; i < this.formatters.length; i += 1) {
 				formatted += this.formatters[i].call(this, context, i);
 			}
@@ -136,7 +138,7 @@
                     }
                     formatted += '[' + ary.join(', ') + ']';
                 } else {
-                    formatted += value.toString();
+                    formatted += JSON.stringify(value);
                 }
                 break;
 			case 'string':
