@@ -44,11 +44,24 @@ public interface NasStore extends RoutingMapper, Locatable<Pair<String, String>,
 
     NasRule put(NasRule rule);
 
+    /**
+     * Get all existed NAS rules.
+     * @return stream of existed nas rules.
+     */
     Stream<NasRule> rules();
-
-    Stream<Nas> devices();
 
     void reload();
 
+    /**
+     * Get all NAS devices.
+     * @return stream of all existed nas devices.
+     */
+    Stream<Nas> devices();
+
+    /**
+     * Search nas devices.
+     * @param value search keyword.
+     * @return stream of resulting nas devices.
+     */
     Stream<Nas> search(String value);
 }

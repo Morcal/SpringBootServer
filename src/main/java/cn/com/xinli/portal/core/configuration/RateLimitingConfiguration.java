@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Rate-Limiting Configuration.
  *
@@ -7,11 +10,14 @@ package cn.com.xinli.portal.core.configuration;
  *
  * @author zhoupeng 2016/1/29.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RateLimitingConfiguration {
     /** Allow maximum rate. */
+    @JsonProperty
     private int rate;
 
     /** Time to live. */
+    @JsonProperty
     private int ttl;
 
     public int getRate() {

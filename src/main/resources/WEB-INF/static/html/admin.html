@@ -79,6 +79,12 @@
                         Management
                     </a>
                 </li>
+                <li>
+                    <a class="loading-outer">
+                    <div id="loading-spin" class="collapse">
+                    </div>
+                    </a>
+                </li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>
@@ -137,7 +143,7 @@
                     </div>
                     <div class="form-group">
                         <label for="nas-type" class="control-label">NAS Type:</label>
-                        <select id="nas-type" class="form-control">
+                        <select id="nas-type" class="form-control" onchange="$.portal.configuration.changeNasType(this);">
                             <option>HUAWEI</option>
                             <option>CMCC</option>
                             <option>RADIUS</option>
@@ -162,15 +168,52 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- HUAWEI specific content. -->
+                    <div class="form-group huawei collapse">
+                        <label for="huawei-nas-shared-secret" class="control-label">Shared secret</label>
+                        <input id="huawei-nas-shared-secret" name="shared_secret"
+                               class="form-control" placeholder="shared secret"
+                               data-toggle="tooltip" data-container="body"/>
+                    </div>
+
+                    <div class="form-group huawei collapse">
+                        <label for="huawei-nas-listen-port" class="control-label">Listen Port</label>
+                        <input id="huawei-nas-listen-port" name="huawei-nas-listen-port"
+                               class="form-control" placeholder="shared secret"
+                               data-toggle="tooltip" data-container="body"/>
+                    </div>
+
+                    <div class="form-group huawei collapse">
+                        <label for="huawei-nas-auth-type" class="control-label">Authentication Type</label>
+                        <select id="huawei-nas-auth-type" name="huawei-nas-auth-type">
+                            <option>CHAP</option>
+                            <option>PAP</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group huawei collapse">
+                        <label for="huawei-nas-version" class="control-label">Version</label>
+                        <select id="huawei-nas-version" name="huawei-nas-version">
+                            <option>V1</option>
+                            <option>V2</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <button id="nas-open-translation" type="button" class="btn btn-default" aria-label="Left Align"
+                                onclick="$.portal.configuration.openTranslation();">
+                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit Translation
+                        </button>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
+                <button id="delete-nas" type="button" class="btn btn-danger" aria-label="Left Align" style="width: 150px; margin-right: 200px;">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true" style="padding-right: 8px;"></span>Delete
+                </button>
                 <button id="save-nas" type="button" class="btn btn-primary" aria-label="Left Align" style="width: 150px;">
                     <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
-                </button>
-                <button id="nas-open-translation" type="button" class="btn btn-default" aria-label="Left Align"
-                        onclick="$.portal.configuration.openTranslation();">
-                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Check Translation
                 </button>
             </div>
         </div>
@@ -186,14 +229,13 @@
                 <nav id="nav-configuration" class="sidebar-content collapse">
                     <ul class="nav">
                         <li class="active">
-                            <a id="configuration-nas" href="javascript:void(0);">
+                            <a id="sidebar-nas" href="javascript:void(0);" onclick="$.portal.configuration.switchTo('nas');">
                                 NAS<span class="badge">0</span>
                             </a>
                         </li>
                         <li>
-                            <a id="configuration-system" href="javascript:void(0);">
-                                System<span class="badge">1</span>
-                            </a>
+                            <a id="sidebar-system" href="javascript:void(0);" onclick="$.portal.configuration.switchTo('system');">
+                                System</a>
                         </li>
                     </ul>
                 </nav>
@@ -202,13 +244,13 @@
                 <nav id="nav-management" class="sidebar-content collapse">
                     <ul class="nav">
                         <li class="active">
-                            <a id="management-session" href="javascript:void(0);">
-                                Session<span class="badge">1</span>
+                            <a id="sidebar-session" href="javascript:void(0);">
+                                Session<span class="badge">0</span>
                             </a>
                         </li>
                         <li>
-                            <a id="management-activity" href="javascript:void(0);">
-                                Activity<span class="badge">3</span>
+                            <a id="sidebar-activity" href="javascript:void(0);">
+                                Activity<span class="badge">0</span>
                             </a>
                         </li>
                     </ul>
@@ -222,9 +264,15 @@
             <!-- Configurations. -->
             <div id="configuration" class="col-md-9 collapse">
                 <!-- NAS configuration, content. -->
-                <div id="configuration-nas-block" class="module-content">
+                <div id="configuration-nas" class="module-content">
                     <div class="row bottom-spacing">
-                        <div id="configuration-nas-search">
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-default" onclick="$.portal.configuration.createNas();">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true" style="padding-right: 8px;"></span>
+                                Add new NAS Device
+                            </button>
+                        </div>
+                        <div id="configuration-nas-search" class="col-md-9">
                             <div class="input-group">
                                 <input id="nas-search" type="text" class="form-control" placeholder="Search for...">
                                 <span class="input-group-btn">
@@ -236,6 +284,16 @@
                         </div><!-- /.col-lg-6 -->
                     </div><!-- /.row -->
 
+                    <!-- NAS device list. -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>
+                                <!--<span class="glyphicon glyphicon-info-sign"></span>-->
+                                Click&nbsp;<span class="glyphicon glyphicon-search"></span>
+                                &nbsp;Search to display NAS device list.
+                            </h4>
+                        </div>
+                    </div>
                     <div class="row bottom-spacing">
                         <div>
                             <table class="table table-bordered table-striped">
@@ -256,7 +314,32 @@
                 </div>
 
                 <!-- System configuration, content. -->
-                <div id="configuration-system-block" class="module-content collapse">
+                <div id="configuration-system" class="module-content collapse">
+                    <div class="form-group">
+                        <label for="private-key" class="control-label">Server Private Key</label>
+                        <input type="text" id="private-key" name="private-key"
+                               class="form-control" placeholder="server private key" data-toggle="tooltip" data-container="body"
+                               data-title="server private key can not be empty."/>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="server-allow-nat" name="allow-nat">
+                                Allow user login in NATed environment
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="enable-session-ttl" name="enable-session-ttl">
+                                Enable session TTL. (if enabled, session while be removed when TTL reached)
+                            </label>
+                        </div>
+                        <label for="private-key" class="control-label">Session TTL (seconds)</label>
+                        <input type="text" id="session-ttl-value" name="session-ttl-value"
+                               class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
+                               data-title="Username can not be empty."/>
+                    </div>
                 </div>
             </div>
 
@@ -267,136 +350,59 @@
                     <div class="row bottom-spacing">
                         <div>
                             <div class="input-group">
-                                <input type="text" class="form-control" placeholder="Search for...">
-                            <span class="input-group-btn">
-                                <button id="session-search" class="btn btn-danger" type="button">
-                                    <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
-                                </button>
-                            </span>
+                                <input id="session-search" type="text" class="form-control" placeholder="Search for...">
+                                <span class="input-group-btn">
+                                    <button id="session-search-btn" class="btn btn-danger" type="button">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                                    </button>
+                                </span>
                             </div><!-- /input-group -->
                         </div><!-- /.col-lg-6 -->
                     </div><!-- /.row -->
 
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>
+                                <!--<span class="glyphicon glyphicon-info-sign"></span>-->
+                                Click&nbsp;<span class="glyphicon glyphicon-search"></span>
+                                &nbsp;Search to display session list.
+                            </h4>
+                        </div>
+                    </div>
                     <div class="row bottom-spacing">
                         <div>
                             <table class="table table-bordered table-striped">
                                 <thead>
-                                <tr>
-                                    <th>id</th>
-                                    <th>NAS</th>
-                                    <th>username</th>
-                                    <th>start time</th>
-                                    <th>action</th>
-                                </tr>
+                                    <tr>
+                                        <th>id</th>
+                                        <th>NAS</th>
+                                        <th>username</th>
+                                        <th>ip</th>
+                                        <th>mac</th>
+                                        <th>start time</th>
+                                        <th>action</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>foobar</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>nas-001</td>
-                                    <td>foobar1</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>nas-001</td>
-                                    <td>foobar3</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>foobar</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>nas-001</td>
-                                    <td>foobar1</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>nas-001</td>
-                                    <td>foobar3</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>foobar</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>nas-001</td>
-                                    <td>foobar1</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>nas-001</td>
-                                    <td>foobar3</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>foobar</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>nas-001</td>
-                                    <td>foobar1</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>nas-001</td>
-                                    <td>foobar3</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>101</td>
-                                    <td>nas-001</td>
-                                    <td>foobar</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>102</td>
-                                    <td>nas-001</td>
-                                    <td>foobar1</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
-                                <tr>
-                                    <td>103</td>
-                                    <td>nas-001</td>
-                                    <td>foobar3</td>
-                                    <td>2016-3-20 22:00:00</td>
-                                    <td><button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button></td>
-                                </tr>
+                                    <!--<tr>-->
+                                        <!--<td>102</td>-->
+                                        <!--<td>nas-001</td>-->
+                                        <!--<td>foobar1</td>-->
+                                        <!--<td>2016-3-20 22:00:00</td>-->
+                                        <!--<td>-->
+                                            <!--<button type="button" class="btn btn-danger">-->
+                                                <!--<span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>-->
+                                                <!--Stop-->
+                                            <!--</button>-->
+                                        <!--</td>-->
+                                    <!--</tr>-->
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div id="no-session" class="row collapse">
+                        <div class="col-md-12">
+                            <h4>No Session found.</h4>
                         </div>
                     </div>
                 </div>
@@ -405,6 +411,8 @@
                 <div id="activities" class="module-content collapse">
                 </div>
             </div>
+
+            <!-- Loading indicator. -->
         </div>
     </div>
 </div> <!-- /container -->
@@ -428,16 +436,28 @@
 //        $('#management').find('.module-nav').affix(15);
 //        $('#configuration-nas-search').affix();
 
-        $('#configuration-nas').click(function () {
-            $.portal.configuration.switchTo('nas');
+        $('#session-search-btn').click(function () {
+            $.application.load({
+                function: $.portal.management.searchSessions,
+                object: $.portal.management,
+                args: $('#session-search').val()
+            });
         });
 
-        $('#configuration-system').click(function () {
-            $.portal.configuration.switchTo('system');
+        $('#sidebar-nas').click(function () {
+            $.application.load({
+                function: $.portal.configuration.switchTo,
+                object: $.portal.configuration,
+                args: 'nas'
+            });
         });
 
-        $('#session-search').click(function () {
-            $.portal.management.searchSession();
+        $('#sidebar-system').click(function () {
+            $.application.load({
+                function: $.portal.configuration.switchTo,
+                object: $.portal.configuration,
+                args: 'system'
+            });
         });
 
         $('#nas-search-btn').click(function () {
@@ -446,6 +466,10 @@
                 object: $.portal.configuration,
                 args: $('#nas-search').val()
             });
+        });
+
+        $('#delete-nas').click(function () {
+            $.portal.configuration.deleteNas($(this).data('nas'));
         });
 
         $('#login').click(function () {

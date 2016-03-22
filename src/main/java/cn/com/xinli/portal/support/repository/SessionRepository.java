@@ -42,4 +42,14 @@ public interface SessionRepository extends CrudRepository<Session, Long> {
     @Query("select s from Session s where s.credentials.ip = :ip and s.credentials.mac = :mac")
     Stream<Session> find(@Param("ip") String ip, @Param("mac") String mac);
 
+    @Query("select count(s) from Session s where s.credentials.username like :query" +
+            " or s.credentials.ip like :query or s.credentials.mac like :query" +
+            " or s.nas.name like :query or s.nas.ipv4Address like :query")
+    long count(@Param("query") String query);
+
+    Stream<Session> findTop25ByIdNotNull();
+
+    @Query("select s from Session s where s.credentials.username like :query order by s.id asc fetch first 25")
+    Stream<Session> searchTop25(@Param("query") String query);
+
 }

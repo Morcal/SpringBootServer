@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * REDIS based session store.
@@ -174,5 +175,29 @@ public class RedisSessionStore implements SessionStore {
     @Override
     public boolean delete(Session session) throws SessionNotFoundException {
         return delete(session.getId());
+    }
+
+    @Override
+    public long count() {
+        //TODO implement count in REDIS
+        return 0;
+    }
+
+    @Override
+    public Stream<Session> all() {
+        //TODO implement all in REDIS
+        return null;
+    }
+
+    @Override
+    public Stream<Session> search(String query) {
+        //TODO implement search in REDIS
+        return null;
+    }
+
+    @Override
+    public long count(String query) {
+        //TODO implement count in REDIS
+        return 0;
     }
 }

@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * EhCache based session data store.
@@ -162,6 +163,26 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
             element = new Element(key, value);
         }
         return element;
+    }
+
+    @Override
+    public long count() {
+        return sessionCache.getSize();
+    }
+
+    @Override
+    public long count(String query) {
+        return sessionPersistence.count(query);
+    }
+
+    @Override
+    public Stream<Session> all() {
+        return sessionPersistence.all();
+    }
+
+    @Override
+    public Stream<Session> search(String query) {
+        return sessionPersistence.search(query);
     }
 
     /**

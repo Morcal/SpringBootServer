@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Portal Server Configuration.
  *
@@ -7,20 +10,26 @@ package cn.com.xinli.portal.core.configuration;
  *
  * @author zhoupeng 2016/1/29.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PortalServerConfiguration {
     /** Portal server name. */
+    @JsonProperty
     private String name;
 
     /** Host. */
+    @JsonProperty
     private String host;
 
     /** Port. */
+    @JsonProperty
     private int port;
 
     /** Shared secret. */
+    @JsonProperty("shared_secret")
     private String sharedSecret;
 
     /** Portal version. */
+    @JsonProperty
     private String version;
 
     public String getName() {

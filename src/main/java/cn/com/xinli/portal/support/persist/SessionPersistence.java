@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * Session persistence.
@@ -24,6 +25,18 @@ public class SessionPersistence {
 
     public void all(Consumer<Session> consumer) {
         sessionRepository.findAll().forEach(consumer);
+    }
+
+    public Stream<Session> all() {
+        return sessionRepository.findTop25ByIdNotNull();
+    }
+
+    public long count(String query) {
+        return sessionRepository.count(query);
+    }
+
+    public Stream<Session> search(String query) {
+        return sessionRepository.searchTop25(query);
     }
 
     public Session save(Session session) {

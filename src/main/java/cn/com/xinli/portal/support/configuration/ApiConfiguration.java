@@ -62,6 +62,8 @@ public class ApiConfiguration {
     public static final String ADMIN_API_TRANSLATION = "translations";
     public static final String ADMIN_API_MODIFIER = "modifiers";
     public static final String ADMIN_API_ACTIVITY = "activity";
+    public static final String ADMIN_API_CONFIGURE = "configuration";
+
 
     /**
      * Create portal api entry point url.
@@ -121,6 +123,7 @@ public class ApiConfiguration {
         registration.registerApi(deleteSession());
         registration.registerApi(searchNas());
         registration.registerApi(getNas());
+        registration.registerApi(configureSystem());
         registration.registerApi(listActivity());
 
         return registration;
@@ -159,6 +162,22 @@ public class ApiConfiguration {
     }
 
     /**
+     * Create configure system api entry point.
+     * @return api entry point.
+     */
+    private EntryPoint configureSystem() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.AdminAction.CONFIGURE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CONFIGURE),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
      * Define authorize entry point.
      * @return authorize entry point.
      */
@@ -167,7 +186,7 @@ public class ApiConfiguration {
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.FIND_SESSION.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, REST_API_SESSION),
-                RequestMethod.GET.name(),
+                RequestMethod.POST.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);
@@ -182,7 +201,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.DELETE_SESSION.alias(),
-                url("/portal/admin", ADMIN_API_VERSION, REST_API_SESSION),
+                url("/portal", REST_API_VERSION, REST_API_SESSION),
                 RequestMethod.GET.name(),
                 "JSON",
                 true);

@@ -28,10 +28,10 @@ public interface NasRepository extends CrudRepository<Nas, Long> {
 
     /**
      * Query nas device, matching ipv4, ipv6 address and name.
-     * @param value query value.
+     * @param query query value.
      * @return stream of nas devices.
      */
-    @Query("select distinct n from Nas n where n.ipv4Address like :value or" +
-            " n.ipv6Address like :value or n.name like :value")
-    Stream<Nas> search(@Param("value") String value);
+    @Query("select distinct n from Nas n where n.ipv4Address like :query or" +
+            " n.ipv6Address like :query or n.name like :query")
+    Stream<Nas> search(@Param("query") String query);
 }

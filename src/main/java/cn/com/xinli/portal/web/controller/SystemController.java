@@ -1,11 +1,15 @@
 package cn.com.xinli.portal.web.controller;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasStore;
+import cn.com.xinli.portal.core.session.Session;
+import cn.com.xinli.portal.core.session.SessionStore;
 import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
 import cn.com.xinli.portal.web.rest.NasResponse;
 import cn.com.xinli.portal.web.rest.RestResponse;
+import cn.com.xinli.portal.web.rest.SessionsResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,12 @@ public class SystemController {
 
     @Autowired
     private NasStore nasStore;
+
+    @Autowired
+    private SessionStore sessionStore;
+
+    @Autowired
+    private ServerConfiguration serverConfiguration;
 
     @RequestMapping
     public ResponseEntity<RestResponse> summary() {
@@ -53,5 +63,33 @@ public class SystemController {
     public NasResponse getNas(@PathVariable("id") Long id) throws NasNotFoundException {
         Nas nas = nasStore.get(id);
         return AdminResponseBuilders.nasResponseBuilder(Stream.of(nas)).build();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/configuration", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse serverConfiguration() {
+        return AdminResponseBuilders.serverConfigurationResponseBuilder(serverConfiguration).build();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/sessions", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public SessionsResponse searchSessions(@RequestParam(defaultValue = "") String query) {
+        final Stream<Session> stream;
+        final long count;
+
+        if (StringUtils.isEmpty(query)) {
+            count = sessionStore.count();
+            stream = sessionStore.all();
+        } else {
+            count = sessionStore.count(query);
+            stream = sessionStore.search(query);
+        }
+
+        return AdminResponseBuilders.sessionsResponseBuilder()
+                .setStream(stream)
+                .setCount(count)
+                .build();
     }
 }

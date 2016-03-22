@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * REST configuration.
  *
@@ -7,26 +10,34 @@ package cn.com.xinli.portal.core.configuration;
  *
  * @author zhoupeng 2016/1/29.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RestConfiguration {
     /** REST API host. */
+    @JsonProperty
     private String host;
 
     /** REST API server. */
+    @JsonProperty
     private String server;
 
     /** REST API scheme. */
+    @JsonProperty
     private String scheme;
 
     /** REST API header in page http header. */
+    @JsonProperty
     private String header;
 
     /** REST API meta in page meta element. */
+    @JsonProperty
     private String meta;
 
     /** REST API challenge time to live in seconds. */
+    @JsonProperty("challenge_ttl")
     private int challengeTtl;
 
     /** REST Access token time to live in seconds. */
+    @JsonProperty("token_ttl")
     private int tokenTtl;
 
     public String getScheme() {

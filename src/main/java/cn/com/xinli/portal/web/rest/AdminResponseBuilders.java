@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.web.rest;
 
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 
@@ -21,6 +23,19 @@ public class AdminResponseBuilders {
         return new NasResponseBuilder(stream);
     }
 
+    public static ServerConfigurationResponseBuilder serverConfigurationResponseBuilder(
+            ServerConfiguration configuration) {
+        return new ServerConfigurationResponseBuilder(configuration);
+    }
+
+    public static SessionsResponseBuilder sessionsResponseBuilder() {
+        return new SessionsResponseBuilder();
+    }
+
+    /**
+     * Abstract administration response builder.
+     * @param <T>
+     */
     public static abstract class AdminResponseBuilder<T> {
         /** If server truncated response. */
         private boolean truncated;
@@ -57,6 +72,9 @@ public class AdminResponseBuilders {
         }
     }
 
+    /**
+     * NAS response builder.
+     */
     public static class NasResponseBuilder extends AdminResponseBuilder<NasResponse> {
         Stream<Nas> stream;
         NasResponseBuilder(Stream<Nas> stream) {
@@ -72,6 +90,9 @@ public class AdminResponseBuilders {
         }
     }
 
+    /**
+     * Rest response builder.
+     */
     public static class RestResponseBuilder extends AdminResponseBuilder<RestResponse> {
         private Challenge challenge;
         private int challengeTtl;
@@ -110,6 +131,56 @@ public class AdminResponseBuilders {
                 response.setAuthorization(RestResponseBuilders.authorizationBuilder(token).build());
             }
 
+            return response;
+        }
+    }
+
+    /**
+     * Server configuration response builder.
+     */
+    public static class ServerConfigurationResponseBuilder
+            extends AdminResponseBuilder<ServerConfigurationResponse> {
+        ServerConfiguration serverConfiguration;
+
+        ServerConfigurationResponseBuilder(ServerConfiguration serverConfiguration) {
+            super(false);
+            this.serverConfiguration = serverConfiguration;
+        }
+
+        @Override
+        protected ServerConfigurationResponse buildInternal() {
+            ServerConfigurationResponse response = new ServerConfigurationResponse();
+            response.setServerConfiguration(serverConfiguration);
+            return response;
+        }
+    }
+
+    /**
+     * Sessions response builder.
+     */
+    public static class SessionsResponseBuilder extends AdminResponseBuilder<SessionsResponse> {
+        Stream<Session> stream;
+        long count;
+
+        SessionsResponseBuilder() {
+            super(false);
+        }
+
+        public SessionsResponseBuilder setStream(Stream<Session> stream) {
+            this.stream = stream;
+            return this;
+        }
+
+        public SessionsResponseBuilder setCount(long count) {
+            this.count = count;
+            return this;
+        }
+
+        @Override
+        protected SessionsResponse buildInternal() {
+            SessionsResponse response = new SessionsResponse();
+            response.setCount(count);
+            response.setStream(stream);
             return response;
         }
     }

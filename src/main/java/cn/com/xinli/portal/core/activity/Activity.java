@@ -204,7 +204,8 @@ public class Activity {
 
     public enum AdminAction {
         AUTHORIZE("authorize"),
-        LOGIN("login");
+        LOGIN("login"),
+        CONFIGURE("configure");
 
         /**
          * Action name alias.

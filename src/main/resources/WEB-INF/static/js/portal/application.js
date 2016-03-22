@@ -39,10 +39,10 @@
             args = runnable.args || {};
             obj = runnable.object || this;
 
-            $('#loading').modal('show');
+            $('#loading-spin').fadeIn();
 
             return runnable.function.call(obj, args).done(function () {
-                $('#loading').modal('hide');
+                $('#loading-spin').fadeOut();
             });
         },
 

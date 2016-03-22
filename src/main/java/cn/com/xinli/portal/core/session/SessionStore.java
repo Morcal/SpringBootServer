@@ -3,6 +3,7 @@ package cn.com.xinli.portal.core.session;
 import cn.com.xinli.portal.core.DataStore;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Session store.
@@ -78,4 +79,30 @@ public interface SessionStore extends DataStore<Session, Long> {
     boolean delete(Long id) throws SessionNotFoundException;
 
     boolean delete(Session session) throws SessionNotFoundException;
+
+    /**
+     * Count all sessions.
+     * @return session count.
+     */
+    long count();
+
+    /**
+     * Get all sessions.
+     * @return stream of existed sessions.
+     */
+    Stream<Session> all();
+
+    /**
+     * Search sessions.
+     * @param query search keyword.
+     * @return stream of resulting sessions.
+     */
+    Stream<Session> search(String query);
+
+    /**
+     * Count sessions by keyword.
+     * @param query search keyword.
+     * @return resulting count.
+     */
+    long count(String query);
 }

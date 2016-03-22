@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.core.configuration;
 
 import cn.com.xinli.portal.core.activity.Activity;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Activity Configuration.
@@ -9,11 +11,14 @@ import cn.com.xinli.portal.core.activity.Activity;
  *
  * @author zhoupeng 2016/1/29.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActivityConfiguration {
     /** Most recent days server should keep auditing logs. */
+    @JsonProperty("most_recent")
     private int mostRecent;
 
     /** Minimum severity to save auditing logs. */
+    @JsonProperty
     private Activity.Severity severity;
 
     public int getMostRecent() {

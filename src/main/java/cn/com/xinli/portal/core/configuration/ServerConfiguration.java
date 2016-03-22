@@ -1,5 +1,8 @@
 package cn.com.xinli.portal.core.configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Server configuration.
  *
@@ -7,35 +10,57 @@ package cn.com.xinli.portal.core.configuration;
  *
  * @author zhoupeng 2016/1/29.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServerConfiguration {
     /** Server private key. */
+    @JsonProperty("private_key")
     private String privateKey;
 
     /** Server main page if need to redirect clients to another url. */
+    @JsonProperty("main_page_redirect_url")
     private String mainPageRedirectUrl;
 
     /** Server allowed NAT environment. */
+    @JsonProperty("allow_nat")
     private boolean allowNat;
 
     /** Server works in a cluster mode. */
+    @JsonProperty("enable_cluster")
     private boolean enableCluster;
 
     /** Server enabled rate-limiting. */
+    @JsonProperty("enable_rate_limiting")
     private boolean enableRateLimiting;
 
     /** Server should check redirect url when user request to connect. */
+    @JsonProperty("check_redirect_url")
     private boolean checkRedirectUrl;
 
+    @JsonProperty("default_admin_username")
     private String defaultAdminUsername;
 
+    @JsonProperty("default_admin_password")
     private String defaultAdminPassword;
 
+    @JsonProperty("activity")
     private ActivityConfiguration activityConfiguration;
+
+    @JsonProperty("cluster")
     private ClusterConfiguration clusterConfiguration;
+
+    @JsonProperty("portal_server")
     private PortalServerConfiguration portalServerConfiguration;
+
+    @JsonProperty("rate_limiting")
     private RateLimitingConfiguration rateLimitingConfiguration;
+
+    @JsonProperty("rest")
     private RestConfiguration restConfiguration;
+
+    @JsonProperty("session")
     private SessionConfiguration sessionConfiguration;
+
+    @JsonProperty("redirect")
     private RedirectConfiguration redirectConfiguration;
 
     public boolean isEnableCluster() {

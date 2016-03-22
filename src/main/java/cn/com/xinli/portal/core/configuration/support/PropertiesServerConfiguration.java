@@ -5,6 +5,8 @@ import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.configuration.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,11 +25,14 @@ import java.util.Properties;
  * @author zhoupeng 2016/1/29.
  */
 public class PropertiesServerConfiguration extends ServerConfiguration {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(PropertiesServerConfiguration.class);
+
     /** Server private key. */
     public static final String SERVER_PRIVATE_KEY = "server.private-key";
     public static final String SERVER_CHECK_REDIRECT_URL = "server.check-redirect-url";
     public static final String SERVER_ADMIN_DEFAULT_USERNAME = "server.admin.default.username";
-    public static final String SERVER_ADMIN_DEFAULT_PASSWORD = "server.admin.default.password.md5";
+    public static final String SERVER_ADMIN_DEFAULT_PASSWORD = "server.admin.default.password";
     /** Main page redirect url. */
     public static final String MAIN_PAGE_REDIRECT_URL = "main-page.redirect.url";
     /** Allow nat. */
@@ -223,7 +228,12 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
          * @return entry value.
          */
         <T>T valueOf(String entry) {
-            return getEntry(entry).getValue();
+            try {
+                return getEntry(entry).getValue();
+            } catch (Exception e) {
+                logger.error("> Missing property {{}}", entry);
+                throw e;
+            }
         }
 
         /**
