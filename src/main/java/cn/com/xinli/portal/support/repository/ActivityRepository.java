@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Activity repository.
@@ -24,32 +25,28 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
      * @param source activity source.
      * @return activities.
      */
-    @Query("select a from Activity a where a.remote = :source")
-    List<Activity> findBySource(@Param("source") String source);
+    List<Activity> findBySource(String source);
 
     /**
      * Find activities by source.
      * @param remote activity remote.
      * @return activities.
      */
-    @Query("select a from Activity a where a.source = :remote")
-    List<Activity> findByRemote(@Param("remote") String remote);
+    List<Activity> findByRemote(String remote);
 
     /**
-     * Filter activies by {@link Activity.Severity}
+     * Filter activities by {@link Activity.Severity}
      * @param severity severity.
      * @return activities.
      */
-    @Query("select a from Activity a where a.severity = :severity")
-    List<Activity> filter(@Param("severity") Activity.Severity severity);
+    List<Activity> findBySeverity(Activity.Severity severity);
 
     /**
      * Filter activies by {@link Activity.Facility}
      * @param facility severity.
      * @return activities.
      */
-    @Query("select a from Activity a where a.severity = :facility")
-    List<Activity> filter(@Param("facility") Activity.Facility facility);
+    List<Activity> findByFacility(Activity.Facility facility);
 
     /**
      * Delete activities older than given date.
@@ -58,4 +55,10 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
     @Modifying
     @Query("delete from Activity a where a.created < :oldest")
     void deleteOlderThan(@Param("oldest") Date oldest);
+
+    @Query("select count(a) from Activity a where a.source like :v")
+    long count(@Param("v") String query);
+
+    @Query("select a from Activity a where a.source like :v")
+    Stream<Activity> search(@Param("v") String query);
 }

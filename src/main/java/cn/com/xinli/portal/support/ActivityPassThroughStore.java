@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * Activity Pass Through Store.
@@ -50,5 +51,25 @@ public class ActivityPassThroughStore implements ActivityStore {
     @Override
     public void deleteOlderThan(Date date) {
         activityPersistence.deleteOlderThan(date);
+    }
+
+    @Override
+    public long count() {
+        return activityPersistence.count();
+    }
+
+    @Override
+    public Stream<Activity> all() {
+        return activityPersistence.all();
+    }
+
+    @Override
+    public Stream<Activity> search(String query) {
+        return activityPersistence.search(query);
+    }
+
+    @Override
+    public long count(String query) {
+        return activityPersistence.count(query);
     }
 }

@@ -1,11 +1,13 @@
 package cn.com.xinli.portal.web.rest;
 
+import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -30,6 +32,10 @@ public class AdminResponseBuilders {
 
     public static SessionsResponseBuilder sessionsResponseBuilder() {
         return new SessionsResponseBuilder();
+    }
+
+    public static ActivityResponseBuilder activityResponseBuilder() {
+        return new ActivityResponseBuilder();
     }
 
     /**
@@ -180,7 +186,37 @@ public class AdminResponseBuilders {
         protected SessionsResponse buildInternal() {
             SessionsResponse response = new SessionsResponse();
             response.setCount(count);
+            response.setSessions(stream.collect(Collectors.toList()));
+            return response;
+        }
+    }
+
+    /**
+     * Activity response builder.
+     */
+    public static class ActivityResponseBuilder extends AdminResponseBuilder<ActivityResponse> {
+        private Stream<Activity> stream;
+        private long count;
+
+        ActivityResponseBuilder() {
+            super(false);
+        }
+
+        public ActivityResponseBuilder setStream(Stream<Activity> stream) {
+            this.stream = stream;
+            return this;
+        }
+
+        public ActivityResponseBuilder setCount(long count) {
+            this.count = count;
+            return this;
+        }
+
+        @Override
+        protected ActivityResponse buildInternal() {
+            ActivityResponse response = new ActivityResponse();
             response.setStream(stream);
+            response.setCount(count);
             return response;
         }
     }

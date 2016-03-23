@@ -234,9 +234,10 @@
 
 			// save log record.
 			this.add(record);
+
 			// write.
 			if (this.handlers) {
-				context.level = this.level;
+				context.level = level;
 				context.record = record;
 				context.date = new Date();
 				formatted = this.format.format(context);
@@ -332,7 +333,7 @@
 
     // register all logging methods to jquery.
     $.each(['debug', 'info', 'warn', 'error'], function (index, value) {
-        var origFn = $[value], fn = {};
+        var origFn = $.logging[value], fn = {};
 
         // extends jquery to plugin logging facilities.
         fn[value] = function (message) {

@@ -49,7 +49,7 @@ public interface SessionRepository extends CrudRepository<Session, Long> {
 
     Stream<Session> findTop25ByIdNotNull();
 
-    @Query("select s from Session s where s.credentials.username like :query order by s.id asc fetch first 25")
+    @Query("select s from Session s where s.credentials.username like :query order by s.id asc")
     Stream<Session> searchTop25(@Param("query") String query);
 
 }

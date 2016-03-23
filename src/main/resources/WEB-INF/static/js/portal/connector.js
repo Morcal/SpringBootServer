@@ -52,8 +52,8 @@
                     return entry;
             }
 
-            $.logging.error('api with action: ', action, ' not found.');
-            throw new Error('api not found.');
+            $.logging.error('api entry {', action, '} not found.');
+            throw new Error('api action {' + action + '} not found.');
         },
 
         /**

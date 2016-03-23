@@ -2,6 +2,8 @@ package cn.com.xinli.portal.core.activity;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
@@ -21,33 +23,43 @@ import java.util.Date;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="activity")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Activity {
     public static final String EMPTY_ACTIVITY = "Activity is empty.";
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty
     private long id;
 
+    @JsonProperty
     @Column(nullable = false)
     private Facility facility;
 
+    @JsonProperty
     @Column(nullable = false)
     private Severity severity;
 
+    @JsonProperty
     @Column(nullable = false)
     private String remote;
 
+    @JsonProperty
     @Column(nullable = false)
     private String source;
 
+    @JsonProperty("source_info")
     @Column(name = "source_info")
     private String sourceInfo;
 
+    @JsonProperty
     @Column(nullable = false)
     private String action;
 
+    @JsonProperty
     @Column
     private String result;
 
+    @JsonProperty
     @Column(nullable = false)
     private Date created;
 
@@ -223,9 +235,9 @@ public class Activity {
 
     }
 
-    public enum LoggingAction {
-        LIST("list-log"),
-        FIND("find-log");
+    public enum ActivityAction {
+        GET("get-activity"),
+        SEARCH("search-activity");
 
         /**
          * Action name alias.
@@ -233,7 +245,7 @@ public class Activity {
          */
         private String alias;
 
-        LoggingAction(String alias) {
+        ActivityAction(String alias) {
             this.alias = alias;
         }
 
@@ -244,7 +256,7 @@ public class Activity {
 
     /** Activity sessionAction. */
     public enum NasAction {
-        LIST("search-nas"),
+        SEARCH("search-nas"),
         GET("get-nas"),
         ADD("add-nas"),
         UPDATE("update-nas"),

@@ -26,21 +26,11 @@
 </div>
 
 <!-- Error overlay modal. -->
-<div id="error-dialog" class="modal collapse" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>Error</h4>
-            </div>
-            <div class="modal-body">
-                <span></span>
-            </div>
-            <div class="modal-footer">
-
-            </div>
-        </div>
-    </div>
-</div>
+<!--<div id="error-alert" class="alert alert-danger fade in" role="alert">-->
+    <!--<button type="button" class="close" data-dismiss="alert" aria-label="Close">-->
+        <!--<span aria-hidden="true">&times;</span></button>-->
+    <!--<p></p>-->
+<!--</div>-->
 
 <!-- Navigation top bar. -->
 <nav class="navbar navbar-default navbar-fixed-top">
@@ -220,6 +210,83 @@
     </div>
 </div>
 
+<!-- Activity dialog. -->
+
+<div id="activity-dialog" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="activity-facility" class="control-label">Facility</label>
+                        <input id="activity-facility" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-severity" class="control-label">Severity</label>
+                        <input id="activity-severity" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-remote" class="control-label">Remote</label>
+                        <input id="activity-remote" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-source" class="control-label">Source</label>
+                        <input id="activity-source" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-sourceInfo" class="control-label">Source Information</label>
+                        <input id="activity-sourceInfo" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-action" class="control-label">Action</label>
+                        <input id="activity-action" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-result" class="control-label">Result</label>
+                        <input id="activity-result" type="text" class="form-control" />
+                    </div>
+                </form>
+
+                <form>
+                    <div class="form-group">
+                        <label for="activity-date" class="control-label">Created at</label>
+                        <input id="activity-date" type="text" class="form-control" />
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="$('#activity-dialog').modal('hide');">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="doc">
     <div class="container">
         <div class="row">
@@ -346,7 +413,7 @@
             <!-- Management. -->
             <div id="management" class="col-md-9 collapse">
                 <!-- Session management, content. -->
-                <div id="sessions" class="module-content">
+                <div id="management-session" class="module-content">
                     <div class="row bottom-spacing">
                         <div>
                             <div class="input-group">
@@ -408,7 +475,55 @@
                 </div>
 
                 <!-- Activity management, content. -->
-                <div id="activities" class="module-content collapse">
+                <div id="management-activity" class="module-content collapse">
+                    <div class="row bottom-spacing">
+                        <div>
+                            <div class="input-group">
+                                <input id="activity-search" type="text" class="form-control" placeholder="Search for...">
+                                <span class="input-group-btn">
+                                    <button id="activity-search-btn" class="btn btn-danger" type="button">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                                    </button>
+                                </span>
+                            </div><!-- /input-group -->
+                        </div><!-- /.col-lg-6 -->
+                    </div><!-- /.row -->
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>
+                                <!--<span class="glyphicon glyphicon-info-sign"></span>-->
+                                Click&nbsp;<span class="glyphicon glyphicon-search"></span>
+                                &nbsp;Search to display session list.
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="row bottom-spacing">
+                        <div>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>id</th>
+                                        <th>Facility</th>
+                                        <th>Severity</th>
+                                        <th>remote</th>
+                                        <th>source</th>
+                                        <th>source info</th>
+                                        <th>action</th>
+                                        <th>created</th>
+                                        <th>actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="no-activity" class="row collapse">
+                        <div class="col-md-12">
+                            <h4>No Activity found.</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -436,14 +551,9 @@
 //        $('#management').find('.module-nav').affix(15);
 //        $('#configuration-nas-search').affix();
 
-        $('#session-search-btn').click(function () {
-            $.application.load({
-                function: $.portal.management.searchSessions,
-                object: $.portal.management,
-                args: $('#session-search').val()
-            });
-        });
-
+        /*
+         * Configuration page scripts.
+         */
         $('#sidebar-nas').click(function () {
             $.application.load({
                 function: $.portal.configuration.switchTo,
@@ -472,18 +582,41 @@
             $.portal.configuration.deleteNas($(this).data('nas'));
         });
 
+        /*
+         * Management page scripts.
+         */
+        $('#sidebar-session').click(function () {
+            $.application.load({
+                function: $.portal.management.switchTo,
+                object: $.portal.management,
+                args: 'session'
+            });
+        });
+
+        $('#sidebar-activity').click(function () {
+            $.application.load({
+                function: $.portal.management.switchTo,
+                object: $.portal.management,
+                args: 'activity'
+            });
+        });
+
+        $('#session-search-btn').click(function () {
+            $.application.load({
+                function: $.portal.management.searchSessions,
+                object: $.portal.management,
+                args: $('#session-search').val()
+            });
+        });
+
+        /*
+         * Application scripts.
+         */
         $('#login').click(function () {
             $.application.login($('#login-dialog'));
         });
 
         $.application.init();
-//
-//        $('#loading').modal('show');
-//
-//        $.application.init().done(function () {
-//            $('#loading').modal('hide');
-//            $('#login-dialog').modal('show');
-//        });
     });
 </script>
 </body>

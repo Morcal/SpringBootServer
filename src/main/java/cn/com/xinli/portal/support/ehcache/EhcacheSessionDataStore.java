@@ -177,7 +177,16 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public Stream<Session> all() {
-        return sessionPersistence.all();
+        List<Session> sessions = new ArrayList<>();
+        sessionPersistence.all()
+                .forEach(session -> {
+                    try {
+                        sessions.add(get(session.getId()));
+                    } catch (SessionNotFoundException e) {
+                        logger.warn("session found in db not in cache, {}", session);
+                    }
+                });
+        return sessions.stream();
     }
 
     @Override

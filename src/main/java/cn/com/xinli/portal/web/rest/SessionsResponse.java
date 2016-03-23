@@ -15,8 +15,11 @@ import java.util.stream.Stream;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionsResponse extends RestResponse {
-    @JsonIgnore
-    private Stream<Session> stream;
+//    @JsonIgnore
+//    private Stream<Session> stream;
+
+    @JsonProperty
+    private List<Session> sessions;
 
     @JsonProperty
     private long count;
@@ -29,16 +32,25 @@ public class SessionsResponse extends RestResponse {
         this.count = count;
     }
 
-    public Stream<Session> getStream() {
-        return stream;
+//    public Stream<Session> getStream() {
+//        return stream;
+//    }
+//
+//    public void setStream(Stream<Session> stream) {
+//        this.stream = stream;
+//    }
+//
+//    public List<Session> getAll() {
+//        return stream.collect(Collectors.toList());
+//    }
+
+
+    public List<Session> getSessions() {
+        return sessions;
     }
 
-    public void setStream(Stream<Session> stream) {
-        this.stream = stream;
-    }
-
-    @JsonProperty("sessions")
-    public List<Session> getAll() {
-        return stream.collect(Collectors.toList());
+    public void setSessions(List<Session> sessions) {
+        sessions.size();
+        this.sessions = sessions;
     }
 }

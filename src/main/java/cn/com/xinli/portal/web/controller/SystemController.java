@@ -79,12 +79,12 @@ public class SystemController {
         final Stream<Session> stream;
         final long count;
 
-        if (StringUtils.isEmpty(query)) {
-            count = sessionStore.count();
-            stream = sessionStore.all();
-        } else {
+        if (!StringUtils.isEmpty(query)) {
             count = sessionStore.count(query);
             stream = sessionStore.search(query);
+        } else {
+            count = sessionStore.count();
+            stream = sessionStore.all();
         }
 
         return AdminResponseBuilders.sessionsResponseBuilder()

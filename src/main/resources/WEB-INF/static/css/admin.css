@@ -17,8 +17,8 @@ body > div.doc {
 }
 
 .navbar .loading-outer {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 13px;
+    padding-bottom: 12px;
 }
 
 @-webkit-keyframes circle {

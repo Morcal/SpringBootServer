@@ -6,10 +6,13 @@ import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.support.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Activity persistence.
@@ -20,6 +23,9 @@ import java.util.Objects;
  */
 @Component
 public class ActivityPersistence {
+//    /** Logger. */
+//    private final Logger logger = LoggerFactory.getLogger(ActivityPersistence.class);
+
     @Qualifier("activityRepository")
     @Autowired
     private ActivityRepository activityRepository;
@@ -50,5 +56,23 @@ public class ActivityPersistence {
 
     public void deleteOlderThan(Date date) {
         activityRepository.deleteOlderThan(date);
+    }
+
+    public long count() {
+        return activityRepository.count();
+    }
+
+    public long count(String query) {
+        return activityRepository.count(query);
+    }
+
+    public Stream<Activity> all() {
+        Page<Activity> page = activityRepository.findAll(new PageRequest(0, 25));
+        return page.getContent().stream();
+    }
+
+    public Stream<Activity> search(String query) {
+        Stream<Activity> stream = activityRepository.search(query);
+        return stream.limit(25);
     }
 }

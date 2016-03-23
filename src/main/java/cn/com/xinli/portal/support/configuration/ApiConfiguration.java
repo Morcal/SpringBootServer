@@ -61,7 +61,7 @@ public class ApiConfiguration {
     public static final String ADMIN_API_NAS = "nas";
     public static final String ADMIN_API_TRANSLATION = "translations";
     public static final String ADMIN_API_MODIFIER = "modifiers";
-    public static final String ADMIN_API_ACTIVITY = "activity";
+    public static final String ADMIN_API_ACTIVITY = "activities";
     public static final String ADMIN_API_CONFIGURE = "configuration";
 
 
@@ -124,7 +124,8 @@ public class ApiConfiguration {
         registration.registerApi(searchNas());
         registration.registerApi(getNas());
         registration.registerApi(configureSystem());
-        registration.registerApi(listActivity());
+        registration.registerApi(searchActivity());
+        registration.registerApi(getActivity());
 
         return registration;
     }
@@ -202,7 +203,7 @@ public class ApiConfiguration {
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.SessionAction.DELETE_SESSION.alias(),
                 url("/portal", REST_API_VERSION, REST_API_SESSION),
-                RequestMethod.GET.name(),
+                RequestMethod.DELETE.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);
@@ -232,7 +233,7 @@ public class ApiConfiguration {
     private EntryPoint searchNas() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
-                Activity.NasAction.LIST.alias(),
+                Activity.NasAction.SEARCH.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
                 RequestMethod.POST.name(),
                 "JSON",
@@ -245,16 +246,33 @@ public class ApiConfiguration {
      * Define authorize entry point.
      * @return authorize entry point.
      */
-    private EntryPoint listActivity() {
+    private EntryPoint searchActivity() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
-                Activity.LoggingAction.LIST.alias(),
+                Activity.ActivityAction.SEARCH.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_ACTIVITY),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create get activity api entry point.
+     * @return api entry point.
+     */
+    private EntryPoint getActivity() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.ActivityAction.GET.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_ACTIVITY),
                 RequestMethod.GET.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);
         return api;
+
     }
 
     /**

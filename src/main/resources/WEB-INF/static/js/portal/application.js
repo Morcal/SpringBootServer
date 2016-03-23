@@ -24,6 +24,29 @@
         },
 
         /**
+         * Display alert message.
+         * @param title
+         * @param msg
+         */
+        alert: function (title, msg) {
+            var html;
+
+            if (msg) {
+                msg = '<b>' + title + ':</b>&nbsp;' + msg;
+            } else {
+                msg = title;
+            }
+
+            html = '<div id="error-alert" class="alert alert-danger fade in" role="alert">' +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                '<span aria-hidden="true">&times;</span></button>' +
+                '<p>' + msg + '</p>' +
+                '</div>';
+
+            $('.doc .container').prepend(html).alert();
+        },
+
+        /**
          * Display a loading spin when loading, after loading finished hide
          * the loading spin.
          *
@@ -31,7 +54,7 @@
          * @returns {*}
          */
         load: function (runnable) {
-            var args, obj;
+            var args, obj, loading;
 
             if (!runnable || !runnable.function)
                 throw new Error('no runnable.');
@@ -39,11 +62,17 @@
             args = runnable.args || {};
             obj = runnable.object || this;
 
-            $('#loading-spin').fadeIn();
+            loading = $('#loading-spin');
+            loading.fadeIn();
 
-            return runnable.function.call(obj, args).done(function () {
-                $('#loading-spin').fadeOut();
-            });
+            try {
+                return runnable.function.call(obj, args).done(function () {
+                    loading.fadeOut();
+                });
+            } catch (e) {
+                this.alert(e.name, e.message);
+                loading.fadeOut();
+            }
         },
 
         /**

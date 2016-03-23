@@ -82,14 +82,12 @@
                         table = $('#configuration').find('table');
 
                     devices = response['devices'];
-
-                    if (!devices.length)
-                        return;
-
+                    table.find('tbody').remove();
                     /* Update navigation badge. */
                     $('#sidebar-nas').find('span').html(devices.length);
 
-                    table.find('tbody').remove();
+                    if (!devices.length)
+                        return;
                     html = '<tbody>';
                     for (index = 0; index < devices.length; index++) {
                         html += that.createNasTableRow(devices[index]);
