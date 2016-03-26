@@ -38,7 +38,20 @@ public class AuthorizeController {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
-
+    /**
+     * Handle challenge requests.
+     * @param realIp real ip if requests been proxied.
+     * @param responseType response type.
+     * @param clientId client/app id.
+     * @param scope token scope.
+     * @param requireToken if request requires token.
+     * @param needRefreshToken if request requires refresh token.
+     * @param ip user ip address.
+     * @param mac user mac address.
+     * @param request HTTP request.
+     * @return rest response.
+     * @throws RemoteException
+     */
     @ResponseBody
     @RequestMapping("/authorize")
     public RestResponse authorize(@RequestHeader(name = "X-Real-Ip", defaultValue = "") String realIp,

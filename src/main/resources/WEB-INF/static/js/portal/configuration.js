@@ -8,7 +8,7 @@
     };
 
     Configuration.prototype = {
-        pages: ['nas', 'system'],
+        pages: ['nas', 'certificate', 'system'],
 
         init: function () {
 
@@ -46,6 +46,8 @@
                     return this.searchNasDevices('');
                 case 'system':
                     return this.openSystemConfiguration();
+                case 'certificate':
+                    return this.searchCertificates('');
                 default:
                     break;
             }
@@ -62,10 +64,29 @@
                 .done(function (response) {
                     var config = response['server_configuration'],
                         session = config['session'],
-                        rest = config['rest'];
+                        rest = config['rest'],
+                        rate = config['rate_limiting'],
+                        server = config['portal_server'],
+                        activity = config['activity'],
+                        dialog = $('#configuration-system');
 
-                    $.logging.debug('session configuration: ', session);
-                    $.logging.debug('rest configuration: ', rest);
+                    dialog.find('#private-key').val(config['private_key']);
+                    dialog.find('#server-allow-nat').val(config['allow_nat']);
+                    dialog.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
+                    dialog.find('#session-ttl-value').val(session['ttl']);
+                    dialog.find('#session-token-ttl').val(session['token_ttl']);
+                    dialog.find('#enable-session-heartbeat').prop('checked', session['enable_heart_beat']);
+                    dialog.find('#session-heartbeat-interval').val(session['heart_beat_interval']);
+                    dialog.find('#portal-server-version').val(server['version']);
+                    dialog.find('#portal-server-listen-port').val(server['port']);
+                    dialog.find('#portal-server-shared-secret').val(server['shared_secret']);
+                    dialog.find('#enable-rate-limiting').prop('checked', config['enable_rate_limiting']);
+                    dialog.find('#activity-most-recent').val(activity['most_recent']);
+                    dialog.find('#min-activity-severity').val(activity['min_severity']);
+                    dialog.find('#enable-cluster').prop('checked', config['enable_cluster']);
+                    dialog.find('#cluster-redis-sentinels').val(config['cluster_sentinels']);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -79,7 +100,7 @@
             return $.portal.connector.request('search-nas', {query: query})
                 .done(function (response) {
                     var devices, index, html,
-                        table = $('#configuration').find('table');
+                        table = $('#configuration-nas').find('table');
 
                     devices = response['devices'];
                     table.find('tbody').remove();
@@ -95,6 +116,8 @@
                     html += '</tbody>';
 
                     table.append(html);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -154,6 +177,8 @@
                     dialog.find('#delete-nas').prop('disabled', false);
 
                     dialog.modal('show');
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -192,6 +217,110 @@
                 default:
                     break;
             }
+        },
+
+        /**
+         * Search certificates.
+         * @param query
+         * @returns {promise}
+         */
+        searchCertificates: function (query) {
+            var that = this;
+            return $.portal.connector.request('search-certificate', {query: query})
+                .done(function (response) {
+                    var certificates, index, html,
+                        table = $('#configuration-certificate').find('table');
+
+                    certificates = response['certificates'];
+                    table.find('tbody').remove();
+                    /* Update navigation badge. */
+                    $('#sidebar-certificate').find('span').html(certificates.length);
+
+                    if (!certificates.length)
+                        return;
+                    html = '<tbody>';
+                    for (index = 0; index < certificates.length; index++) {
+                        html += that.createCertificateTableRow(certificates[index]);
+                    }
+                    html += '</tbody>';
+
+                    table.append(html);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
+                });
+        },
+
+        /**
+         * Create NAS table row html.
+         * @param certificate.
+         * @returns {string} html.
+         */
+        createCertificateTableRow: function (certificate) {
+            var id = certificate['id'];
+
+            return '' +
+                '<tr>' +
+                '<td>' + id + '</td>' +
+                '<td>' + certificate['app_id'] + '</td>' +
+                '<td>' + certificate['vendor'] + '</td>' +
+                '<td>' + certificate['os'] + '</td>' +
+                '<td>' + certificate['version'] + '</td>' +
+                '<td>' +
+                '<button type="button" class="btn btn-default" data-certificate="' + id + '"' +
+                ' onclick="$.portal.configuration.openCertificate(this);" aria-label="Left Align">' +
+                '<span class="glyphicon glyphicon-edit" aria-hidden="true" style="padding-right: 8px;"></span>Edit</button>' +
+                '</td>' +
+                '</tr>';
+        },
+
+
+        /**
+         * Open a certificate and show it in an open dialog if success.
+         * @param e button which open this dialog.
+         * @returns {*}
+         */
+        openCertificate: function (e) {
+            var c = $(e).data('certificate');
+
+            return $.portal.connector.request('get-certificate', { id: c })
+                .done(function (response) {
+                    var dialog = $('#certificate-dialog'),
+                        certificate = response['certificates'][0];
+
+                    dialog.find('div h4').html('Certificate ' + certificate['id']);
+                    dialog.find('#certificate-app-id').val(certificate['app_id']);
+                    dialog.find('#certificate-vendor').val(certificate['vendor']);
+                    dialog.find('#certificate-os').val(certificate['os']);
+                    dialog.find('#certificate-version').val(certificate['version']);
+                    dialog.find('#certificate-app-id').val(certificate['app_id']);
+                    dialog.find('#certificate-shared-secret').val(certificate['shared_secret']);
+
+                    if (certificate['disabled']) {
+                        dialog.find('#enable-certificate').show();
+                        dialog.find('#disable-certificate').hide();
+                    } else {
+                        dialog.find('#enable-certificate').hide();
+                        dialog.find('#disable-certificate').show();
+                    }
+                    dialog.modal('show');
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
+                });
+        },
+
+        /**
+         * Open create certificate dialog.
+         * <p>Reset all input components and display 'enable' button.
+         */
+        createCertificate: function () {
+            var dialog = $('#certificate-dialog');
+
+            dialog.find('div h4').html('Create new certificate');
+            dialog.find('input').val('');
+            dialog.find('select').val(0);
+            dialog.find('#enable-certificate').show().prop('disabled', true);
+            dialog.find('#disable-certificate').hide();
+            dialog.modal('show');
         }
     };
 

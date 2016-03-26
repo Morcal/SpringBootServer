@@ -2,6 +2,8 @@ package cn.com.xinli.portal.core.certificate;
 
 import cn.com.xinli.portal.core.DataStore;
 
+import java.util.stream.Stream;
+
 /**
  * Certificate store.
  *
@@ -15,10 +17,16 @@ import cn.com.xinli.portal.core.DataStore;
  *
  * @author zhoupeng 2016/1/30.
  */
-public interface CertificateStore extends DataStore<Certificate, String> {
+public interface CertificateStore extends DataStore<Certificate, Long> {
     @Override
-    Certificate get(String appId) throws CertificateNotFoundException;
+    Certificate get(Long id) throws CertificateNotFoundException;
 
     @Override
-    boolean delete(String appId) throws CertificateNotFoundException;
+    boolean delete(Long id) throws CertificateNotFoundException;
+
+    Certificate find(String app) throws CertificateNotFoundException;
+
+    Stream<Certificate> all();
+
+    Stream<Certificate> search(String query);
 }

@@ -1,13 +1,14 @@
 package cn.com.xinli.portal.support.ehcache;
 
 import cn.com.xinli.portal.core.Serializer;
+import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.core.session.Session;
-import cn.com.xinli.portal.support.persist.NasPersistence;
+import cn.com.xinli.portal.support.repository.*;
 import cn.com.xinli.portal.util.AddressUtil;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -70,9 +72,26 @@ public class EhcacheNasStore implements NasStore {
     @Autowired
     private Serializer<NasRule> nasRuleSerializer;
 
+    @Qualifier("nasRuleRepository")
     @Autowired
-    private NasPersistence nasPersistence;
+    private NasRuleRepository nasRuleRepository;
 
+    @Qualifier("nasRepository")
+    @Autowired
+    private NasRepository nasRepository;
+
+    @Qualifier("credentialsEncoderRepository")
+    @Autowired
+    private CredentialsEncoderRepository credentialsEncoderRepository;
+
+    @Qualifier("credentialsModifierRepository")
+    @Autowired
+
+    private CredentialsModifierRepository credentialsModifierRepository;
+
+    @Qualifier("credentialsTranslationRepository")
+    @Autowired
+    private CredentialsTranslationRepository credentialsTranslationRepository;
     /**
      * Get nas from cache element.
      * @param element cache element.
@@ -134,18 +153,18 @@ public class EhcacheNasStore implements NasStore {
      * <p>Since {@link NasRule}s fetch associated {@link Nas} with
      * {@link FetchType#EAGER} mode and {@link Nas}'s
      * {@link CredentialsTranslation} will be fetched by {@link FetchType#LAZY}
-     * mode, we need force {@link #nasPersistence} to load NAS details with
+     * mode, we need force {@link #nasRuleRepository} to load NAS details with
      * lazy-loading.
      *
      * <p>Results of calling this method are:
      * <br>{@link NasRule}s are loaded with <em>partial</em> {@link Nas} into
-     * {@link #nasPersistence}, {@link Nas#translation} is not loaded yet, but its sufficient for server.
+     * {@link #nasRuleRepository}, {@link Nas#translation} is not loaded yet, but its sufficient for server.
      * <br>{@link Nas}s are populated with <em>full-loaded</em> {@link Nas}es and
-     * saved in {@link #nasPersistence}.
+     * saved in {@link #nasRuleRepository}.
      */
     private void load() {
-        nasPersistence.rules().forEach(this::addRule);
-        nasPersistence.devices().forEach(this::addDevice);
+        nasRuleRepository.findAll().forEach(this::addRule);
+        nasRepository.findAll().forEach(this::addDevice);
 
         logger.info("{} devices loaded.", nasCache.getSize());
         logger.info("{} rules loaded.", nasRuleCache.getSize());
@@ -193,7 +212,26 @@ public class EhcacheNasStore implements NasStore {
     public void put(Nas nas) {
         Objects.requireNonNull(nas, Nas.EMPTY_NAS);
         addDevice(nas);
-        nasPersistence.save(nas);
+
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
+
+        CredentialsTranslation translation = nas.getTranslation();
+        if (translation != null) {
+            nas.setTranslation(translation);
+
+            CredentialsEncoder encoder = translation.getEncoder();
+            if (encoder != null) {
+                credentialsEncoderRepository.save(translation.getEncoder());
+            }
+
+            if (!translation.isEmpty()) {
+                translation.getModifiers().forEach(m -> credentialsModifierRepository.save(m));
+            }
+
+            credentialsTranslationRepository.save(translation);
+        }
+
+        nasRepository.save(nas);
     }
 
     @Override
@@ -210,13 +248,13 @@ public class EhcacheNasStore implements NasStore {
         if (!exists(id)) {
             throw new NasNotFoundException(id);
         }
-        nasPersistence.delete(id);
+        nasRepository.delete(id);
         return nasCache.remove(id);
     }
 
     @Override
     public Stream<Nas> search(String value) {
-        return nasPersistence.search(value);
+        return nasRepository.search(value);
     }
 
     @Override
@@ -243,7 +281,7 @@ public class EhcacheNasStore implements NasStore {
     public NasRule put(NasRule rule) {
         Objects.requireNonNull(rule, NasRule.EMPTY_RULE);
         addRule(rule);
-        return nasPersistence.save(rule);
+        return nasRuleRepository.save(rule);
     }
 
     @Override

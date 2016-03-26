@@ -32,6 +32,11 @@ public class ActivityController {
         return null;
     }
 
+    /**
+     * Search auditing logging activities.
+     * @param query query string.
+     * @return activity repsonse.
+     */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
@@ -53,6 +58,12 @@ public class ActivityController {
                 .build();
     }
 
+    /**
+     * Get an activity logging entry.
+     * @param id entry id.
+     * @return activity response.
+     * @throws Exception
+     */
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")

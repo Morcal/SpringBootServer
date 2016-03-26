@@ -1,12 +1,12 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.SessionConfiguration;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionStore;
-import cn.com.xinli.portal.support.persist.SessionPersistence;
-import cn.com.xinli.portal.core.Serializer;
+import cn.com.xinli.portal.support.repository.SessionRepository;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -62,8 +63,9 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     @Autowired
     private Ehcache sessionSearchCache;
 
+    @Qualifier("sessionRepository")
     @Autowired
-    private SessionPersistence sessionPersistence;
+    private SessionRepository sessionRepository;
 
     @Autowired
     private Serializer<Session> sessionSerializer;
@@ -81,14 +83,14 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
         logger.info("register event listener on session cache: {}.", registered);
 
-        sessionPersistence.all(this::addSession);
+        sessionRepository.findAll().forEach(this::addSession);
 
         logger.info("EhCache sync with database done.");
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(sessionPersistence);
+        Assert.notNull(sessionRepository);
     }
 
     @Scheduled(fixedDelay = 10_000L)
@@ -172,13 +174,13 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public long count(String query) {
-        return sessionPersistence.count(query);
+        return sessionRepository.count(query);
     }
 
     @Override
     public Stream<Session> all() {
         List<Session> sessions = new ArrayList<>();
-        sessionPersistence.all()
+        sessionRepository.findTop25ByIdNotNull()
                 .forEach(session -> {
                     try {
                         sessions.add(get(session.getId()));
@@ -191,7 +193,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Override
     public Stream<Session> search(String query) {
-        return sessionPersistence.search(query);
+        return sessionRepository.search(query);
     }
 
     /**
@@ -223,7 +225,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
         Objects.requireNonNull(session, Session.EMPTY_SESSION);
 
         /* Save to database, id will be generated. */
-        sessionPersistence.save(session);
+        sessionRepository.save(session);
 
         addSession(session);
     }
@@ -264,7 +266,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     public boolean delete(Session session) {
         Objects.requireNonNull(session, Session.EMPTY_SESSION);
         logger.trace("ehcache session data store deleting session {}.", session);
-        sessionPersistence.delete(session);
+        sessionRepository.delete(session);
         sessionSearchCache.remove(session.getId());
         return sessionCache.remove(session.getId());
     }
@@ -273,7 +275,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     public boolean delete(Long id) {
         Objects.requireNonNull(id, Session.EMPTY_SESSION);
         logger.trace("ehcache session data store deleting session {}.", id);
-        sessionPersistence.delete(id);
+        sessionRepository.delete(id);
         if (logger.isTraceEnabled()) {
             logger.trace("before delete search keys: {}", dumpKeys(sessionSearchCache.getKeys()));
         }

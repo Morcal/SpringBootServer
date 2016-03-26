@@ -214,6 +214,9 @@ public class Activity {
         NTF_LOGOUT
     }
 
+    /**
+     * System administration action.
+     */
     public enum AdminAction {
         AUTHORIZE("authorize"),
         LOGIN("login"),
@@ -235,6 +238,31 @@ public class Activity {
 
     }
 
+    /**
+     * Certificate action.
+     */
+    public enum CertificateAction {
+        GET("get-certificate"),
+        SEARCH("search-certificate");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        CertificateAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
+    }
+
+    /**
+     * Activity action.
+     */
     public enum ActivityAction {
         GET("get-activity"),
         SEARCH("search-activity");

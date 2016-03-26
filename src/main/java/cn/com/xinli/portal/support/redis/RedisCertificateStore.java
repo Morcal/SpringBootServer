@@ -12,7 +12,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>Project: xpws
@@ -40,7 +44,11 @@ public class RedisCertificateStore implements CertificateStore {
      * @return REDIS key.
      */
     String keyFor(String clientId) {
-        return "certificate:" + clientId + "";
+        return "certificate:app:" + clientId + "";
+    }
+
+    String keyFor(Long id) {
+        return "certificate:id:" + id;
     }
 
     /**
@@ -61,7 +69,7 @@ public class RedisCertificateStore implements CertificateStore {
     }
 
     @Override
-    public Certificate get(String id) throws CertificateNotFoundException {
+    public Certificate get(Long id) throws CertificateNotFoundException {
         Certificate certificate = certificateRedisTemplate.opsForValue().get(keyFor(id));
         if (certificate == null) {
             throw new CertificateNotFoundException(id);
@@ -93,17 +101,17 @@ public class RedisCertificateStore implements CertificateStore {
     }
 
     @Override
-    public boolean exists(String id) {
+    public boolean exists(Long id) {
         return certificateRedisTemplate.opsForValue().get(keyFor(id)) != null;
     }
 
     @Override
-    public boolean delete(String id) throws CertificateNotFoundException {
+    public boolean delete(Long id) throws CertificateNotFoundException {
         Certificate certificate = get(id);
         certificateRedisTemplate.delete(keyFor(certificate));
-        redisQueryTemplate.delete(keyFor(certificate.getAppId()));
+        redisQueryTemplate.delete(keyFor(id));
         redisQueryTemplate.delete(keyFor(certificate.getAppId(), certificate.getOs(), certificate.getVersion()));
-        boolean removed = !exists(certificate.getAppId());
+        boolean removed = !exists(certificate.getId());
         if (logger.isTraceEnabled()) {
             logger.trace("certificate deleted {}", removed);
         }
@@ -119,5 +127,33 @@ public class RedisCertificateStore implements CertificateStore {
             }
         }
         return removed;
+    }
+
+    @Override
+    public Certificate find(String app) throws CertificateNotFoundException {
+        Long id = redisQueryTemplate.opsForValue().get(keyFor(app));
+        if (id == null) {
+            throw new CertificateNotFoundException("certificate with app: " + app + " not found.");
+        }
+
+        return certificateRedisTemplate.opsForValue().get(id);
+    }
+
+    @Override
+    public Stream<Certificate> all() {
+        Set<String> keys = certificateRedisTemplate.keys("certificate:id:");
+        Set<Certificate> certificates = keys.stream()
+                .map(key -> certificateRedisTemplate.opsForValue().get(key))
+                .collect(Collectors.toSet());
+        return certificates.stream();
+    }
+
+    @Override
+    public Stream<Certificate> search(String query) {
+        Set<String> keys = certificateRedisTemplate.keys("certificate:app:" + query);
+        Set<Certificate> certificates = keys.stream()
+                .map(key -> certificateRedisTemplate.opsForValue().get(key))
+                .collect(Collectors.toSet());
+        return certificates.stream();
     }
 }

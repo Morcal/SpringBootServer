@@ -79,6 +79,8 @@
                     html += '</tbody>';
 
                     table.append(html);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -92,6 +94,10 @@
                 cls = activity['severity'].toLowerCase();
 
             switch (cls) {
+                case 'error':
+                    cls = 'danger';
+                    break;
+
                 case 'warn':
                     cls = 'warning';
                     break;
@@ -109,7 +115,7 @@
                 '<td>' + activity['severity'] + '</td>' +
                 '<td>' + activity['remote'] + '</td>' +
                 '<td>' + activity['source'] + '</td>' +
-                '<td>' + activity['source_info'] + '</td>' +
+                //'<td>' + activity['source_info'] + '</td>' +
                 '<td>' + activity['action'] + '</td>' +
                 '<td>' + new Date(activity['created']).toLocaleString() + '</td>' +
                 //'<td>' + activity['result'] + '</td>' +
@@ -137,9 +143,11 @@
                     dialog.find('#activity-sourceInfo').val(activity['source_info']);
                     dialog.find('#activity-action').val(activity['action']);
                     dialog.find('#activity-result').val(activity['result']);
-                    dialog.find('#activity-date').val(new Date(activity['created']));
+                    dialog.find('#activity-date').val(new Date(activity['created']).toLocaleString());
 
                     dialog.modal('show');
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -175,6 +183,8 @@
                     html += '</tbody>';
 
                     table.append(html);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
         },
 
@@ -220,6 +230,8 @@
             return $.portal.connector.request('disconnect', args)
                 .done(function () {
                     that.searchSessions($('#session-search').val());
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status, err);
                 });
         }
     };

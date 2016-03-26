@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/search.css" rel="stylesheet">
+    <title>Search Help</title>
+</head>
+<body>
+<h3>Xinli Portal Server Console - Searching Help</h3>
+<div>
+    Xinli Portal Server supports searching for
+    <ul>
+        <li>
+            <a href="#Activity">Activity</a>
+        </li>
+
+    <li>
+        <a href="#Certificate">Certificate</a>
+    </li>
+
+    <li>
+        <a href="#Nas">Nas</a>
+    </li>
+
+    <li>
+        <a href="#Session">Session</a>
+    </li>
+    </ul>
+</div>
+
+<div>
+    <h4>Overview</h4>
+    <p>
+        Searching is implemented base on JPQL (java persistence query language).
+        Searching syntax is the same as JPQL. You can create query using 'and',
+        'or', sub query and etc., and you can also use 'like' to create queries,
+        i.e. <code>activity.action like '%SESSION'</code>. Results can be sorted
+        by 'order by' clause.
+    </p>
+</div>
+
+<div>
+    <a name="Activity">Search Activity</a>
+    <br/>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>keyword</th>
+                <th>values</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>activity.facility</td>
+                <td>SYSTEM, SERVER, ADMIN, PORTAL</td>
+            </tr>
+            <tr>
+                <td>activity.severity</td>
+                <td>FATAL, ERROR, WARN, INFO, DEBUG, TRACE</td>
+            </tr>
+            <tr>
+                <td>activity.source</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>activity.action</td>
+                <td>AUTHENTICATE, CREATE_SESSION, GET_SESSION, UPDATE_SESSION, FIND_SESSION, DELETE_SESSION</td>
+            </tr>
+            <tr>
+                <td>activity.result</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>created</td>
+                <td>Date expression, i.e. <code>activity.created before '2016-5-5'</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <a name="Certificate">Search Certificate</a>
+    <br/>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>keyword</th>
+                <th>values</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>certificate.appId</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>certificate.vendor</td>
+                <td>text expression, i.e. <code>certificate.vendor = 'xinli'</code></td>
+            </tr>
+            <tr>
+                <td>certificate.os</td>
+                <td>text expression, i.e. <code>certificate.os like '%ios'</code></td>
+            </tr>
+            <tr>
+                <td>certificate.version</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>certificate.disable</td>
+                <td><code>true</code> or <code>false</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <a name="Nas">Search Nas</a>
+    <br/>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>keyword</th>
+                <th>values</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>nas.name</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>nas.ipv4Address</td>
+                <td>ipv4 text expression, i.e. <code>nas.ipv4Address = '192.168.1.1'</code></td>
+            </tr>
+            <tr>
+                <td>nas.ipv6Address</td>
+                <td>ipv6 text expression</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <a name="Session">Search Session</a>
+    <br/>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>keyword</th>
+                <th>values</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>session.nas.name</td>
+                <td>text expression, same as nas.name</td>
+            </tr>
+            <tr>
+                <td>session.nas.ipv4Address</td>
+                <td>ipv4 address expression</td>
+            </tr>
+            <tr>
+                <td>session.nas.ipv6Address</td>
+                <td>ipv6 address expression</td>
+            </tr>
+            <tr>
+                <td>session.credentials.username</td>
+                <td>username expression</td>
+            </tr>
+            <tr>
+                <td>session.credentials.ip</td>
+                <td>ip address expression</td>
+            </tr>
+            <tr>
+                <td>session.credentials.mac</td>
+                <td>mac address expression(lowercase, separated by ':'),
+                    i.e. <code>session.credentails.mac = '40:8d:5c:1e:ce:3e'</code></td>
+            </tr>
+            <tr>
+                <td>session.certificate.appId</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>session.certificate.vendor</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>session.certificate.os</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>session.certificate.version</td>
+                <td>text expression</td>
+            </tr>
+            <tr>
+                <td>session.startTime</td>
+                <td>Date expression, i.e. <code>session.startTime before '2016-5-5'</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

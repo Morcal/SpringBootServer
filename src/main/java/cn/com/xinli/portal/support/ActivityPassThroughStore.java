@@ -1,14 +1,19 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityStore;
-import cn.com.xinli.portal.support.persist.ActivityPersistence;
+import cn.com.xinli.portal.support.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -24,52 +29,64 @@ import java.util.stream.Stream;
 @Component
 @Profile("standalone")
 public class ActivityPassThroughStore implements ActivityStore {
+    @Qualifier("activityRepository")
     @Autowired
-    private ActivityPersistence activityPersistence;
+    private ActivityRepository activityRepository;
 
     @Override
     public Activity get(Long id) throws ServerException {
-        return activityPersistence.load(id);
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
+        Activity activity = activityRepository.findOne(id);
+        if (activity == null) {
+            throw new ServerException(
+                    PortalError.SERVER_INTERNAL_ERROR, "activity not found:" + id);
+        }
+        return activity;
     }
 
     @Override
     public void put(Activity activity) {
-        activityPersistence.save(activity);
+        Objects.requireNonNull(activity, Activity.EMPTY_ACTIVITY);
+        activityRepository.save(activity);
     }
 
     @Override
     public boolean exists(Long id) {
-        return activityPersistence.find(id) != null;
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
+        return activityRepository.exists(id);
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        activityPersistence.delete(id);
+        Objects.requireNonNull(id, Activity.EMPTY_ACTIVITY);
+        activityRepository.delete(id);
         return true;
     }
 
     @Override
     public void deleteOlderThan(Date date) {
-        activityPersistence.deleteOlderThan(date);
+        activityRepository.deleteOlderThan(date);
     }
 
     @Override
     public long count() {
-        return activityPersistence.count();
+        return activityRepository.count();
     }
 
     @Override
     public Stream<Activity> all() {
-        return activityPersistence.all();
+        Page<Activity> page = activityRepository.findAll(new PageRequest(0, 25));
+        return page.getContent().stream();
     }
 
     @Override
     public Stream<Activity> search(String query) {
-        return activityPersistence.search(query);
+        Stream<Activity> stream = activityRepository.search(query);
+        return stream.limit(25);
     }
 
     @Override
     public long count(String query) {
-        return activityPersistence.count(query);
+        return activityRepository.count(query);
     }
 }

@@ -19,9 +19,11 @@ import java.util.stream.Stream;
  * @author zhoupeng 2015/12/17.
  */
 @Repository
-public interface ActivityRepository extends PagingAndSortingRepository<Activity, Long> {
+public interface ActivityRepository extends PagingAndSortingRepository<Activity, Long>,
+        Searchable<Activity> {
     /**
      * Find activities by source.
+     *
      * @param source activity source.
      * @return activities.
      */
@@ -29,6 +31,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
 
     /**
      * Find activities by source.
+     *
      * @param remote activity remote.
      * @return activities.
      */
@@ -36,6 +39,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
 
     /**
      * Filter activities by {@link Activity.Severity}
+     *
      * @param severity severity.
      * @return activities.
      */
@@ -43,6 +47,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
 
     /**
      * Filter activies by {@link Activity.Facility}
+     *
      * @param facility severity.
      * @return activities.
      */
@@ -50,6 +55,7 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
 
     /**
      * Delete activities older than given date.
+     *
      * @param oldest oldest.
      */
     @Modifying

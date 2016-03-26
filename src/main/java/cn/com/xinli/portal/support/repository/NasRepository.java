@@ -7,8 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.stream.Stream;
-
 /**
  * Nas/bras device repository.
  *
@@ -17,7 +15,7 @@ import java.util.stream.Stream;
  * @author zhoupeng 2015/12/17.
  */
 @Repository
-public interface NasRepository extends CrudRepository<Nas, Long> {
+public interface NasRepository extends CrudRepository<Nas, Long>, Searchable<Nas> {
     /**
      * Delete nas.
      * @param name nas name.
@@ -25,13 +23,4 @@ public interface NasRepository extends CrudRepository<Nas, Long> {
     @Modifying
     @Query("delete from Nas n where n.name = :name")
     void delete(@Param("name") String name);
-
-    /**
-     * Query nas device, matching ipv4, ipv6 address and name.
-     * @param query query value.
-     * @return stream of nas devices.
-     */
-    @Query("select distinct n from Nas n where n.ipv4Address like :query or" +
-            " n.ipv6Address like :query or n.name like :query")
-    Stream<Nas> search(@Param("query") String query);
 }

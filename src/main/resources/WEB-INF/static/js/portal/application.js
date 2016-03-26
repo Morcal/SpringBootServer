@@ -47,6 +47,28 @@
         },
 
         /**
+         * Display remote error.
+         * @param response response.
+         * @param status status.
+         * @param err error.
+         */
+        displayRemoteError: function (response, status, err) {
+            var ary = [];
+
+            if (response) {
+                ary.push($.utils.stringOf(response));
+            }
+
+            if (status)
+                ary.push($.utils.stringOf(status));
+
+            if (err)
+                ary.push($.utils.stringOf(err));
+
+            this.alert('Error', ary.join(', '));
+        },
+
+        /**
          * Display a loading spin when loading, after loading finished hide
          * the loading spin.
          *
@@ -66,12 +88,11 @@
             loading.fadeIn();
 
             try {
-                return runnable.function.call(obj, args).done(function () {
+                return runnable.function.call(obj, args).always(function () {
                     loading.fadeOut();
                 });
             } catch (e) {
                 this.alert(e.name, e.message);
-                loading.fadeOut();
             }
         },
 
@@ -93,6 +114,10 @@
             promise.done(function (response) {
                 $.logging.debug('login finished, result: ', response);
                 modal.modal('hide');
+
+                $.portal.sessionChart.create();
+                $.portal.nasSessionChart.create();
+                //$.portal.sessionChart.update();
             });
 
             return true;

@@ -28,6 +28,11 @@ public class ApiController {
     @Qualifier("rest-api-provider")
     private Provider restApiProvider;
 
+    /**
+     * Retrieve portal service APIs.
+     * @param request HTTP request.
+     * @return portal service APIs.
+     */
     @ResponseBody
     @RequestMapping
     public Provider api(HttpServletRequest request) {

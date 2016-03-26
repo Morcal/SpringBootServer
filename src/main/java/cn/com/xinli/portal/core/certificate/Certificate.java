@@ -19,7 +19,7 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="certificate")
-@JsonInclude
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Certificate {
     public static final String EMPTY_CERTIFICATE = "Certificate is empty.";
 
@@ -31,12 +31,12 @@ public class Certificate {
 
     /** Client application id. */
     @Column(name = "app_id")
-    @JsonProperty
+    @JsonProperty("app_id")
     private String appId;
 
     /** Shared secret. */
     @Column(name = "shared_secret")
-    @JsonProperty
+    @JsonProperty("shared_secret")
     private String sharedSecret;
 
     @Column

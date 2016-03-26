@@ -16,16 +16,7 @@ import java.util.stream.Stream;
  * @author zhoupeng 2015/12/7.
  */
 @Repository
-public interface SessionRepository extends CrudRepository<Session, Long> {
-    /**
-     * Find session by user name.
-     *
-     * @param username user name.
-     * @return session list.
-     */
-    @Query("select s from Session s where s.credentials.username = :username")
-    Stream<Session> findByUsername(@Param("username") String username);
-
+public interface SessionRepository extends CrudRepository<Session, Long>, Searchable<Session> {
     /**
      * Find one session by ip.
      * @param ip ip address.
@@ -42,14 +33,9 @@ public interface SessionRepository extends CrudRepository<Session, Long> {
     @Query("select s from Session s where s.credentials.ip = :ip and s.credentials.mac = :mac")
     Stream<Session> find(@Param("ip") String ip, @Param("mac") String mac);
 
-    @Query("select count(s) from Session s where s.credentials.username like :query" +
-            " or s.credentials.ip like :query or s.credentials.mac like :query" +
-            " or s.nas.name like :query or s.nas.ipv4Address like :query")
-    long count(@Param("query") String query);
-
+    /**
+     * Find top 25 sessions.
+     * @return stream of resulting sessions.
+     */
     Stream<Session> findTop25ByIdNotNull();
-
-    @Query("select s from Session s where s.credentials.username like :query order by s.id asc")
-    Stream<Session> searchTop25(@Param("query") String query);
-
 }

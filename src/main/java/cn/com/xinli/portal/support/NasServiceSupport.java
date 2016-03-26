@@ -1,7 +1,8 @@
 package cn.com.xinli.portal.support;
 
-import cn.com.xinli.portal.core.credentials.Credentials;
+import cn.com.xinli.portal.core.credentials.*;
 import cn.com.xinli.portal.core.nas.*;
+import cn.com.xinli.portal.transport.PortalServer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -150,5 +153,41 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
         nasStore.put(rule);
 
         return rule;
+    }
+
+    @Override
+    public Nas createHuaweiNas(NasConfig nasConfig) {
+        List<CredentialsModifier> modifiers = new ArrayList<>();
+
+        for (NasConfig.ModifierConfig m : nasConfig.getModifiers()) {
+            CredentialsModifier modifier = new CredentialsModifier();
+            modifier.setPosition(CredentialsModifier.Position.valueOf(m.getPosition()));
+            modifier.setTarget(CredentialsModifier.Target.valueOf(m.getTarget()));
+            modifier.setValue(m.getValue());
+            modifiers.add(modifier);
+        }
+
+        CredentialsEncoder noOp = new CredentialsEncoders.NoOpEncoder();
+
+        CredentialsTranslation translation = new CredentialsTranslation();
+        translation.setModifiers(modifiers);
+        translation.setAuthenticateWithDomain(nasConfig.isAuthenticateWithDomain());
+        translation.setEncoder(noOp);
+
+        HuaweiNas huaweiNas = new HuaweiNas();
+        huaweiNas.setName(nasConfig.getName());
+        huaweiNas.setAuthType(nasConfig.getAuthType());
+        huaweiNas.setListenPort(nasConfig.getPort());
+        huaweiNas.setIpv4Address(nasConfig.getHost());
+        huaweiNas.setSharedSecret(nasConfig.getSharedSecret());
+        huaweiNas.setVersion(nasConfig.getVersion());
+        huaweiNas.setTranslation(translation);
+        Nas nas = create(huaweiNas);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("nas created: {}", nas);
+        }
+
+        return nas;
     }
 }

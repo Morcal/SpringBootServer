@@ -34,6 +34,25 @@
                     return true;
                 }
             }
+        },
+
+        stringOf: function (obj) {
+            var index, ary;
+
+            if (!obj)
+                return 'null';
+
+            if (typeof obj === 'object')
+                if (Array.isArray(obj)) {
+                    ary = [];
+                    for (index = 0; index < obj.length; index++) {
+                        ary.push(this.stringOf(obj[index]));
+                    }
+                    return '[' + ary.join(', ') + ']';
+                } else
+                    return JSON.stringify(obj);
+            else
+                return obj.toString();
         }
     });
 

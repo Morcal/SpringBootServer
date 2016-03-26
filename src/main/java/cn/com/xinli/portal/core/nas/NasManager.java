@@ -1,5 +1,14 @@
 package cn.com.xinli.portal.core.nas;
 
+import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
+import cn.com.xinli.portal.core.credentials.CredentialsEncoders;
+import cn.com.xinli.portal.core.credentials.CredentialsModifier;
+import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
+import cn.com.xinli.portal.transport.PortalServer;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * NAS manager.
  *
@@ -38,4 +47,16 @@ public interface NasManager {
      * @return nas rule.
      */
     NasRule createNasIpv4RangeRule(Nas nas, String startIp, String endIp);
+
+
+    /**
+     * Create NAS/BRAS device for given name.
+     *
+     * <p>If HUAWEI NAS is enabled for developing purpose,
+     * This method will create a {@link PortalServer} for HUAWEI NAS.
+     *
+     * @param nasConfig NAS/BRAS device config.
+     * @return NAS.
+     */
+    Nas createHuaweiNas(NasConfig nasConfig);
 }

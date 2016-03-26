@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.web.rest;
 
 import cn.com.xinli.portal.core.activity.Activity;
+import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.session.Session;
@@ -36,6 +37,10 @@ public class AdminResponseBuilders {
 
     public static ActivityResponseBuilder activityResponseBuilder() {
         return new ActivityResponseBuilder();
+    }
+
+    public static CertificateResponseBuilder certificateResponseBuilder(Stream<Certificate> stream) {
+        return new CertificateResponseBuilder(stream);
     }
 
     /**
@@ -217,6 +222,25 @@ public class AdminResponseBuilders {
             ActivityResponse response = new ActivityResponse();
             response.setStream(stream);
             response.setCount(count);
+            return response;
+        }
+    }
+
+    /**
+     * Certificate response builder.
+     */
+    public static class CertificateResponseBuilder extends AdminResponseBuilder<CertificateResponse> {
+        private Stream<Certificate> stream;
+
+        CertificateResponseBuilder(Stream<Certificate> stream) {
+            super(false);
+            this.stream = stream;
+        }
+
+        @Override
+        protected CertificateResponse buildInternal() {
+            CertificateResponse response = new CertificateResponse();
+            response.setStream(stream);
             return response;
         }
     }

@@ -3,10 +3,11 @@ package cn.com.xinli.portal.support.ehcache;
 import cn.com.xinli.portal.core.radius.Radius;
 import cn.com.xinli.portal.core.radius.RadiusNotFoundException;
 import cn.com.xinli.portal.core.radius.RadiusStore;
-import cn.com.xinli.portal.support.persist.RadiusPersistence;
+import cn.com.xinli.portal.support.repository.RadiusRepository;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,9 @@ public class EhcacheRadiusStore implements RadiusStore {
     @Autowired
     private Ehcache radiusCache;
 
+    @Qualifier("radiusRepository")
     @Autowired
-    private RadiusPersistence radiusPersistence;
+    private RadiusRepository radiusRepository;
 
     Element toElement(Radius radius) {
         return new Element(radius.getId(), radius);
@@ -45,7 +47,7 @@ public class EhcacheRadiusStore implements RadiusStore {
     @Override
     public void put(Radius radius) {
         Objects.requireNonNull(radius, Radius.EMPTY_RADIUS);
-        radiusPersistence.save(radius);
+        radiusRepository.save(radius);
         radiusCache.put(toElement(radius));
     }
 
@@ -56,7 +58,7 @@ public class EhcacheRadiusStore implements RadiusStore {
 
     @Override
     public boolean delete(Long id) throws RadiusNotFoundException {
-        radiusPersistence.delete(id);
+        radiusRepository.delete(id);
         return radiusCache.remove(id);
     }
 }

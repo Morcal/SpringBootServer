@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.certificate;
 
+import java.util.stream.Stream;
+
 /**
  * Certificate service.
  *
@@ -27,9 +29,9 @@ public interface CertificateService {
 
     /**
      * Disable an existed certificate.
-     * @param clientId certificate client/app id.
+     * @param id certificate id.
      */
-    void disableCertificate(String clientId) throws CertificateNotFoundException;
+    void disableCertificate(Long id) throws CertificateNotFoundException;
 
     /**
      * Load certificate by client id, aka app id.
@@ -42,4 +44,10 @@ public interface CertificateService {
      * @return certificated.
      */
     Certificate loadCertificate(String clientId) throws CertificateNotFoundException;
+
+    Certificate get(Long id) throws CertificateNotFoundException;
+
+    Stream<Certificate> all();
+
+    Stream<Certificate> search(String query);
 }

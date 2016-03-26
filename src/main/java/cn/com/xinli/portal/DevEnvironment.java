@@ -4,10 +4,6 @@ import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateManager;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateService;
-import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
-import cn.com.xinli.portal.core.credentials.CredentialsEncoders;
-import cn.com.xinli.portal.core.credentials.CredentialsModifier;
-import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.*;
 import cn.com.xinli.portal.transport.PortalServer;
 import cn.com.xinli.portal.transport.huawei.AuthType;
@@ -27,7 +23,6 @@ import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -38,6 +33,10 @@ import java.util.*;
  * or programmatically. See
  * <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-profiles.html">
  * spring boot profile documents</a>.
+ *
+ * <p>In a developing environment, A mocked Huawei portal NAS will be created
+ * and listen on local address for incoming portal requests. And a certificate with
+ * name "jportal" will be generated.
  *
  * <p>Project: xpws
  *
@@ -53,25 +52,33 @@ public class DevEnvironment {
 
     @Value("${mock.nas.host}")
     private String mockNasHost;
+
     @Value("${mock.nas.name}")
     private String mockNasName;
+
     @Value("${mock.nas.port}")
     private int mockNasPort;
+
     @Value("${mock.nas.shared-secret}")
     private String mockNasSharedSecret;
+
     @Value("${mock.nas.version}")
     private String mockNasVersion;
+
     @Value("${mock.nas.auth-type}")
     private String mockNasAuthType;
+
     @Value("${mock.nas.ipv4.range}")
     private String mockNasIpv4Ranges;
+
     @Value("${mock.nas.enable}")
     private boolean enableMock;
+
     @Value("${mock.nas.authenticateWithDomain}")
     private boolean mockNasAuthenticateWithDomain;
 
-    /** NAS configuration filename prefix. */
-    public static final String NAS_CONFIG_FILENAME_PREFIX = "nas";
+//    /** NAS configuration filename prefix. */
+//    public static final String NAS_CONFIG_FILENAME_PREFIX = "nas";
 
     @Autowired
     private NasService nasService;
@@ -98,36 +105,36 @@ public class DevEnvironment {
     public void handleEnvironmentInitialized(EnvironmentInitializedEvent event)
             throws NasNotFoundException, IOException {
         logger.info("PWS environment initialized, {}", event);
+
         ensureJPortalCertificate();
-        ensureNasConfigurations(NAS_CONFIG_FILENAME_PREFIX, 1, 1);
+
+        //ensureNasConfigurations(NAS_CONFIG_FILENAME_PREFIX, 1, 1);
+
         if (enableMock) {
             NasConfig mock = new NasConfig();
-            mock.name = mockNasName;
-            mock.port = mockNasPort;
-            mock.authType = mockNasAuthType;
-            mock.host = mockNasHost;
-            mock.sharedSecret = mockNasSharedSecret;
-            mock.version = mockNasVersion;
-            mock.range = mockNasIpv4Ranges;
-            mock.authenticateWithDomain = mockNasAuthenticateWithDomain;
-            ensureNasConfiguration(mock);
-            PortalServer huaweiNas = createHuaweiNas(mockNasName);
-            huaweiNas.start();
+            mock.setName(mockNasName);
+            mock.setPort(mockNasPort);
+            mock.setAuthType(mockNasAuthType);
+            mock.setHost(mockNasHost);
+            mock.setSharedSecret(mockNasSharedSecret);
+            mock.setVersion(mockNasVersion);
+            mock.setRange(mockNasIpv4Ranges);
+            mock.setAuthenticateWithDomain(mockNasAuthenticateWithDomain);
+            ensureHuaweiNasConfiguration(mock);
+
+            /* Find nas configuration for mocking. */
+            HuaweiNas nas = (HuaweiNas) nasService.find(mockNasName);
+
+            Endpoint endpoint = new Endpoint();
+            endpoint.setPort(nas.getListenPort());
+            endpoint.setSharedSecret(nas.getSharedSecret());
+            endpoint.setVersion(Version.valueOf(nas.getVersion()));
+            endpoint.setAddress(nas.getNetworkAddress());
+            endpoint.setAuthType(AuthType.valueOf(nas.getAuthType()));
+
+            PortalServer mockServer = HuaweiPortal.createNas(endpoint);
+            mockServer.start();
         }
-    }
-
-    PortalServer createHuaweiNas(String nasName) throws NasNotFoundException, UnknownHostException {
-        /* Find nas configuration for mocking. */
-        HuaweiNas nas = (HuaweiNas) nasService.find(nasName);
-
-        Endpoint endpoint = new Endpoint();
-        endpoint.setPort(nas.getListenPort());
-        endpoint.setSharedSecret(nas.getSharedSecret());
-        endpoint.setVersion(Version.valueOf(nas.getVersion()));
-        endpoint.setAddress(nas.getNetworkAddress());
-        endpoint.setAuthType(AuthType.valueOf(nas.getAuthType()));
-
-        return HuaweiPortal.createNas(endpoint);
     }
 
     /**
@@ -135,7 +142,7 @@ public class DevEnvironment {
      *
      * @return 'jportal' client certificate.
      */
-    Certificate ensureJPortalCertificate() {
+    private Certificate ensureJPortalCertificate() {
         try {
             return certificateService.loadCertificate("jportal");
         } catch (CertificateNotFoundException e) {
@@ -145,69 +152,25 @@ public class DevEnvironment {
     }
 
     /**
-     * Create NAS/BRAS device for given name.
-     *
-     * <p>If HUAWEI NAS is enabled for developing purpose,
-     * This method will create a {@link PortalServer} for HUAWEI NAS.
-     *
-     * @param nasConfig NAS/BRAS device config.
-     * @return NAS.
-     */
-    private Nas createNas(NasConfig nasConfig) {
-        List<CredentialsModifier> modifiers = new ArrayList<>();
-
-        for (NasConfig.ModifierConfig m : nasConfig.modifiers) {
-            CredentialsModifier modifier = new CredentialsModifier();
-            modifier.setPosition(CredentialsModifier.Position.valueOf(m.position));
-            modifier.setTarget(CredentialsModifier.Target.valueOf(m.target));
-            modifier.setValue(m.value);
-            modifiers.add(modifier);
-        }
-
-        CredentialsEncoder noOp = new CredentialsEncoders.NoOpEncoder();
-
-        CredentialsTranslation translation = new CredentialsTranslation();
-        translation.setModifiers(modifiers);
-        translation.setAuthenticateWithDomain(nasConfig.authenticateWithDomain);
-        translation.setEncoder(noOp);
-
-        HuaweiNas huaweiNas = new HuaweiNas();
-        huaweiNas.setName(nasConfig.name);
-        huaweiNas.setAuthType(nasConfig.authType);
-        huaweiNas.setListenPort(nasConfig.port);
-        huaweiNas.setIpv4Address(nasConfig.host);
-        huaweiNas.setSharedSecret(nasConfig.sharedSecret);
-        huaweiNas.setVersion(nasConfig.version);
-        huaweiNas.setTranslation(translation);
-        Nas nas = nasManager.create(huaweiNas);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("nas created: {}", nas);
-        }
-
-        return nas;
-    }
-
-    /**
      * Ensure given NAS/BRAS device exists.
      *
      * <p>If NAS/BRAS device with given name not exists, create new one.
      *
      * @param nasConfig NAS/BRAS device config.
      */
-    private void ensureNasConfiguration(NasConfig nasConfig) {
-        if (StringUtils.isEmpty(nasConfig.name)) {
+    private void ensureHuaweiNasConfiguration(NasConfig nasConfig) {
+        if (StringUtils.isEmpty(nasConfig.getName())) {
             throw new IllegalArgumentException("NAS name can not be blank.");
         }
 
         try {
-            Nas nas = nasService.find(nasConfig.name);
+            Nas nas = nasService.find(nasConfig.getName());
             logger.debug("NAS found, {}", nas);
         } catch (NasNotFoundException e) {
             logger.debug("NAS not found, creating... name: {}", nasConfig);
-            Nas nas = createNas(nasConfig);
-            if (!StringUtils.isEmpty(nasConfig.range)) {
-                for (String range : nasConfig.range.split(",")) {
+            Nas nas = nasManager.createHuaweiNas(nasConfig);
+            if (!StringUtils.isEmpty(nasConfig.getRange())) {
+                for (String range : nasConfig.getRange().split(",")) {
                     String[] value = range.trim().split("-");
                     if (value.length == 2) {
                         nasManager.createNasIpv4RangeRule(nas, value[0], value[1]);
@@ -218,6 +181,7 @@ public class DevEnvironment {
         }
     }
 
+    @Deprecated
     private void ensureNasConfigurations(String prefix, int start, int step) {
         String configFilename;
         Set<String> names = new HashSet<>();
@@ -241,14 +205,14 @@ public class DevEnvironment {
                     final NasConfig config = new NasConfig();
                     config.load(properties);
 
-                    if (!names.add(config.name)) {
+                    if (!names.add(config.getName())) {
                         in.close();
                         logger.error("Redundant configuration name: {}, detected in file: {}",
-                                config.name, configFilename);
+                                config.getName(), configFilename);
                         System.exit(1);
                     }
 
-                    ensureNasConfiguration(config);
+                    ensureHuaweiNasConfiguration(config);
                 }
                 in.close();
             } catch (IOException e) {
@@ -260,74 +224,6 @@ public class DevEnvironment {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    class NasConfig {
-        String name;
-        String authType;
-        int port;
-        String host;
-        String sharedSecret;
-        String version;
-        String range;
-
-        boolean authenticateWithDomain;
-
-        List<ModifierConfig> modifiers = new ArrayList<>();
-
-        class ModifierConfig {
-            String position;
-            String target;
-            String value;
-        }
-
-        void load(Properties properties) {
-            name = properties.getProperty("nas.name");
-                    host = properties.getProperty("nas.host");
-                    sharedSecret = properties.getProperty("nas.shared-secret");
-                    version = properties.getProperty("nas.version");
-                    authType = properties.getProperty("nas.auth-type");
-                    range = properties.getProperty("nas.ipv4.range");
-            port = Integer.parseInt(properties.getProperty("nas.port"));
-
-            authenticateWithDomain = Boolean.parseBoolean(properties.getProperty("nas.authenticateWithDomain"));
-
-            for (int i = 1; ; i++) {
-                final String modifier = "nas.translation.modifier-" + i;
-                final String pos = modifier + ".position",
-                        tar = modifier + ".target",
-                        val = modifier + ".value";
-
-                final String position = properties.getProperty(pos),
-                        target = properties.getProperty(tar),
-                        value = properties.getProperty(val);
-
-                if (StringUtils.isEmpty(position) ||
-                        StringUtils.isEmpty(target) ||
-                        StringUtils.isEmpty(value)) {
-                    break;
-                }
-
-                ModifierConfig mc = new ModifierConfig();
-                mc.position = position;
-                mc.target = target;
-                mc.value = value;
-                modifiers.add(mc);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "NasConfig{" +
-                    "name='" + name + '\'' +
-                    ", authType='" + authType + '\'' +
-                    ", port=" + port +
-                    ", host='" + host + '\'' +
-                    ", sharedSecret='" + sharedSecret + '\'' +
-                    ", version='" + version + '\'' +
-                    ", range='" + range + '\'' +
-                    '}';
         }
     }
 }

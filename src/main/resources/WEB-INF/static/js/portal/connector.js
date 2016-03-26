@@ -71,8 +71,8 @@
                 $.logging.debug('authorize result', response);
                 that.state.nonce = response['authentication']['nonce'];
                 that.state.challenge = response['authentication']['challenge'];
-            }).fail(function (response, status, err) {
-                $.portal.ajaxError(response, status, err, 'authorize failed.');
+            }).fail(function (xhr, status, err) {
+                $.portal.ajaxError(xhr.responseText, status, err, 'authorize failed.');
             });
         },
 
@@ -137,7 +137,7 @@
 
             if (entry['requires_auth']) {
                 if (!this.state.authorized()) {
-                    return deferred.reject('not authorized').promise();
+                    return deferred.reject({ responseText: 'not authorized'}).promise();
                 }
 
                 $.extend(opt, {
@@ -148,9 +148,10 @@
             }
 
             $.ajax(url, opt).done(function (response) {
+                $.logging.debug('request result: ', JSON.stringify(response));
                 deferred.resolve(response);
-            }).fail(function (response, status, err) {
-                deferred.reject(response, status, err);
+            }).fail(function (xhr, status, err) {
+                deferred.reject(xhr, status, err);
             });
 
             return deferred.promise();

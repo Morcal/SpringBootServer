@@ -34,14 +34,15 @@ import java.security.Principal;
 /**
  * System administration controller.
  *
+ * <p>This controller provides a server api retrieving entry and
+ * perform a CHAP login process.
+ *
  * @author zhoupeng, created on 2016/3/20.
  */
 @Controller
 @RequestMapping("/portal/admin")
 public class AdminController {
-    /**
-     * Logger.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired
@@ -60,6 +61,12 @@ public class AdminController {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
+    /**
+     * Retrieve administration APIs.
+     *
+     * @param request request.
+     * @return server administration APIs.
+     */
     @ResponseBody
     @RequestMapping("/api")
     public Provider api(HttpServletRequest request) {
@@ -70,6 +77,16 @@ public class AdminController {
         return adminRestApiProvider;
     }
 
+    /**
+     * Start a new challenge-login.
+     *
+     * @param responseType     response type.
+     * @param scope            token scope.
+     * @param requireToken     if request requires token.
+     * @param needRefreshToken if request requires refresh token.
+     * @return rest response.
+     * @throws RemoteException
+     */
     @ResponseBody
     @RequestMapping("/v1.0/authorize")
     public RestResponse authorize(@RequestParam(name = "response_type") String responseType,
@@ -94,6 +111,15 @@ public class AdminController {
         }
     }
 
+    /**
+     * Handle CHAP login and issue token if succeeded.
+     *
+     * @param username  username.
+     * @param password  MD5(password + challenge).
+     * @param principal spring security principal.
+     * @return Rest response.
+     * @throws PortalException
+     */
     @ResponseBody
     @RequestMapping("/v1.0/login")
     @PreAuthorize("hasRole('PRE_AUTH')")

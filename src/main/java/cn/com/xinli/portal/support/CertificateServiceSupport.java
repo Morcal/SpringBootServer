@@ -1,12 +1,14 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.certificate.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Certificate Service Support.
@@ -39,7 +41,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     }
 
     @Override
-    public void disableCertificate(String id) throws CertificateNotFoundException {
+    public void disableCertificate(Long id) throws CertificateNotFoundException {
         Certificate certificate = certificateStore.get(id);
         certificate.setDisabled(true);
         certificateStore.put(certificate);
@@ -48,7 +50,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     @Override
     public void delete(Certificate certificate) throws CertificateNotFoundException {
         Objects.requireNonNull(certificate, Certificate.EMPTY_CERTIFICATE);
-        certificateStore.delete(certificate.getAppId());
+        certificateStore.delete(certificate.getId());
     }
 
     @Override
@@ -62,6 +64,25 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public Certificate loadCertificate(String clientId) throws CertificateNotFoundException {
-        return certificateStore.get(clientId);
+        return certificateStore.find(clientId);
+    }
+
+    @Override
+    public Certificate get(Long id) throws CertificateNotFoundException {
+        return certificateStore.get(id);
+    }
+
+    @Override
+    public Stream<Certificate> all() {
+        return certificateStore.all();
+    }
+
+    @Override
+    public Stream<Certificate> search(String query) {
+        if (StringUtils.isEmpty(query)) {
+            return all();
+        } else {
+            return certificateStore.search(query);
+        }
     }
 }

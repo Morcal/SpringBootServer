@@ -43,6 +43,11 @@ public class SystemController {
         return null;
     }
 
+    /**
+     * Search NAS devices.
+     * @param query query string.
+     * @return nas response.
+     */
     @RequestMapping(value = "/nas", method = RequestMethod.POST)
     @ResponseBody
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,6 +62,12 @@ public class SystemController {
         return AdminResponseBuilders.nasResponseBuilder(stream).build();
     }
 
+    /**
+     * Retrieve a NAS device's information.
+     * @param id nas id.
+     * @return nas response.
+     * @throws NasNotFoundException
+     */
     @ResponseBody
     @RequestMapping(value = "/nas/{id}", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")
@@ -65,6 +76,10 @@ public class SystemController {
         return AdminResponseBuilders.nasResponseBuilder(Stream.of(nas)).build();
     }
 
+    /**
+     * Retrieve system configuration.
+     * @return rest response.
+     */
     @ResponseBody
     @RequestMapping(value = "/configuration", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,6 +87,11 @@ public class SystemController {
         return AdminResponseBuilders.serverConfigurationResponseBuilder(serverConfiguration).build();
     }
 
+    /**
+     * Search sessions.
+     * @param query query string.
+     * @return session response.
+     */
     @ResponseBody
     @RequestMapping(value = "/sessions", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")

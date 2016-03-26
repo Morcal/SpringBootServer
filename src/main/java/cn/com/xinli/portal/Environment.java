@@ -1,7 +1,6 @@
 package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.configuration.PortalServerConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
@@ -74,11 +73,12 @@ public class Environment implements ApplicationEventPublisherAware {
     @Qualifier("admin-api-provider")
     private Provider adminRestApiProvider;
 
-    @Bean
-    public Activity.Severity minimalSeverity() {
-        return serverConfiguration.getActivityConfiguration().getSeverity();
-    }
-
+    /**
+     * Set up authentication filter matcher URIs.
+     * <p>After matcher URIs been setup, any requests targeting those URIs(matches)
+     * will be filter by authentication filter.
+     * @param filter filter.
+     */
     @Autowired
     public void setupAuthenticationFilterMatchedUris(AuthenticationFilter filter) {
         List<List<String>> list = restApiProvider.getRegistrations().stream()
@@ -110,6 +110,12 @@ public class Environment implements ApplicationEventPublisherAware {
         filter.setContinueFilterChainOnUnsuccessful(false);
     }
 
+    /**
+     * Set up rate-limiting filter matcher uris.
+     * <p>After matcher URIs been setup, any requests targeting those URIs(matches)
+     * will be filter by rate-limiting.
+     * @param filter filter.
+     */
     @Autowired
     public void setupRateLimitingFilterMatchedUris(RateLimitingFilter filter) {
         List<List<String>> list = restApiProvider.getRegistrations().stream()

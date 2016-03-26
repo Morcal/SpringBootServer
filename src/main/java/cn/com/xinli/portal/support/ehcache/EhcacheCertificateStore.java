@@ -3,17 +3,21 @@ package cn.com.xinli.portal.support.ehcache;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateStore;
-import cn.com.xinli.portal.support.persist.CertificatePersistence;
+import cn.com.xinli.portal.support.repository.CertificateRepository;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Certificate store based on <a href="http://ehcache.org">EhCache</a>.
@@ -28,35 +32,59 @@ public class EhcacheCertificateStore implements CertificateStore {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(EhcacheCertificateStore.class);
 
+    @Qualifier("certificateRepository")
     @Autowired
-    private CertificatePersistence certificatePersistence;
+    private CertificateRepository certificateRepository;
 
     @Autowired
     private Ehcache certificateCache;
 
     @PostConstruct
     public void init() {
-        certificatePersistence.all(this::put);
+        certificateRepository.findAll().forEach(this::put);
 
         logger.info("EhCache certificate sync with database done.");
     }
 
     @Override
-    public Certificate get(String appId) throws CertificateNotFoundException {
-        Element element = certificateCache.get(appId);
-        if (element == null) {
-            throw new CertificateNotFoundException(appId);
+    public Certificate find(String appId) throws CertificateNotFoundException {
+        for (Object key : certificateCache.getKeys()) {
+            Element element = certificateCache.get(key);
+            Certificate certificate = (Certificate) element.getObjectValue();
+            if (certificate.getAppId().equals(appId))
+                return certificate;
         }
 
-        return (Certificate) element.getObjectValue();
+        throw new CertificateNotFoundException(appId);
+//        Element element = certificateCache.get(appId);
+//        if (element == null) {
+//            throw new CertificateNotFoundException(appId);
+//        }
+//
+//        return (Certificate) element.getObjectValue();
+    }
+
+    @Override
+    public Stream<Certificate> all() {
+        List<Certificate> certificates = new ArrayList<>();
+        for (Certificate certificate : certificateRepository.findAll()) {
+            certificates.add(certificate);
+        }
+
+        return certificates.stream();
+    }
+
+    @Override
+    public Stream<Certificate> search(String query) {
+        return certificateRepository.search(query);
     }
 
     @Override
     public void put(Certificate certificate) {
         Objects.requireNonNull(certificate, Certificate.EMPTY_CERTIFICATE);
         /* save to database, id will be generated if missing. */
-        certificatePersistence.save(certificate);
-        Element element = new Element(certificate.getAppId(), certificate);
+        certificateRepository.save(certificate);
+        Element element = new Element(certificate.getId(), certificate);
         certificateCache.put(element);
         if (logger.isTraceEnabled()) {
             logger.trace("certificate saved in cache, {}", certificate);
@@ -64,16 +92,21 @@ public class EhcacheCertificateStore implements CertificateStore {
     }
 
     @Override
-    public boolean exists(String appId) {
-        return certificateCache.get(appId) != null;
+    public boolean exists(Long id) {
+        return certificateCache.get(id) != null;
     }
 
     @Override
-    public boolean delete(String appId) throws CertificateNotFoundException {
+    public Certificate get(Long id) throws CertificateNotFoundException {
+        return (Certificate) certificateCache.get(id).getObjectValue();
+    }
+
+    @Override
+    public boolean delete(Long id) throws CertificateNotFoundException {
         if (logger.isTraceEnabled()) {
-            logger.trace("deleting certificate {{}}", appId);
+            logger.trace("deleting certificate {{}}", id);
         }
-        certificatePersistence.delete(appId);
-        return certificateCache.remove(appId);
+        certificateRepository.delete(id);
+        return certificateCache.remove(id);
     }
 }

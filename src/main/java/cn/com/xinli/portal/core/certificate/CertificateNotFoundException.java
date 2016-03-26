@@ -14,6 +14,10 @@ import cn.com.xinli.portal.core.PortalException;
  * @author zhoupeng 2015/12/21.
  */
 public class CertificateNotFoundException extends PortalException {
+    public CertificateNotFoundException(Long id) {
+        this("certificate " + id + " not found.");
+    }
+
     public CertificateNotFoundException(String message) {
         super(PortalError.INVALID_CERTIFICATE, message);
     }

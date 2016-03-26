@@ -67,9 +67,8 @@
                 }).done(function (response) {
                     $.logging.debug('login result: ', response);
                     $.portal.connector.handleLogin(response);
-                }).fail(function (response, status, err) {
-                    $.portal.ajaxError(response, status, err);
-                    //TODO add alert.
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status, err);
                 });
             });
 
