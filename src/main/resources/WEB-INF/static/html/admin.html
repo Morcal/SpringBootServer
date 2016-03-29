@@ -357,7 +357,7 @@ Certificate dialog.
     <div class="container">
         <div class="row">
             <!-- navigation sidebar. -->
-            <div id="nav-sidebar" class="collapse col-md-3">
+            <div id="nav-sidebar" class="col-md-3">
                 <!-- configuration navigation. -->
                 <nav id="nav-configuration" class="sidebar-content collapse">
                     <ul class="nav">
@@ -395,35 +395,92 @@ Certificate dialog.
                 </nav>
             </div>
 
-            <!-- Dashboard. -->
+            <!--
+            ==================================
+            Dashboard.
+            ==================================
+             -->
             <div id="dashboard" class="col-md-12">
-                <!--
-                ==================================
-                session.
-                ==================================
-                -->
+                <!-- session. -->
                 <div id="session-summary">
                     <div class="row bottom-spacing">
                         <div class="col-md-6">
-                            <h3>
-                                <span class="glyphicon glyphicon-scale"></span>
-                                Total sessions:<code>8192</code>
-                                <button type="button" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-refresh"></span>
-                                </button>
-                            </h3>
-                            <div id="session-chart-p">
-                                <canvas id="session-chart" width="500" height="150"></canvas>
+                            <div>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td rowspan="2"><span style="font-size: 48px;"><code>1234</code></span></td>
+                                            <td>Total sessions</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <button id="refresh-dashboard-btn" type="button" class="btn btn-default">
+                                                    <span class="glyphicon glyphicon-refresh"></span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div>
+                                <!--<p>Sessions (Last 300 seconds)</p>-->
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="4">Sessions (Last 300 seconds)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Created</td><td><code>123</code></td>
+                                            <td>Removed</td><td><code>54</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td>NTF_LOGOUT</td><td><code>21</code></td>
+                                            <td>Errors</td><td><code>2</code></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <h3>NAS Session</h3>
-                            <div>
-                                <canvas id="nas-session-chart" width="400" height="150"></canvas>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4">System Load (Last 60 seconds)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Requests</td><td><code>123</code></td>
+                                        <td>Errors</td><td><code>54</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="height: 100px;">
+                                <!--<canvas id="load-chart" width="450" height="150"></canvas>-->
+                                <canvas id="load-chart"></canvas>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div id="devices-summary">
+                    <div class="row bottom-spacing">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <!--<canvas id="session-chart" width="500" height="150"></canvas>-->
+                    </div>
+                </div>
+
+                <!--<div style="position: fixed; bottom: 0; width: 90%; height: 100px;">-->
+                <div style="height: 150px;">
+                    <canvas id="session-chart"></canvas>
                 </div>
             </div>
 
@@ -781,7 +838,8 @@ Certificate dialog.
 <script src="../js/jquery-2.2.1.js"></script>
 <script src="../js/bootstrap.js"></script>
 <script src="../js/Chart.js"></script>
-<script src="../js/Chart.HorizontalBar.js"></script>
+<!--<script src="../js/Chart.HorizontalBar.js"></script>-->
+<script src="../js/jquery.timer.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/md5.js"></script>
 <script src="../js/logging.js"></script>
@@ -798,6 +856,13 @@ Certificate dialog.
 //        $('#configuration').find('.module-nav').affix(15);
 //        $('#management').find('.module-nav').affix(15);
 //        $('#configuration-nas-search').affix();
+
+        /*
+         * Dashboard page scripts.
+         */
+        $('#refresh-dashboard-btn').click(function () {
+            $.portal.dashboard.update();
+        });
 
         /*
          * Configuration page scripts.

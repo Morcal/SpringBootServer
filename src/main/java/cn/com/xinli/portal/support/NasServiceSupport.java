@@ -2,7 +2,6 @@ package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.credentials.*;
 import cn.com.xinli.portal.core.nas.*;
-import cn.com.xinli.portal.transport.PortalServer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +98,11 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     @Override
     public void map(String ip, String mac, String nasIp) throws NasNotFoundException {
         nasStore.map(ip, mac, nasIp);
+    }
+
+    @Override
+    public Stream<Nas> all() {
+        return nasStore.devices();
     }
 
     /**

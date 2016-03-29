@@ -161,3 +161,11 @@ body > div.doc {
 .module-content {
     padding-left: 35px;
 }
+
+#dashboard .col-md-6 {
+    /*border: 1px solid #e5e6e7;*/
+}
+
+#dashboard .table > thead > tr > th {
+    border-bottom-width: 1px;
+}

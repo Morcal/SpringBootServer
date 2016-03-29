@@ -4,10 +4,17 @@ import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
+import cn.com.xinli.portal.core.runtime.LoadStatistics;
+import cn.com.xinli.portal.core.runtime.NasStatistics;
+import cn.com.xinli.portal.core.runtime.SessionStatistics;
+import cn.com.xinli.portal.core.runtime.TotalSessionStatistics;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.token.RestToken;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +48,10 @@ public class AdminResponseBuilders {
 
     public static CertificateResponseBuilder certificateResponseBuilder(Stream<Certificate> stream) {
         return new CertificateResponseBuilder(stream);
+    }
+
+    public static SystemStatisticsBuilder systemStatisticsBuilder() {
+        return new SystemStatisticsBuilder();
     }
 
     /**
@@ -242,6 +253,64 @@ public class AdminResponseBuilders {
             CertificateResponse response = new CertificateResponse();
             response.setStream(stream);
             return response;
+        }
+    }
+
+    /**
+     * System statistics response builder.
+     */
+    public static class SystemStatisticsBuilder extends AdminResponseBuilder<SystemStatisticsResponse> {
+        private LoadStatistics loadStatistics;
+        private SessionStatistics sessionStatistics;
+        private List<NasStatistics> nasStatistics;
+        private TotalSessionStatistics totalSessionStatistics;
+
+        private static final NasComparator comparator = new NasComparator();
+
+        SystemStatisticsBuilder() {
+            super(false);
+        }
+
+        public SystemStatisticsBuilder setLoad(LoadStatistics statistics) {
+            loadStatistics = statistics;
+            return this;
+        }
+
+        public SystemStatisticsBuilder setSession(SessionStatistics statistics) {
+            sessionStatistics = statistics;
+            return this;
+        }
+
+        public SystemStatisticsBuilder setDevices(List<NasStatistics> devices) {
+            nasStatistics = devices;
+            return this;
+        }
+
+        public SystemStatisticsBuilder setTotal(TotalSessionStatistics total) {
+            totalSessionStatistics = total;
+            return this;
+        }
+
+        @Override
+        protected SystemStatisticsResponse buildInternal() {
+            SystemStatisticsResponse response = new SystemStatisticsResponse();
+            response.setLoadStatistics(loadStatistics);
+            response.setSessionStatistics(sessionStatistics);
+            response.setTotalSessionStatistics(totalSessionStatistics);
+            response.setNasStatistics(nasStatistics);
+            Collections.sort(nasStatistics, comparator);
+            return response;
+        }
+
+        static class NasComparator implements Comparator<NasStatistics> {
+            @Override
+            public int compare(NasStatistics o1, NasStatistics o2) {
+                if (o1 == o2)
+                    return 0;
+
+                Long diff = o1.getNasId() - o2.getNasId();
+                return diff.intValue();
+            }
         }
     }
 }

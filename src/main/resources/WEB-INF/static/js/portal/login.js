@@ -55,24 +55,27 @@
          * @returns {*}
          */
         execute: function (username, password) {
-            var promise,
+            var deferred = $.Deferred(),
+                promise,
                 that = this;
 
             promise = $.portal.connector.authorize();
+
             promise.done(function () {
                 $.logging.debug('logging in, user: ', username.val(), ', password: ', password.val());
                 $.portal.connector.request('login', {
                     username: username.val(),
                     password: that.md5password(password.val(), $.portal.connector.state.challenge)
-                }).done(function (response) {
-                    $.logging.debug('login result: ', response);
+                }).done(function (response, status, xhr) {
                     $.portal.connector.handleLogin(response);
+                    $.logging.debug('login handled by connector.');
+                    deferred.resolve(response, status, xhr);
                 }).fail(function (xhr, status, err) {
-                    $.application.displayRemoteError(xhr.responseText, status, err);
+                    deferred.reject(xhr, status, err);
                 });
             });
 
-            return promise;
+            return deferred.promise();
         }
     };
 

@@ -111,13 +111,14 @@
                 return false;
 
             promise = login.execute(username, password);
-            promise.done(function (response) {
-                $.logging.debug('login finished, result: ', response);
+
+            promise.done(function () {
                 modal.modal('hide');
 
-                $.portal.sessionChart.create();
-                $.portal.nasSessionChart.create();
-                //$.portal.sessionChart.update();
+                $.logging.debug('creating dashboard.');
+                $.portal.dashboard.create();
+            }).fail(function (xhr, status, err) {
+                $.application.displayRemoteError(xhr.responseText, status, err);
             });
 
             return true;
@@ -155,6 +156,11 @@
                 toggle.click();
             }
 
+            if (target !== 'Dashboard')
+                $.portal.dashboard.pause();
+            else
+                $.portal.dashboard.play();
+
             return true;
         },
 
@@ -165,5 +171,5 @@
     };
 
     $.application = $.application || new Application();
-    $.application.current = 'dashboard';
+    $.application.current = 'Dashboard';
 }(jQuery));

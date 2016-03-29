@@ -1,0 +1,133 @@
+package cn.com.xinli.portal.core.runtime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * System session statistics.
+ * @author zhoupeng, created on 2016/3/28.
+ */
+public class SessionStatistics extends AbstractStatistics<SessionStatistics.SessionRecord> {
+    /** Record every 1 minute. */
+    private static final int RECORD_HISTORY_IN = 1;
+
+    /** Record recent 5 minutes. */
+    private static final int RECORD_HISTORY_LENGTH = 5;
+
+    @JsonProperty("created")
+    public long getCreated() {
+        return getValue("created");
+    }
+
+    @JsonProperty("removed")
+    public long getRemoved() {
+        return getValue("removed");
+    }
+
+    @JsonProperty("ntf_logout")
+    public long getNtfLogout() {
+        return getValue("ntf logout");
+    }
+
+    @JsonProperty("errors")
+    public long getErrors() {
+        return getValue("errors");
+    }
+
+    @Override
+    protected String getHistoryDefaultValueName() {
+        return "created";
+    }
+
+    @Override
+    protected TimeUnit getHistoryRecordDurationTimeUnit() {
+        return TimeUnit.MINUTES;
+    }
+
+    @Override
+    protected int getHistoryRecordDuration() {
+        return RECORD_HISTORY_IN;
+    }
+
+    @Override
+    protected int getHistoryRecordingLength() {
+        return RECORD_HISTORY_LENGTH;
+    }
+
+    @Override
+    protected AggregateRecord<SessionRecord> createAggregateRecord(Date date) {
+        return new AggregatedSessionRecord(date);
+    }
+
+    @Override
+    public boolean supports(Class<?> cls) {
+        return cls != null && SessionRecord.class.isAssignableFrom(cls);
+    }
+
+    /**
+     * Session record.
+     */
+    public static class SessionRecord extends BaseRecord {
+        public enum Action {
+            USER_CREATE_SESSION,
+            USER_DELETE_SESSION,
+            NAS_NTF_LOGOUT
+        }
+
+        private Action action;
+
+        public SessionRecord(boolean error) {
+            super(error);
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public void setAction(Action action) {
+            this.action = action;
+        }
+    }
+
+    /**
+     * Aggregated session record.
+     */
+    class AggregatedSessionRecord extends BaseAggregateRecord<SessionRecord> {
+        AggregatedSessionRecord(Date recordedAt) {
+            super(recordedAt);
+        }
+
+        @Override
+        protected String[] supportedValueTypes() {
+            return new String[]{"created", "removed", "ntf logout", "errors" };
+        }
+
+        @Override
+        public void addRecord(SessionRecord record) {
+            if (!record.isError()) {
+                switch (record.action) {
+                    case USER_CREATE_SESSION:
+                        increment("created");
+                        break;
+
+                    case NAS_NTF_LOGOUT:
+                        increment("ntf logout");
+                        break;
+
+                    case USER_DELETE_SESSION:
+                        increment("removed");
+                        break;
+
+                    default:
+                        break;
+                }
+            } else {
+                increment("errors");
+            }
+        }
+    }
+}

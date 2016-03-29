@@ -68,7 +68,6 @@
                 require_token: true,
                 need_refresh_token: false
             }).done(function (response) {
-                $.logging.debug('authorize result', response);
                 that.state.nonce = response['authentication']['nonce'];
                 that.state.challenge = response['authentication']['challenge'];
             }).fail(function (xhr, status, err) {
@@ -97,7 +96,6 @@
         handleLogin: function (response) {
             delete this.state.challenge;
             delete this.state.nonce;
-            $.logging.debug('auth: ', response['authorization']);
             this.state.token = response['authorization']['token'];
         },
 

@@ -59,6 +59,7 @@ final class HuaweiPortalServer implements PortalServer {
      */
     private final AtomicInteger reqId = new AtomicInteger(0);
 
+    /** Using request id. */
     private final Map<Integer, String> taken = new ConcurrentHashMap<>();
 
     HuaweiPortalServer(Endpoint endpoint, ServerHandler handler) {
@@ -87,6 +88,10 @@ final class HuaweiPortalServer implements PortalServer {
         return next;
     }
 
+    /**
+     * Release a request id.
+     * @param requestId id to release.
+     */
     public void release(int requestId) {
         taken.remove(requestId);
     }
@@ -295,6 +300,17 @@ final class HuaweiPortalServer implements PortalServer {
         }
     }
 
+    /**
+     * Handle NTF logout.
+     *
+     * <p>NTF_LOGOUT (aka notify logout) is originated by NAS devices, when devices
+     * removed session and then notify portal server.
+     *
+     * @param channel request channel.
+     * @param request request packet.
+     * @param remote remote address.
+     * @throws IOException
+     */
     private void handleNtfLogout(DatagramChannel channel,
                                  Packet request,
                                  SocketAddress remote) throws IOException {

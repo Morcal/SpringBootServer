@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.nas;
 
+import java.util.stream.Stream;
+
 /**
  * Nas Mapping.
  *
@@ -39,4 +41,6 @@ public interface NasService {
     Nas get(Long id) throws NasNotFoundException;
 
     Nas find(String name) throws NasNotFoundException;
+
+    Stream<Nas> all();
 }

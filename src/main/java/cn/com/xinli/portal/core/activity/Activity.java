@@ -210,8 +210,23 @@ public class Activity {
 
     /** System action. */
     public enum SystemAction {
-        DELETE_OLD_ACTIVITIES,
-        NTF_LOGOUT
+        GET_SYSTEM_STATISTICS("get-statistics"),
+        DELETE_OLD_ACTIVITIES("delete-activities"),
+        NTF_LOGOUT("ntf-lgout");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        SystemAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
     }
 
     /**

@@ -64,7 +64,7 @@ public class ApiConfiguration {
     public static final String ADMIN_API_ACTIVITY = "activities";
     public static final String ADMIN_API_CONFIGURE = "configuration";
     public static final String ADMIN_API_CERTIFICATE = "certificates";
-
+    public static final String ADMIN_API_STATISTICS = "statistics";
 
     /**
      * Create portal api entry point url.
@@ -129,6 +129,7 @@ public class ApiConfiguration {
         registration.registerApi(getActivity());
         registration.registerApi(searchCertificates());
         registration.registerApi(getCertificates());
+        registration.registerApi(getSystemStatistics());
 
         return registration;
     }
@@ -302,6 +303,22 @@ public class ApiConfiguration {
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.CertificateAction.GET.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CERTIFICATE),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create get system statistics api entry point.
+     * @return api entry point.
+     */
+    private EntryPoint getSystemStatistics() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.SystemAction.GET_SYSTEM_STATISTICS.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_STATISTICS),
                 RequestMethod.GET.name(),
                 "JSON",
                 true);

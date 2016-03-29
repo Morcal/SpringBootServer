@@ -4,18 +4,18 @@ import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasStore;
+import cn.com.xinli.portal.core.runtime.NasStatistics;
+import cn.com.xinli.portal.core.runtime.Runtime;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionStore;
-import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
-import cn.com.xinli.portal.web.rest.NasResponse;
-import cn.com.xinli.portal.web.rest.RestResponse;
-import cn.com.xinli.portal.web.rest.SessionsResponse;
+import cn.com.xinli.portal.web.rest.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -37,11 +37,8 @@ public class SystemController {
     @Autowired
     private ServerConfiguration serverConfiguration;
 
-    @RequestMapping
-    public ResponseEntity<RestResponse> summary() {
-        //TODO implement summary.
-        return null;
-    }
+    @Autowired
+    private Runtime runtime;
 
     /**
      * Search NAS devices.
@@ -110,6 +107,25 @@ public class SystemController {
         return AdminResponseBuilders.sessionsResponseBuilder()
                 .setStream(stream)
                 .setCount(count)
+                .build();
+    }
+
+    /**
+     * Get system runtime statistics.
+     * @return system statistics.
+     */
+    @ResponseBody
+    @RequestMapping(value = "/statistics", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ADMIN')")
+    public SystemStatisticsResponse systemStatistics() {
+        List<NasStatistics> devices =
+            runtime.getNasStatisticsMap().values().stream().collect(Collectors.toList());
+
+        return AdminResponseBuilders.systemStatisticsBuilder()
+                .setLoad(runtime.getLoadStatistics())
+                .setSession(runtime.getSessionStatistics())
+                .setDevices(devices)
+                .setTotal(runtime.getTotalSessionStatistics())
                 .build();
     }
 }

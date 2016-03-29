@@ -6,6 +6,7 @@ import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasService;
+import cn.com.xinli.portal.core.runtime.Runtime;
 import cn.com.xinli.portal.core.session.SessionService;
 import cn.com.xinli.portal.support.InternalServerHandler;
 import cn.com.xinli.portal.transport.PortalServer;
@@ -72,6 +73,9 @@ public class Environment implements ApplicationEventPublisherAware {
     @Autowired
     @Qualifier("admin-api-provider")
     private Provider adminRestApiProvider;
+
+    @Autowired
+    private Runtime runtime;
 
     /**
      * Set up authentication filter matcher URIs.
@@ -152,6 +156,7 @@ public class Environment implements ApplicationEventPublisherAware {
         logger.info("context refresh event: {}", event);
         nasService.init();
         sessionService.init();
+        runtime.init(nasService.all());
 
         applicationEventPublisher.publishEvent(new EnvironmentInitializedEvent(this));
     }

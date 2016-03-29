@@ -1,9 +1,11 @@
 package cn.com.xinli.portal.support.aspect;
 
 import cn.com.xinli.portal.core.activity.Activity;
+import cn.com.xinli.portal.core.activity.ActivityService;
+import cn.com.xinli.portal.core.runtime.Runtime;
+import cn.com.xinli.portal.core.runtime.SessionStatistics;
 import cn.com.xinli.portal.support.InternalServerHandler;
 import cn.com.xinli.portal.transport.huawei.LogoutError;
-import cn.com.xinli.portal.core.activity.ActivityService;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -29,6 +31,9 @@ import java.util.Calendar;
 public class PortalServerAspect {
     @Autowired
     private ActivityService activityService;
+
+    @Autowired
+    private Runtime runtime;
 
     /**
      * Define methods pointcut for {@link InternalServerHandler}.
@@ -72,6 +77,9 @@ public class PortalServerAspect {
             returning = "returning")
     public void recordNtfLogout(String nasIp, String ip, LogoutError returning) {
         saveActivity(nasIp, ip, returning.getDescription());
+        SessionStatistics.SessionRecord record = new SessionStatistics.SessionRecord(false);
+        record.setAction(SessionStatistics.SessionRecord.Action.NAS_NTF_LOGOUT);
+        runtime.addSessionRecord(record);
     }
 
     /**
@@ -86,5 +94,8 @@ public class PortalServerAspect {
             throwing = "cause")
     public void recordNtfLogout(String nasIp, String ip, Throwable cause) {
         saveActivity(nasIp, ip, cause.getMessage());
+        SessionStatistics.SessionRecord record = new SessionStatistics.SessionRecord(true);
+        record.setAction(SessionStatistics.SessionRecord.Action.NAS_NTF_LOGOUT);
+        runtime.addSessionRecord(record);
     }
 }
