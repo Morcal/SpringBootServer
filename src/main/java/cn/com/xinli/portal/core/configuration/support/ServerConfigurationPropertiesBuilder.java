@@ -2,7 +2,8 @@ package cn.com.xinli.portal.core.configuration.support;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.core.configuration.support.PropertiesServerConfiguration.Configuration;
+import cn.com.xinli.portal.core.configuration.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public class ServerConfigurationPropertiesBuilder {
      * @return properties.
      * @throws ServerException
      */
-    protected Properties loadDefaults() throws ServerException {
+    public Properties loadDefaults() throws ServerException {
         InputStream in = null;
         try {
             in = getClass().getClassLoader().getResourceAsStream("defaults.properties");
@@ -60,7 +61,7 @@ public class ServerConfigurationPropertiesBuilder {
             in.close();
             return defaults;
         } catch (IOException e) {
-            throw new ServerException(PortalError.MISSING_PWS_CONFIGURATION,
+            throw new ServerException(PortalError.MISSING_SERVER_CONFIGURATION,
                     "read configuration failed.");
         } finally {
             if (in != null) {
@@ -99,8 +100,11 @@ public class ServerConfigurationPropertiesBuilder {
         final InputStream in;
 
         if (this.properties != null) {
-            for (Object key : this.properties.keySet()) {
-                properties.put(key, this.properties.get(key));
+            for (String key : Configuration.keys()) {
+                String v = this.properties.getProperty(key);
+                if (StringUtils.isEmpty(v))
+                    continue;
+                properties.put(key, v);
             }
             return createConfigurationFromProperties(properties);
         } else if (filename != null) {
@@ -108,7 +112,7 @@ public class ServerConfigurationPropertiesBuilder {
         } else if (content != null) {
             in = new ByteArrayInputStream(content.getBytes());
         } else {
-            throw new ServerException(PortalError.MISSING_PWS_CONFIGURATION, "unsupported configuration");
+            throw new ServerException(PortalError.MISSING_SERVER_CONFIGURATION, "unsupported configuration");
         }
 
         try {
@@ -116,7 +120,7 @@ public class ServerConfigurationPropertiesBuilder {
             return createConfigurationFromProperties(properties);
         } catch (IOException e) {
             logger.error("Failed to load properties from string", e);
-            throw new ServerException(PortalError.MISSING_PWS_CONFIGURATION,
+            throw new ServerException(PortalError.MISSING_SERVER_CONFIGURATION,
                     "read configuration failed.", e);
         } finally {
             if (in != null) {

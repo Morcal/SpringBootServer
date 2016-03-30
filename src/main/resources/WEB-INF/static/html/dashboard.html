@@ -1,0 +1,82 @@
+
+<!-- session. -->
+<div id="session-summary">
+    <div class="row bottom-spacing">
+        <div class="col-md-6">
+            <div>
+                <table class="table table-bordered">
+                    <tbody>
+                    <tr>
+                        <td rowspan="2" class="col-md-4"><span style="font-size: 48px;"><code>1234</code></span></td>
+                        <td>Total sessions</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <button id="refresh-dashboard-btn" type="button" class="btn btn-default">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <!--<p>Sessions (Last 300 seconds)</p>-->
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th colspan="4">Sessions (Last 300 seconds)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Created</td><td><code>123</code></td>
+                        <td>Removed</td><td><code>54</code></td>
+                    </tr>
+                    <tr>
+                        <td>NTF_LOGOUT</td><td><code>21</code></td>
+                        <td>Errors</td><td><code>2</code></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th colspan="4">System Load (Last 60 seconds)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Requests</td><td><code>123</code></td>
+                    <td>Errors</td><td><code>54</code></td>
+                </tr>
+                </tbody>
+            </table>
+            <div style="height: 100px;">
+                <!--<canvas id="load-chart" width="450" height="150"></canvas>-->
+                <canvas id="load-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="devices-summary">
+    <div class="row bottom-spacing">
+    </div>
+</div>
+
+<!--<div style="position: fixed; bottom: 0; width: 90%; height: 100px;">-->
+<div style="height: 150px;">
+    <canvas id="session-chart"></canvas>
+</div>
+
+<script language="javascript">
+    $('#refresh-dashboard-btn').click(function () {
+        $.portal.dashboard.update();
+    });
+</script>

@@ -14,6 +14,8 @@
          * Initialize web application.
          */
         init: function () {
+            $.portal.configuration.init();
+
             this.load({
                 function: $.portal.connector.create,
                 object: $.portal.connector,

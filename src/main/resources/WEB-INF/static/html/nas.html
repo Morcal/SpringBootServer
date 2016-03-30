@@ -1,0 +1,61 @@
+
+<div class="row bottom-spacing">
+    <div class="col-md-3">
+        <button type="button" class="btn btn-default" onclick="$.portal.configuration.createNas();">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true" style="padding-right: 8px;"></span>
+            Add new NAS Device
+        </button>
+    </div>
+    <div id="configuration-nas-search" class="col-md-9">
+        <div class="input-group">
+            <input id="nas-search" type="text" class="form-control" placeholder="Search for...">
+                                <span class="input-group-btn">
+                                    <button id="nas-search-btn" class="btn btn-danger" type="button" aria-label="Left Align">
+                                        <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                                    </button>
+                                </span>
+        </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+
+<!-- NAS device list. -->
+<div class="row">
+    <button type="button" class="btn btn-default col-md-pull-3" style="float:right;" onclick="window.open('/html/search.html#Nas');">
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" style="padding-right: 5px;"></span>How to search
+    </button>
+    <div class="col-md-push-9">
+        <h4>
+            <!--<span class="glyphicon glyphicon-info-sign"></span>-->
+            Click&nbsp;<span class="glyphicon glyphicon-search"></span>
+            &nbsp;Search to display NAS device list.
+        </h4>
+    </div>
+</div>
+
+<div class="row bottom-spacing">
+    <div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>type</th>
+                <th>ip</th>
+                <th>actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script language="javascript">
+    $('#nas-search-btn').click(function () {
+        $.application.load({
+            function: $.portal.configuration.searchNasDevices,
+            object: $.portal.configuration,
+            args: $('#nas-search').val()
+        });
+    });
+</script>

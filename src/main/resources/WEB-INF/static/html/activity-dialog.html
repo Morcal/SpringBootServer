@@ -1,0 +1,73 @@
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                    <label for="activity-facility" class="control-label">Facility</label>
+                    <input id="activity-facility" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-severity" class="control-label">Severity</label>
+                    <input id="activity-severity" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-remote" class="control-label">Remote</label>
+                    <input id="activity-remote" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-source" class="control-label">Source</label>
+                    <input id="activity-source" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-sourceInfo" class="control-label">Source Information</label>
+                    <textarea id="activity-sourceInfo" class="form-control" readonly></textarea>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-action" class="control-label">Action</label>
+                    <input id="activity-action" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-result" class="control-label">Result</label>
+                    <textarea id="activity-result" class="form-control" readonly></textarea>
+                </div>
+            </form>
+
+            <form>
+                <div class="form-group">
+                    <label for="activity-date" class="control-label">Created at</label>
+                    <input id="activity-date" type="text" class="form-control" readonly/>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" aria-label="Left Align" onclick="$('#activity-dialog').modal('hide');">
+                Close
+            </button>
+        </div>
+    </div>
+</div>

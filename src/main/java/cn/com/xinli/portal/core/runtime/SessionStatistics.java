@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.core.runtime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * System session statistics.
  * @author zhoupeng, created on 2016/3/28.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionStatistics extends AbstractStatistics<SessionStatistics.SessionRecord> {
     /** Record every 1 minute. */
     private static final int RECORD_HISTORY_IN = 1;

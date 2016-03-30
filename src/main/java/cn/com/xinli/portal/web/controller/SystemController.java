@@ -1,5 +1,10 @@
 package cn.com.xinli.portal.web.controller;
 
+import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.RemoteException;
+import cn.com.xinli.portal.core.configuration.Configuration;
+import cn.com.xinli.portal.core.configuration.ConfigurationEntry;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
@@ -10,6 +15,8 @@ import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionStore;
 import cn.com.xinli.portal.web.rest.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +34,8 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/portal/admin/v1.0")
 public class SystemController {
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(SystemController.class);
 
     @Autowired
     private NasStore nasStore;
@@ -36,6 +45,9 @@ public class SystemController {
 
     @Autowired
     private ServerConfiguration serverConfiguration;
+
+    @Autowired
+    private Configuration configuration;
 
     @Autowired
     private Runtime runtime;
@@ -127,5 +139,26 @@ public class SystemController {
                 .setDevices(devices)
                 .setTotal(runtime.getTotalSessionStatistics())
                 .build();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/configuration", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse configure(@RequestParam("key") String key,
+                                  @RequestParam("value") String value) throws PortalException {
+        if (StringUtils.isEmpty(key)) {
+            throw new RemoteException(PortalError.INVALID_REQUEST);
+        }
+
+        ConfigurationEntry entry = configuration.getEntry(key);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("updating server configuration: {}", entry);
+        }
+
+        entry.setValueText(value);
+        entry.readValue(value);
+
+        return AdminResponseBuilders.successResponseBuilder().build();
     }
 }

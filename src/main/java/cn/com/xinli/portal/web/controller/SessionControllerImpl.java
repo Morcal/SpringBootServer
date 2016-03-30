@@ -147,6 +147,10 @@ public class SessionControllerImpl implements SessionController {
                                 @RequestParam(name = "redirect_url", defaultValue = "") String redirectUrl,
                                 @AuthenticationPrincipal Principal principal)
             throws PortalException {
+        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(ip)) {
+            throw new RemoteException(PortalError.INVALID_REQUEST);
+        }
+
         final String formatted = AddressUtil.formatMac(mac);
         Credentials credentials = Credentials.of(username, password, ip, formatted);
 
@@ -280,6 +284,10 @@ public class SessionControllerImpl implements SessionController {
                              @RequestParam(defaultValue = "") String context,
                              @AuthenticationPrincipal Principal principal)
             throws PortalException {
+        if (StringUtils.isEmpty(ip)) {
+            throw new RemoteException(PortalError.INVALID_REQUEST);
+        }
+
         RestResponse rs;
 
         Context c = null;

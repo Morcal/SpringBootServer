@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.core.runtime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Total session statistics.
  * @author zhoupeng, created on 2016/3/28.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TotalSessionStatistics extends AbstractStatistics<SessionStatistics.SessionRecord> {
     /** Record every 1 hour. */
     private static final int RECORD_HISTORY_IN = 5;

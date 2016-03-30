@@ -1,0 +1,70 @@
+
+<!-- configuration navigation. -->
+<nav id="nav-configuration" class="sidebar-content collapse">
+    <ul class="nav">
+        <li class="active">
+            <a id="sidebar-nas" href="javascript:void(0);" onclick="$.portal.configuration.switchTo('nas');">
+                NAS<span class="badge">0</span>
+            </a>
+        </li>
+        <li>
+            <a id="sidebar-certificate" href="javascript:void(0);" onclick="$.portal.configuration.switchTo('certificate');">
+                Certificate<span class="badge">0</span>
+            </a>
+        </li>
+        <li>
+            <a id="sidebar-system" href="javascript:void(0);" onclick="$.portal.configuration.switchTo('system');">
+                System</a>
+        </li>
+    </ul>
+</nav>
+
+<!-- management navigation. -->
+<nav id="nav-management" class="sidebar-content collapse">
+    <ul class="nav">
+        <li class="active">
+            <a id="sidebar-session" href="javascript:void(0);">
+                Session<span class="badge">0</span>
+            </a>
+        </li>
+        <li>
+            <a id="sidebar-activity" href="javascript:void(0);">
+                Activity<span class="badge">0</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script language="javascript">
+    $('#sidebar-nas').click(function () {
+        $.application.load({
+            function: $.portal.configuration.switchTo,
+            object: $.portal.configuration,
+            args: 'nas'
+        });
+    });
+
+    $('#sidebar-system').click(function () {
+        $.application.load({
+            function: $.portal.configuration.switchTo,
+            object: $.portal.configuration,
+            args: 'system'
+        });
+    });
+
+    $('#sidebar-session').click(function () {
+        $.application.load({
+            function: $.portal.management.switchTo,
+            object: $.portal.management,
+            args: 'session'
+        });
+    });
+
+    $('#sidebar-activity').click(function () {
+        $.application.load({
+            function: $.portal.management.switchTo,
+            object: $.portal.management,
+            args: 'activity'
+        });
+    });
+</script>

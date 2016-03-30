@@ -1,4 +1,4 @@
-package cn.com.xinli.portal.core.configuration.support;
+package cn.com.xinli.portal.core.configuration;
 
 import cn.com.xinli.portal.core.activity.Activity;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Entity
 @PersistenceUnit(unitName = "system")
 @Table(schema = "PWS", name="server_configuration")
-public class ServerConfigurationEntry {
+public class ConfigurationEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonProperty
@@ -24,14 +24,13 @@ public class ServerConfigurationEntry {
     @Column(name = "value_type", nullable = false)
     private ValueType valueType;
 
-    @Column(name = "value_text", nullable = false)
+    @Column(name = "value_text", nullable = true)
     private String valueText;
 
     @Transient
     private Object value;
 
-
-    enum ValueType {
+    public enum ValueType {
         BOOLEAN(Boolean.class),
         INTEGER(Integer.class),
         STRING(String.class),
@@ -80,7 +79,8 @@ public class ServerConfigurationEntry {
      * Read value into this entry.
      * @param value value.
      */
-    void readValue(String value) {
+    public void readValue(String value) {
+        this.valueText = value;
         switch (valueType) {
             case BOOLEAN:
                 this.value = Boolean.parseBoolean(value);
@@ -116,10 +116,21 @@ public class ServerConfigurationEntry {
      * @param valueType entry value type.
      * @return entry.
      */
-    static ServerConfigurationEntry of(String key, ValueType valueType) {
-        ServerConfigurationEntry entry = new ServerConfigurationEntry();
+    static ConfigurationEntry of(String key, ValueType valueType) {
+        ConfigurationEntry entry = new ConfigurationEntry();
         entry.key = key;
         entry.valueType = valueType;
         return entry;
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigurationEntry{" +
+                "id=" + id +
+                ", key='" + key + '\'' +
+                ", valueType=" + valueType +
+                ", valueText='" + valueText + '\'' +
+                ", value=" + value +
+                '}';
     }
 }

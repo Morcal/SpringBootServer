@@ -24,9 +24,12 @@ import java.util.stream.Stream;
  * @author zhoupeng, created on 2016/3/21.
  */
 public class AdminResponseBuilders {
+    public static SuccessResponseBuilder successResponseBuilder() {
+        return new SuccessResponseBuilder();
+    }
 
-    public static RestResponseBuilder restResponseBuilder() {
-        return new RestResponseBuilder();
+    public static ChallengeResponseBuilder challengeResponseBuilder() {
+        return new ChallengeResponseBuilder();
     }
 
     public static NasResponseBuilder nasResponseBuilder(Stream<Nas> stream) {
@@ -94,6 +97,18 @@ public class AdminResponseBuilders {
         }
     }
 
+    public static class SuccessResponseBuilder extends AdminResponseBuilder<RestResponse> {
+
+        SuccessResponseBuilder() {
+            super(false);
+        }
+
+        @Override
+        protected RestResponse buildInternal() {
+            return new RestResponse();
+        }
+    }
+
     /**
      * NAS response builder.
      */
@@ -115,26 +130,26 @@ public class AdminResponseBuilders {
     /**
      * Rest response builder.
      */
-    public static class RestResponseBuilder extends AdminResponseBuilder<RestResponse> {
+    public static class ChallengeResponseBuilder extends AdminResponseBuilder<RestResponse> {
         private Challenge challenge;
         private int challengeTtl;
         private RestToken token;
 
-        RestResponseBuilder() {
+        ChallengeResponseBuilder() {
             super(false);
         }
 
-        public RestResponseBuilder setChallenge(Challenge challenge) {
+        public ChallengeResponseBuilder setChallenge(Challenge challenge) {
             this.challenge = challenge;
             return this;
         }
 
-        public RestResponseBuilder setChallengeTtl(int challengeTtl) {
+        public ChallengeResponseBuilder setChallengeTtl(int challengeTtl) {
             this.challengeTtl = challengeTtl;
             return this;
         }
 
-        public RestResponseBuilder setToken(RestToken token) {
+        public ChallengeResponseBuilder setToken(RestToken token) {
             this.token = token;
             return this;
         }

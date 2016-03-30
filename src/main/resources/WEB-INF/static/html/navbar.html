@@ -1,0 +1,45 @@
+
+<div class="container">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="javascript:void(0);">Xinli Portal Server</a>
+        <!--<a class="navbar-brand navbar-path" href="javascript:void(0);">Dashboard</a>-->
+        <span class="navbar-brand hidden-sm hidden-lg hidden-md" href="javascript:void(0);">Dashboard</span>
+    </div>
+    <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+            <li id="navbar-dashboard" class="active">
+                <a href="javascript:void(0);" onclick="$.application.switchTo('Dashboard');">
+                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                    Dashboard
+                </a>
+            </li>
+            <li id="navbar-configuration" >
+                <a href="javascript:void(0);" onclick="$.application.switchTo('Configuration');">
+                    <!--<a aria-label="Left Align" href="#">-->
+                    <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                    Configuration
+                </a>
+            </li>
+            <li id="navbar-management" >
+                <a href="javascript:void(0);" onclick="$.application.switchTo('Management');">
+                    <!--<a aria-label="Left Align" href="#">-->
+                    <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                    Management
+                </a>
+            </li>
+            <li>
+                <a class="loading-outer">
+                    <div id="loading-spin" class="collapse">
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div><!--/.nav-collapse -->
+</div>

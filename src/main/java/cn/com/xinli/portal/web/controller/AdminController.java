@@ -102,7 +102,7 @@ public class AdminController {
             Challenge challenge =
                     authorizationServer.createChallenge("0", scope, requireToken, needRefreshToken);
 
-            return AdminResponseBuilders.restResponseBuilder()
+            return AdminResponseBuilders.challengeResponseBuilder()
                     .setChallenge(challenge)
                     .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
                     .build();
@@ -155,7 +155,7 @@ public class AdminController {
             logger.trace("login success, user: {}", username);
         }
 
-        return AdminResponseBuilders.restResponseBuilder()
+        return AdminResponseBuilders.challengeResponseBuilder()
                 .setToken(token)
                 .build();
     }

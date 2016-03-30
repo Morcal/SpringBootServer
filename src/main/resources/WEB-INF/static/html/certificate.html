@@ -1,0 +1,62 @@
+
+<div class="row bottom-spacing">
+    <div class="col-md-3">
+        <button type="button" class="btn btn-default" onclick="$.portal.configuration.createCertificate();">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true" style="padding-right: 8px;"></span>
+            Add new certificate
+        </button>
+    </div>
+
+    <div id="configuration-certificate-search" class="col-md-9">
+        <div class="input-group">
+            <input id="certificate-search" type="text" class="form-control" placeholder="Search for...">
+            <span class="input-group-btn">
+                <button id="certificate-search-btn" class="btn btn-danger" type="button" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true" style="padding-right: 8px;"></span>Search
+                </button>
+            </span>
+        </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+</div><!-- /.row -->
+
+<!-- NAS device list. -->
+<div class="row">
+    <button type="button" class="btn btn-default col-md-pull-3" style="float:right;" onclick="window.open('/html/search.html#Certificate');">
+        <span class="glyphicon glyphicon-question-sign" aria-hidden="true" style="padding-right: 5px;"></span>How to search
+    </button>
+    <div class="col-md-push-9">
+        <h4>
+            <!--<span class="glyphicon glyphicon-info-sign"></span>-->
+            Click&nbsp;<span class="glyphicon glyphicon-search"></span>
+            &nbsp;Search to display certificate list.
+        </h4>
+    </div>
+</div>
+
+<div class="row bottom-spacing">
+    <div>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>app</th>
+                    <th>vendor</th>
+                    <th>os</th>
+                    <th>version</th>
+                    <th>actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script language="javascript">
+    $('#certificate-search-btn').click(function () {
+        $.application.load({
+            function: $.portal.configuration.searchCertificates,
+            object: $.portal.configuration,
+            args: $('#certificate-search').val()
+        });
+    });
+</script>

@@ -11,7 +11,6 @@
         pages: ['nas', 'certificate', 'system'],
 
         init: function () {
-
         },
 
         /**
@@ -272,7 +271,6 @@
                 '</td>' +
                 '</tr>';
         },
-
 
         /**
          * Open a certificate and show it in an open dialog if success.

@@ -1,0 +1,58 @@
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title"></h4>
+        </div>
+
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                    <label for="certificate-app-id" class="control-label">App Id</label>
+                    <input type="text" id="certificate-app-id" name="certificate-app-id"
+                           class="form-control" placeholder="app id" data-toggle="tooltip" data-container="body"/>
+                </div>
+
+                <div class="form-group collapse">
+                    <label for="certificate-shared-secret" class="control-label">Shared secret</label>
+                    <input type="text" id="certificate-shared-secret" name="certificate-shared-secret"
+                           class="form-control" data-toggle="tooltip" data-container="body" readonly/>
+                </div>
+
+                <div class="form-group">
+                    <label for="certificate-vendor" class="control-label">Vendor</label>
+                    <input type="text" id="certificate-vendor" name="certificate-vendor"
+                           class="form-control" placeholder="app id" data-toggle="tooltip" data-container="body"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="certificate-os" class="control-label">Operating system name</label>
+                    <input type="text" id="certificate-os" name="certificate-os"
+                           class="form-control" placeholder="operating system name" data-toggle="tooltip" data-container="body"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="certificate-version" class="control-label">Version</label>
+                    <input type="text" id="certificate-version" name="certificate-version"
+                           class="form-control" placeholder="version" data-toggle="tooltip" data-container="body"/>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button id="disable-certificate" type="button" class="btn btn-danger" aria-label="Left Align" style="width: 150px; float:left;">
+                <span class="glyphicon glyphicon-ban-circle" aria-hidden="true" style="padding-right: 8px;"></span>Disable
+            </button>
+
+            <button id="enable-certificate" type="button" class="btn btn-success collapse" aria-label="Left Align" style="width: 150px; float:left;">
+                <span class="glyphicon glyphicon-ok-circle" aria-hidden="true" style="padding-right: 8px;"></span>Enable
+            </button>
+
+            <button id="save-certificate" type="button" class="btn btn-primary" aria-label="Left Align" style="width: 150px;">
+                <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
+            </button>
+        </div>
+    </div>
+</div>
