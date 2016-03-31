@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.SessionConfiguration;
@@ -7,6 +8,7 @@ import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.core.session.SessionStore;
 import cn.com.xinli.portal.support.repository.SessionRepository;
+import cn.com.xinli.portal.util.QueryUtil;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -192,7 +194,8 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     }
 
     @Override
-    public Stream<Session> search(String query) {
+    public Stream<Session> search(String query) throws RemoteException {
+        QueryUtil.checkQuery(query);
         return sessionRepository.search(query);
     }
 

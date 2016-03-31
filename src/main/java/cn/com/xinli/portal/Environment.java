@@ -1,18 +1,9 @@
 package cn.com.xinli.portal;
 
-import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.core.configuration.PortalServerConfiguration;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.nas.Nas;
-import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasService;
 import cn.com.xinli.portal.core.runtime.Runtime;
 import cn.com.xinli.portal.core.session.SessionService;
-import cn.com.xinli.portal.support.InternalServerHandler;
-import cn.com.xinli.portal.transport.PortalServer;
-import cn.com.xinli.portal.transport.huawei.Endpoint;
-import cn.com.xinli.portal.transport.huawei.Version;
-import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
 import cn.com.xinli.portal.web.filter.AuthenticationFilter;
 import cn.com.xinli.portal.web.filter.RateLimitingFilter;
 import cn.com.xinli.portal.web.rest.EntryPoint;
@@ -31,8 +22,6 @@ import org.springframework.core.annotation.Order;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,12 +48,6 @@ public class Environment implements ApplicationEventPublisherAware {
 
     @Autowired
     private SessionService sessionService;
-
-    @Autowired
-    private InternalServerHandler internalServerHandler;
-
-    @Autowired
-    private ServerConfiguration serverConfiguration;
 
     @Autowired
     @Qualifier("rest-api-provider")
@@ -177,28 +160,9 @@ public class Environment implements ApplicationEventPublisherAware {
         };
     }
 
-    /**
-     * Define portal server (receiving request from NAS).
-     *
-     * <p>Since portal server in web server only accepts NTF_LOGOUT requests,
-     * some of portal server's endpoint members are not necessary.
-     *
-     * @return internal portal server.
-     * @throws NasNotFoundException
-     */
-    @Bean(name = "internalPortalServer", initMethod = "start", destroyMethod = "shutdown")
-    public PortalServer portalServer() throws NasNotFoundException, ServerException, UnknownHostException {
-        PortalServerConfiguration config = serverConfiguration.getPortalServerConfiguration();
-        Endpoint endpoint = new Endpoint();
-        endpoint.setPort(config.getPort());
-        endpoint.setSharedSecret(config.getSharedSecret());
-        endpoint.setVersion(Version.valueOf(config.getVersion()));
-        endpoint.setAddress(InetAddress.getByName(config.getHost()));
-        return HuaweiPortal.createServer(endpoint, internalServerHandler);
-    }
-
     @Override
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
+
 }

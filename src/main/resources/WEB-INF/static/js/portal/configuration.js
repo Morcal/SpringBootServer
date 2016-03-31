@@ -96,7 +96,7 @@
          */
         searchNasDevices: function (query) {
             var that = this;
-            return $.portal.connector.request('search-nas', {query: query})
+            return $.portal.connector.request('search-nas', null, {query: query})
                 .done(function (response) {
                     var devices, index, html,
                         table = $('#configuration-nas').find('table');
@@ -152,7 +152,7 @@
         openNas: function (e) {
             var nas = $(e).data('nas');
 
-            return $.portal.connector.request('get-nas', {id: nas})
+            return $.portal.connector.request('get-nas', nas)
                 .done(function (response) {
                     var dialog = $('#nas-dialog'),
                         device = response['devices'][0];
@@ -186,10 +186,7 @@
         },
 
         deleteNas: function (nas) {
-            $.portal.connector.request('remove-nas', { id: nas })
-                .done(function () {
-
-                });
+            return $.portal.connector.request('remove-nas', nas );
         },
 
         createNas: function () {
@@ -199,6 +196,7 @@
             dialog.find('input').val('');
             dialog.find('select').val(0);
             dialog.find('#delete-nas').prop('disabled', true);
+            dialog.find('#nas-open-translation').prop('disabled', true);
             dialog.modal('show');
         },
 
@@ -225,7 +223,7 @@
          */
         searchCertificates: function (query) {
             var that = this;
-            return $.portal.connector.request('search-certificate', {query: query})
+            return $.portal.connector.request('search-certificate', null, {query: query})
                 .done(function (response) {
                     var certificates, index, html,
                         table = $('#configuration-certificate').find('table');
@@ -280,9 +278,10 @@
         openCertificate: function (e) {
             var c = $(e).data('certificate');
 
-            return $.portal.connector.request('get-certificate', { id: c })
+            return $.portal.connector.request('get-certificate', c)
                 .done(function (response) {
                     var dialog = $('#certificate-dialog'),
+                        secret = dialog.find('#certificate-shared-secret'),
                         certificate = response['certificates'][0];
 
                     dialog.find('div h4').html('Certificate ' + certificate['id']);
@@ -291,7 +290,8 @@
                     dialog.find('#certificate-os').val(certificate['os']);
                     dialog.find('#certificate-version').val(certificate['version']);
                     dialog.find('#certificate-app-id').val(certificate['app_id']);
-                    dialog.find('#certificate-shared-secret').val(certificate['shared_secret']);
+                    secret.val(certificate['shared_secret']);
+                    secret.parent().show();
 
                     if (certificate['disabled']) {
                         dialog.find('#enable-certificate').show();
@@ -318,13 +318,23 @@
             dialog.find('select').val(0);
             dialog.find('#enable-certificate').show().prop('disabled', true);
             dialog.find('#disable-certificate').hide();
+            dialog.find('#certificate-shared-secret').parent().hide();
             dialog.modal('show');
         },
 
         saveConfiguration: function (key, value) {
-            return $.portal.connector.request('configure', {
+            return $.portal.connector.request('configure', null, {
                 key: key,
                 value: value
+            });
+        },
+
+        saveCertificate: function (app, vendor, os, version) {
+            return $.portal.connector.request('create-certificate', null, {
+                "app-id": app,
+                vendor: vendor,
+                os: os,
+                version: version
             });
         }
     };

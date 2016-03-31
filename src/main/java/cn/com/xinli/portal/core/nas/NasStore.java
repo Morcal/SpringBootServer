@@ -2,6 +2,7 @@ package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.DataStore;
 import cn.com.xinli.portal.core.Locatable;
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.RoutingMapper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -63,5 +64,5 @@ public interface NasStore extends RoutingMapper, Locatable<Pair<String, String>,
      * @param value search keyword.
      * @return stream of resulting nas devices.
      */
-    Stream<Nas> search(String value);
+    Stream<Nas> search(String value) throws RemoteException;
 }

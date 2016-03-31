@@ -19,19 +19,13 @@ import java.util.Set;
  */
 @Component
 public class SecureRandomStringGenerator {
-    /**
-     * Log.
-     */
+    /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SecureRandomStringGenerator.class);
 
-    /**
-     * Secure random generator.
-     */
+    /** Secure random generator. */
     private static SecureRandom random;
 
-    /**
-     * Generated token values.
-     */
+    /** Generated token values. */
     private final Set<String> generated = Collections.synchronizedSet(new HashSet<>());
 
     private static final int MAX_CACHED_STRING_SIZE = 1000;

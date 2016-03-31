@@ -1,16 +1,18 @@
 package cn.com.xinli.portal.core.configuration;
 
+import cn.com.xinli.portal.core.ServerException;
+
 /**
  * Server configuration service.
  * @author zhoupeng, created on 2016/3/31.
  */
 public interface ServerConfigurationService {
-
-    boolean isServerConfigured();
-
-    void save(Configuration config);
+    Configuration getConfiguration() throws ServerException;
 
     void save(ConfigurationEntry entry);
 
-    Iterable<ConfigurationEntry> all();
+    ServerConfiguration getServerConfiguration();
+
+    void updateConfigurationEntry(String key, String value)
+            throws ServerConfigurationNotExistsException, ServerException;
 }

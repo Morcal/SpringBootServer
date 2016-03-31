@@ -1,9 +1,11 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateStore;
 import cn.com.xinli.portal.support.repository.CertificateRepository;
+import cn.com.xinli.portal.util.QueryUtil;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.slf4j.Logger;
@@ -75,7 +77,8 @@ public class EhcacheCertificateStore implements CertificateStore {
     }
 
     @Override
-    public Stream<Certificate> search(String query) {
+    public Stream<Certificate> search(String query) throws RemoteException {
+        QueryUtil.checkQuery(query);
         return certificateRepository.search(query);
     }
 

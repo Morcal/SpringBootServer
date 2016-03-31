@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.web.controller;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityStore;
 import cn.com.xinli.portal.web.rest.ActivityResponse;
@@ -40,7 +41,7 @@ public class ActivityController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
-    public ActivityResponse search(@RequestParam(defaultValue = "") String query) {
+    public ActivityResponse search(@RequestParam(defaultValue = "") String query) throws RemoteException {
         final Stream<Activity> stream;
         final long count;
 

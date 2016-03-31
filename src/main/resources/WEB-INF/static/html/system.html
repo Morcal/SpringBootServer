@@ -108,16 +108,72 @@
 </div>
 
 <script language="javascript">
-    $('#session-heartbeat-interval').change(function () {
-        //alert($(this).val());
-        $.logging.debug('changed!')
-    });
-
-    $('#private-key').change(function () {
+    function saveConfiguration(args) {
         $.application.load({
             function: $.portal.configuration.saveConfiguration,
             object: $.portal.configuration,
-            args: ['server.private-key', $(this).val() ]
+            args: args
         });
+    }
+
+    $('#private-key').change(function () {
+        saveConfiguration(['server.private-key', $(this).val() ]);
     });
+
+    $('#server-allow-nat').change(function () {
+        saveConfiguration(['nat.allowed', $(this).is(':checked') ]);
+    });
+
+    $('#enable-session-ttl').change(function () {
+        saveConfiguration(['session.ttl.enabled', $(this).is(':checked') ]);
+    });
+
+    $('#session-ttl-value').change(function () {
+        saveConfiguration(['session.ttl.value', $(this).val() ]);
+    });
+
+    $('#session-token-ttl').change(function () {
+        saveConfiguration(['session.token.ttl', $(this).val() ]);
+    });
+
+    $('#enable-session-heartbeat').change(function () {
+        saveConfiguration(['session.heartbeat.enabled', $(this).is(':checked') ]);
+    });
+
+    $('#session-heartbeat-interval').change(function () {
+        saveConfiguration(['session.heartbeat.interval', $(this).val() ]);
+    });
+
+    $('#portal-server-version').change(function () {
+        saveConfiguration(['portal-server.protocol.version', $(this).val() ]);
+    });
+
+    $('#portal-server-listen-port').change(function () {
+        saveConfiguration(['portal-server.listen.port', $(this).val() ]);
+    });
+
+    $('#portal-server-shared-secret').change(function () {
+        saveConfiguration(['portal-server.shared-secret', $(this).val() ]);
+    });
+
+    $('#enable-rate-limiting').change(function () {
+        saveConfiguration(['rate-limiting.enabled', $(this).is(':checked') ]);
+    });
+
+    $('#activity-most-recent').change(function () {
+        saveConfiguration(['activity.most-recent', $(this).val() ]);
+    });
+
+    $('#min-activity-severity').change(function () {
+        saveConfiguration(['activity.logging.minimum.severity', $(this).val() ]);
+    });
+
+    $('#enable-cluster').change(function () {
+        saveConfiguration(['cluster.enabled', $(this).is(':checked') ]);
+    });
+
+    $('#cluster-redis-sentinels').change(function () {
+        saveConfiguration(['cluster.redis.sentinels', $(this).val() ]);
+    });
+
 </script>

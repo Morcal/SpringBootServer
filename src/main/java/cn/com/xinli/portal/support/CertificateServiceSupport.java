@@ -1,6 +1,8 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.certificate.*;
+import cn.com.xinli.portal.web.util.SecureRandomStringGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -27,6 +29,9 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Autowired
     private CertificateStore certificateStore;
+
+    @Autowired
+    private SecureRandomStringGenerator secureRandomStringGenerator;
 
     @Override
     public Certificate create(String appId, String vendor, String os, String version, String sharedSecret) {
@@ -78,11 +83,18 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     }
 
     @Override
-    public Stream<Certificate> search(String query) {
+    public Stream<Certificate> search(String query) throws RemoteException {
         if (StringUtils.isEmpty(query)) {
             return all();
         } else {
             return certificateStore.search(query);
         }
+    }
+
+    @Override
+    public Certificate create(Certificate certificate) {
+        final String sharedSecret = secureRandomStringGenerator.generateUniqueRandomString(16);
+        return create(certificate.getAppId(), certificate.getVendor(), certificate.getOs(),
+                certificate.getVersion(), sharedSecret);
     }
 }

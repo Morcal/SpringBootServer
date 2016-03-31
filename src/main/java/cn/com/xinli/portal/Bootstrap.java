@@ -1,22 +1,28 @@
 package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.core.configuration.*;
-import cn.com.xinli.portal.core.configuration.support.PropertiesServerConfiguration;
-import cn.com.xinli.portal.core.configuration.support.ServerConfigurationPropertiesBuilder;
+import cn.com.xinli.portal.core.configuration.PortalServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
+import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.session.SessionProvider;
 import cn.com.xinli.portal.support.HuaweiPortalSessionProvider;
 import cn.com.xinli.portal.support.InterProcessNpsSessionProvider;
-import org.apache.commons.lang3.StringUtils;
+import cn.com.xinli.portal.support.InternalServerHandler;
+import cn.com.xinli.portal.transport.PortalServer;
+import cn.com.xinli.portal.transport.huawei.Endpoint;
+import cn.com.xinli.portal.transport.huawei.Version;
+import cn.com.xinli.portal.transport.huawei.support.HuaweiPortal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Portal web server bootstrap.
@@ -35,55 +41,8 @@ public class Bootstrap {
     private ServerConfigurationService serverConfigurationService;
 
     @Bean
-    public Configuration configuration() throws ServerException {
-        boolean firstRun = serverConfigurationService.isServerConfigured();
-        final Properties properties;
-        if (firstRun) {
-            /* Server configuration never been saved yet. */
-            properties = new ServerConfigurationPropertiesBuilder().loadDefaults();
-        } else {
-            properties = new Properties();
-
-            for (ConfigurationEntry e : serverConfigurationService.all()) {
-                if (!StringUtils.isEmpty(e.getValueText())) {
-                    properties.setProperty(e.getKey(), e.getValueText());
-                }
-            }
-
-            if (properties.keySet().size() == 0) {
-                logger.warn("server configuration not exists, using defaults.");
-            }
-        }
-
-        return new ServerConfigurationPropertiesBuilder()
-                        .setProperties(properties)
-                        .build();
-    }
-
-    /**
-     * Load server configuration from database.
-     *
-     * <p>If server configuration does not exist in the database,
-     * a <em>Default</em> configuration will be applied.
-     *
-     * <p>If server configuration has been modified, this method should
-     * be called to apply those modifications. TODO verify it!
-     * @return server configuration.
-     * @throws ServerException
-     * @throws ServerConfigurationNotExistsException
-     */
-    @Bean
-    @Autowired
-    public ServerConfiguration serverConfiguration(Configuration config)
-            throws ServerException, ServerConfigurationNotExistsException {
-        PropertiesServerConfiguration configuration = new PropertiesServerConfiguration();
-        configuration.load(config);
-
-        if (!serverConfigurationService.isServerConfigured()) {
-            serverConfigurationService.save(config);
-        }
-
-        return configuration;
+    public ServerConfiguration serverConfiguration() {
+        return serverConfigurationService.getServerConfiguration();
     }
 
     /**
@@ -97,5 +56,29 @@ public class Bootstrap {
         providers.add(new InterProcessNpsSessionProvider());
         logger.info("Session providers loaded, {}", providers.size());
         return providers;
+    }
+
+
+    /**
+     * Define portal server (receiving request from NAS).
+     *
+     * <p>Since portal server in web server only accepts NTF_LOGOUT requests,
+     * some of portal server's endpoint members are not necessary.
+     *
+     * @return internal portal server.
+     * @throws NasNotFoundException
+     */
+    @Bean(name = "internalPortalServer", initMethod = "start", destroyMethod = "shutdown")
+    @Autowired
+    public PortalServer portalServer(InternalServerHandler internalServerHandler)
+            throws NasNotFoundException, ServerException, UnknownHostException {
+        PortalServerConfiguration config =
+                serverConfigurationService.getServerConfiguration().getPortalServerConfiguration();
+        Endpoint endpoint = new Endpoint();
+        endpoint.setPort(config.getPort());
+        endpoint.setSharedSecret(config.getSharedSecret());
+        endpoint.setVersion(Version.valueOf(config.getVersion()));
+        endpoint.setAddress(InetAddress.getByName(config.getHost()));
+        return HuaweiPortal.createServer(endpoint, internalServerHandler);
     }
 }

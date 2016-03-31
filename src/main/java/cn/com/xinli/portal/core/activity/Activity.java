@@ -259,6 +259,7 @@ public class Activity {
      */
     public enum CertificateAction {
         GET("get-certificate"),
+        CREATE("create-certificate"),
         SEARCH("search-certificate");
 
         /**

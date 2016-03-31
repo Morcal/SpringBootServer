@@ -1,13 +1,14 @@
 package cn.com.xinli.portal.core.configuration;
 
-import org.apache.commons.lang3.StringUtils;
+import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.ServerException;
+import cn.com.xinli.portal.core.activity.Activity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,59 +67,61 @@ public class Configuration {
     public static final String REDIRECT_USER_IP = "redirect.user.ip";
     public static final String REDIRECT_USER_MAC = "redirect.user.mac";
     public static final String REDIRECT_NAS_IP = "redirect.nas.ip";
+    
+    private final Map<String, ConfigurationEntry> entries = new HashMap<>();
 
-    private static final ConfigurationEntry[] entries = {
+    private static final EntryMetadata[] metadata = {
                 /* Server private key. */
-            ConfigurationEntry.of(SERVER_PRIVATE_KEY, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(SERVER_CHECK_REDIRECT_URL, ConfigurationEntry.ValueType.BOOLEAN),
-            ConfigurationEntry.of(SERVER_ADMIN_DEFAULT_USERNAME, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(SERVER_ADMIN_DEFAULT_PASSWORD, ConfigurationEntry.ValueType.STRING),
+            EntryMetadata.of(SERVER_PRIVATE_KEY, ValueType.STRING),
+            EntryMetadata.of(SERVER_CHECK_REDIRECT_URL, ValueType.BOOLEAN),
+            EntryMetadata.of(SERVER_ADMIN_DEFAULT_USERNAME, ValueType.STRING),
+            EntryMetadata.of(SERVER_ADMIN_DEFAULT_PASSWORD, ValueType.STRING),
                 /* Main page redirect url. */
-            ConfigurationEntry.of(MAIN_PAGE_REDIRECT_URL, ConfigurationEntry.ValueType.STRING),
+            EntryMetadata.of(MAIN_PAGE_REDIRECT_URL, ValueType.STRING),
                 /* Allow nat. */
-            ConfigurationEntry.of(NAT_ALLOWED, ConfigurationEntry.ValueType.BOOLEAN),
+            EntryMetadata.of(NAT_ALLOWED, ValueType.BOOLEAN),
                 /* Rest configurations. */
-            ConfigurationEntry.of(REST_HOST, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REST_SERVER, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REST_SCHEME, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REST_HEADER, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REST_META, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REST_CHALLENGE_TTL, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(REST_TOKEN_TTL, ConfigurationEntry.ValueType.INTEGER),
+            EntryMetadata.of(REST_HOST, ValueType.STRING),
+            EntryMetadata.of(REST_SERVER, ValueType.STRING),
+            EntryMetadata.of(REST_SCHEME, ValueType.STRING),
+            EntryMetadata.of(REST_HEADER, ValueType.STRING),
+            EntryMetadata.of(REST_META, ValueType.STRING),
+            EntryMetadata.of(REST_CHALLENGE_TTL, ValueType.INTEGER),
+            EntryMetadata.of(REST_TOKEN_TTL, ValueType.INTEGER),
                 /* Cluster configurations. */
-            ConfigurationEntry.of(CLUSTER_ENABLED, ConfigurationEntry.ValueType.BOOLEAN),
-            ConfigurationEntry.of(CLUSTER_REDIS_MASTER, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(CLUSTER_REDIS_SENTINELS, ConfigurationEntry.ValueType.STRING),
+            EntryMetadata.of(CLUSTER_ENABLED, ValueType.BOOLEAN),
+            EntryMetadata.of(CLUSTER_REDIS_MASTER, ValueType.STRING),
+            EntryMetadata.of(CLUSTER_REDIS_SENTINELS, ValueType.STRING),
                 /* Activity configurations. */
-            ConfigurationEntry.of(ACTIVITY_MOST_RECENT, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(ACTIVITY_LOGGING_MIN_SEVERITY, ConfigurationEntry.ValueType.SEVERITY),
+            EntryMetadata.of(ACTIVITY_MOST_RECENT, ValueType.INTEGER),
+            EntryMetadata.of(ACTIVITY_LOGGING_MIN_SEVERITY, ValueType.SEVERITY),
                 /* Session configurations. */
-            ConfigurationEntry.of(SESSION_TTL_ENABLED, ConfigurationEntry.ValueType.BOOLEAN),
-            ConfigurationEntry.of(SESSION_TTL_VALUE, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(SESSION_TOKEN_TTL, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(SESSION_HEARTBEAT_ENABLED, ConfigurationEntry.ValueType.BOOLEAN),
-            ConfigurationEntry.of(SESSION_HEARTBEAT_INTERVAL, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(SESSION_UPDATE_MIN_INTERVAL, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(SESSION_REMOVE_QUEUE_MAX_LENGTH, ConfigurationEntry.ValueType.INTEGER),
+            EntryMetadata.of(SESSION_TTL_ENABLED, ValueType.BOOLEAN),
+            EntryMetadata.of(SESSION_TTL_VALUE, ValueType.INTEGER),
+            EntryMetadata.of(SESSION_TOKEN_TTL, ValueType.INTEGER),
+            EntryMetadata.of(SESSION_HEARTBEAT_ENABLED, ValueType.BOOLEAN),
+            EntryMetadata.of(SESSION_HEARTBEAT_INTERVAL, ValueType.INTEGER),
+            EntryMetadata.of(SESSION_UPDATE_MIN_INTERVAL, ValueType.INTEGER),
+            EntryMetadata.of(SESSION_REMOVE_QUEUE_MAX_LENGTH, ValueType.INTEGER),
                 /* Rate-limiting configurations. */
-            ConfigurationEntry.of(RATE_LIMITING_ENABLED, ConfigurationEntry.ValueType.BOOLEAN),
-            ConfigurationEntry.of(RATE_LIMITING_RATE, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(RATE_LIMITING_TTL, ConfigurationEntry.ValueType.INTEGER),
+            EntryMetadata.of(RATE_LIMITING_ENABLED, ValueType.BOOLEAN),
+            EntryMetadata.of(RATE_LIMITING_RATE, ValueType.INTEGER),
+            EntryMetadata.of(RATE_LIMITING_TTL, ValueType.INTEGER),
                 /* Portal server configurations. */
-            ConfigurationEntry.of(PORTAL_SERVER_NAME, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(PORTAL_SERVER_HOST, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(PORTAL_SERVER_PROTOCOL_VERSION, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(PORTAL_SERVER_LISTEN_PORT, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(PORTAL_SERVER_CORE_THREADS, ConfigurationEntry.ValueType.INTEGER),
-            ConfigurationEntry.of(PORTAL_SERVER_SHARED_SECRET, ConfigurationEntry.ValueType.STRING),
+            EntryMetadata.of(PORTAL_SERVER_NAME, ValueType.STRING),
+            EntryMetadata.of(PORTAL_SERVER_HOST, ValueType.STRING),
+            EntryMetadata.of(PORTAL_SERVER_PROTOCOL_VERSION, ValueType.STRING),
+            EntryMetadata.of(PORTAL_SERVER_LISTEN_PORT, ValueType.INTEGER),
+            EntryMetadata.of(PORTAL_SERVER_CORE_THREADS, ValueType.INTEGER),
+            EntryMetadata.of(PORTAL_SERVER_SHARED_SECRET, ValueType.STRING),
                 /* redirect configurations. */
-            ConfigurationEntry.of(REDIRECT_USER_IP, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REDIRECT_USER_MAC, ConfigurationEntry.ValueType.STRING),
-            ConfigurationEntry.of(REDIRECT_NAS_IP, ConfigurationEntry.ValueType.STRING),
+            EntryMetadata.of(REDIRECT_USER_IP, ValueType.STRING),
+            EntryMetadata.of(REDIRECT_USER_MAC, ValueType.STRING),
+            EntryMetadata.of(REDIRECT_NAS_IP, ValueType.STRING),
     };
 
     public static Collection<String> keys() {
-        return Stream.of(entries).map(ConfigurationEntry::getKey).collect(Collectors.toList());
+        return Stream.of(metadata).map(EntryMetadata::getKey).collect(Collectors.toList());
     }
 
     /**
@@ -127,7 +130,7 @@ public class Configuration {
      * @param <T> value type.
      * @return entry value.
      */
-    public <T>T valueOf(String entry) throws ServerConfigurationNotExistsException {
+    public <T>T getEntryValue(String entry) throws ServerConfigurationNotExistsException {
         try {
             return getEntry(entry).getValue();
         } catch (Exception e) {
@@ -142,29 +145,98 @@ public class Configuration {
      * @return configuration entry.
      */
     public ConfigurationEntry getEntry(String name) throws ServerConfigurationNotExistsException {
-        for (ConfigurationEntry entry : entries) {
-            if (entry.getKey().equals(name)) {
-                return entry;
-            }
+        if (!entries.containsKey(name)) {
+            throw new ServerConfigurationNotExistsException(name);
         }
-        throw new ServerConfigurationNotExistsException(name);
+
+        return entries.get(name);
+    }
+
+    public static Optional<EntryMetadata> getMetadata(String key) {
+        return Stream.of(metadata).filter(m -> m.getKey().equals(key)).findFirst();
+    }
+
+    public void setEntries(Iterable<ConfigurationEntry> entries) {
+        entries.forEach(this::addEntry);
+    }
+
+    private void addEntry(ConfigurationEntry entry) {
+        Objects.requireNonNull(entry, "Entry can not be null.");
+
+        entry.updateValue(entry.getValueText());
+        entries.put(entry.getKey(), entry);
     }
 
     /**
-     * Load configuration from properties.
-     * @param properties properties.
+     * Load default configurations.
+     * @return properties.
+     * @throws ServerException
      */
-    public void load(Properties properties) {
-        for (ConfigurationEntry entry : entries) {
-            String value = properties.getProperty(entry.getKey());
-            if (StringUtils.isEmpty(value)) {
-                continue;
+    public static Properties loadDefaults() throws ServerException {
+        InputStream in = null;
+        try {
+            in = Configuration.class.getClassLoader().getResourceAsStream("defaults.properties");
+            Properties defaults = new Properties();
+            defaults.load(in);
+            in.close();
+            return defaults;
+        } catch (IOException e) {
+            throw new ServerException(PortalError.MISSING_SERVER_CONFIGURATION,
+                    "read configuration failed.");
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            entry.readValue(value);
         }
     }
 
-    public Iterable<ConfigurationEntry> entries() {
-        return Collections.unmodifiableList(Arrays.asList(entries));
+    public enum ValueType {
+        BOOLEAN(Boolean.class),
+        INTEGER(Integer.class),
+        STRING(String.class),
+        SEVERITY(Activity.Severity.class);
+
+        private final Class<?> valueClass;
+
+        ValueType(Class<?> cls) {
+            this.valueClass = cls;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T>T cast(Object object) {
+            return (T) valueClass.cast(object);
+        }
+    }
+    
+    public static class EntryMetadata {
+        private String key;
+        private ValueType valueType;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public ValueType getValueType() {
+            return valueType;
+        }
+
+        public void setValueType(ValueType valueType) {
+            this.valueType = valueType;
+        }
+
+        static EntryMetadata of (String key, ValueType valueType) {
+            EntryMetadata metadata = new EntryMetadata();
+            metadata.setKey(key);
+            metadata.setValueType(valueType);
+            return metadata;
+        }
     }
 }

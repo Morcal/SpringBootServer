@@ -1,10 +1,12 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.PortalError;
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityStore;
 import cn.com.xinli.portal.support.repository.ActivityRepository;
+import cn.com.xinli.portal.util.QueryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -80,7 +82,8 @@ public class ActivityPassThroughStore implements ActivityStore {
     }
 
     @Override
-    public Stream<Activity> search(String query) {
+    public Stream<Activity> search(String query) throws RemoteException {
+        QueryUtil.checkQuery(query);
         Stream<Activity> stream = activityRepository.search(query);
         return stream.limit(25);
     }

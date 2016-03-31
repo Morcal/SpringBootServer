@@ -58,7 +58,7 @@
 
             $('#no-activity').hide();
 
-            return $.portal.connector.request('search-activity', { query: query })
+            return $.portal.connector.request('search-activity', null, { query: query })
                 .done(function (response) {
                     var activities, index, html,
                         table = $('#management-activity').find('table');
@@ -130,7 +130,7 @@
         openActivity: function (e) {
             var act = $(e).data('activity');
 
-            return $.portal.connector.request('get-activity', { id: act })
+            return $.portal.connector.request('get-activity', act)
                 .done(function (response) {
                     var dialog = $('#activity-dialog'),
                         activity = response['activities'][0];
@@ -161,7 +161,7 @@
 
             $('#no-session').hide();
 
-            return $.portal.connector.request('find-session', { query: query })
+            return $.portal.connector.request('find-session', null, { query: query })
                 .done(function (response) {
                     var sessions, index, html,
                         table = $('#management-session').find('table');
@@ -225,9 +225,9 @@
             });
         },
 
-        deleteSessionInternal: function (args) {
+        deleteSessionInternal: function (session) {
             var that = this;
-            return $.portal.connector.request('disconnect', args)
+            return $.portal.connector.request('disconnect', session, { args: [session]})
                 .done(function () {
                     that.searchSessions($('#session-search').val());
                 }).fail(function (xhr, status, err) {

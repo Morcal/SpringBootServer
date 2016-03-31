@@ -3,9 +3,7 @@ package cn.com.xinli.portal.web.controller;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
-import cn.com.xinli.portal.core.configuration.Configuration;
-import cn.com.xinli.portal.core.configuration.ConfigurationEntry;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasStore;
@@ -44,10 +42,7 @@ public class SystemController {
     private SessionStore sessionStore;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
-
-    @Autowired
-    private Configuration configuration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Autowired
     private Runtime runtime;
@@ -60,7 +55,7 @@ public class SystemController {
     @RequestMapping(value = "/nas", method = RequestMethod.POST)
     @ResponseBody
     @PreAuthorize("hasRole('ADMIN')")
-    public NasResponse searchNas(@RequestParam(defaultValue = "") String query) {
+    public NasResponse searchNas(@RequestParam(defaultValue = "") String query) throws RemoteException {
         final Stream<Nas> stream;
         if (StringUtils.isEmpty(query)) {
             stream = nasStore.devices();
@@ -93,7 +88,8 @@ public class SystemController {
     @RequestMapping(value = "/configuration", method = RequestMethod.GET)
     @PreAuthorize("hasRole('ADMIN')")
     public RestResponse serverConfiguration() {
-        return AdminResponseBuilders.serverConfigurationResponseBuilder(serverConfiguration).build();
+        return AdminResponseBuilders.serverConfigurationResponseBuilder(
+                serverConfigurationService.getServerConfiguration()).build();
     }
 
     /**
@@ -104,7 +100,7 @@ public class SystemController {
     @ResponseBody
     @RequestMapping(value = "/sessions", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
-    public SessionsResponse searchSessions(@RequestParam(defaultValue = "") String query) {
+    public SessionsResponse searchSessions(@RequestParam(defaultValue = "") String query) throws RemoteException {
         final Stream<Session> stream;
         final long count;
 
@@ -150,14 +146,11 @@ public class SystemController {
             throw new RemoteException(PortalError.INVALID_REQUEST);
         }
 
-        ConfigurationEntry entry = configuration.getEntry(key);
-
         if (logger.isTraceEnabled()) {
-            logger.trace("updating server configuration: {}", entry);
+            logger.trace("update configuration {}:{}", key, value);
         }
 
-        entry.setValueText(value);
-        entry.readValue(value);
+        serverConfigurationService.updateConfigurationEntry(key, value);
 
         return AdminResponseBuilders.successResponseBuilder().build();
     }

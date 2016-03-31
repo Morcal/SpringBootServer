@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.web.controller;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateService;
@@ -7,11 +8,9 @@ import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Stream;
 
@@ -31,8 +30,9 @@ public class CertificateController {
      * @return rest response.
      */
     @ResponseBody
-    @RequestMapping(value = "/certificates", method = RequestMethod.POST)
-    public RestResponse searchCertificates(String query) {
+    @RequestMapping(value = "/search/certificates", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse searchCertificates(String query) throws RemoteException {
         final Stream<Certificate> stream;
 
         if (StringUtils.isEmpty(query)) {
@@ -52,6 +52,7 @@ public class CertificateController {
      */
     @ResponseBody
     @RequestMapping(value = "/certificates/{id}", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ADMIN')")
     public RestResponse get(@PathVariable("id") long id)
             throws CertificateNotFoundException {
         Certificate certificate = certificateService.get(id);
@@ -59,4 +60,33 @@ public class CertificateController {
         return AdminResponseBuilders.certificateResponseBuilder(Stream.of(certificate))
                 .build();
     }
+
+    /**
+     * Create a new certificate.
+     * @param appId application id.
+     * @param vendor vendor.
+     * @param os operating system name.
+     * @param version version.
+     * @return certificate response.
+     */
+    @ResponseBody
+    @RequestMapping(value = "/certificates", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse createCertificate(@RequestParam("app-id") String appId,
+                                          @RequestParam("vendor") String vendor,
+                                          @RequestParam("os") String os,
+                                          @RequestParam("version") String version) {
+        Certificate certificate = new Certificate();
+        certificate.setAppId(appId);
+        certificate.setDisabled(false);
+        certificate.setOs(os);
+        certificate.setVersion(version);
+        certificate.setVendor(vendor);
+
+        certificate = certificateService.create(certificate);
+
+        return AdminResponseBuilders.certificateResponseBuilder(Stream.of(certificate))
+                .build();
+    }
+
 }

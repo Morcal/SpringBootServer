@@ -164,12 +164,7 @@
                 $.portal.dashboard.play();
 
             return true;
-        },
-
-        logout: function() {
-            $.portal.connector.request('POST', '/portal/admin/logout', {});
         }
-
     };
 
     $.application = $.application || new Application();

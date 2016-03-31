@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.certificate;
 
+import cn.com.xinli.portal.core.RemoteException;
+
 import java.util.stream.Stream;
 
 /**
@@ -49,5 +51,7 @@ public interface CertificateService {
 
     Stream<Certificate> all();
 
-    Stream<Certificate> search(String query);
+    Stream<Certificate> search(String query) throws RemoteException;
+
+    Certificate create(Certificate certificate);
 }

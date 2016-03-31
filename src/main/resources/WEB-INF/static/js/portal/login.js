@@ -63,7 +63,7 @@
 
             promise.done(function () {
                 $.logging.debug('logging in, user: ', username.val(), ', password: ', password.val());
-                $.portal.connector.request('login', {
+                $.portal.connector.request('login', null, {
                     username: username.val(),
                     password: that.md5password(password.val(), $.portal.connector.state.challenge)
                 }).done(function (response, status, xhr) {

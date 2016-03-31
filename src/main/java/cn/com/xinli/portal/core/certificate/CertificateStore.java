@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.core.certificate;
 
 import cn.com.xinli.portal.core.DataStore;
+import cn.com.xinli.portal.core.RemoteException;
 
 import java.util.stream.Stream;
 
@@ -28,5 +29,5 @@ public interface CertificateStore extends DataStore<Certificate, Long> {
 
     Stream<Certificate> all();
 
-    Stream<Certificate> search(String query);
+    Stream<Certificate> search(String query) throws RemoteException;
 }

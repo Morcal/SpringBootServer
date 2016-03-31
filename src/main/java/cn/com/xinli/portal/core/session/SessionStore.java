@@ -1,6 +1,7 @@
 package cn.com.xinli.portal.core.session;
 
 import cn.com.xinli.portal.core.DataStore;
+import cn.com.xinli.portal.core.RemoteException;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -97,7 +98,7 @@ public interface SessionStore extends DataStore<Session, Long> {
      * @param query search keyword.
      * @return stream of resulting sessions.
      */
-    Stream<Session> search(String query);
+    Stream<Session> search(String query) throws RemoteException;
 
     /**
      * Count sessions by keyword.

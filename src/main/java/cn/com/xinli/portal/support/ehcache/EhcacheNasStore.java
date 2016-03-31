@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support.ehcache;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.credentials.CredentialsEncoder;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
@@ -10,6 +11,7 @@ import cn.com.xinli.portal.core.nas.NasStore;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.support.repository.*;
 import cn.com.xinli.portal.util.AddressUtil;
+import cn.com.xinli.portal.util.QueryUtil;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang3.StringUtils;
@@ -253,8 +255,9 @@ public class EhcacheNasStore implements NasStore {
     }
 
     @Override
-    public Stream<Nas> search(String value) {
-        return nasRepository.search(value);
+    public Stream<Nas> search(String query) throws RemoteException {
+        QueryUtil.checkQuery(query);
+        return nasRepository.search(query);
     }
 
     @Override

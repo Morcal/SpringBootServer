@@ -64,6 +64,7 @@ public class ApiConfiguration {
     public static final String ADMIN_API_ACTIVITY = "activities";
     public static final String ADMIN_API_CONFIGURE = "configuration";
     public static final String ADMIN_API_CERTIFICATE = "certificates";
+    public static final String ADMIN_API_SEARCH_CERTIFICATE = "search/certificates";
     public static final String ADMIN_API_STATISTICS = "statistics";
 
     /**
@@ -130,6 +131,7 @@ public class ApiConfiguration {
         registration.registerApi(getActivity());
         registration.registerApi(searchCertificates());
         registration.registerApi(getCertificates());
+        registration.registerApi(createCertificate());
         registration.registerApi(getSystemStatistics());
 
         return registration;
@@ -303,7 +305,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.CertificateAction.SEARCH.alias(),
-                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CERTIFICATE),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_SEARCH_CERTIFICATE),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
@@ -325,6 +327,23 @@ public class ApiConfiguration {
                 true);
         logger.info("Creating: {}.", api);
         return api;
+    }
+
+    /**
+     * Create api entry for creating certificate.
+     * @return api entry point.
+     */
+    private EntryPoint createCertificate() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.CertificateAction.CREATE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CERTIFICATE),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+
     }
 
     /**

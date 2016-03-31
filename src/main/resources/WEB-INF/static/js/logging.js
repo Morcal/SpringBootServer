@@ -19,7 +19,7 @@
         
         // log record entry.
         Entry = function (value) {
-            if (!value) {
+            if (typeof value === 'undefined') {
                 this.type = 'string';
                 this.value = '';
             } else {

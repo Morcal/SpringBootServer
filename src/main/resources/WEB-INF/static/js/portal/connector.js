@@ -62,7 +62,7 @@
          */
         authorize: function () {
             var that = this;
-            return this.request('authorize', {
+            return this.request('authorize', null, {
                 response_type: 'challenge',
                 scope: 'portal-system-admin',
                 require_token: true,
@@ -102,11 +102,12 @@
         /**
          * Perform a REST action.
          * @param action action name.
+         * @param path additional path adding to url.
          * @param data data if presents.
          * @param options ajax options.
          * @returns {*}
          */
-        request: function (action, data, options) {
+        request: function (action, path, data, options) {
             var opt, url, entry, deferred = $.Deferred(), that = this;
 
             if (!this.provider || !this.state)
@@ -126,12 +127,10 @@
             };
 
             /* Create url for requests. */
-            if (entry['method'] === 'GET' || entry['method'] === 'DELETE') {
-                url = entry['url'] + (data.id ? '/' + data.id : '');
-                data.id && delete data.id;
-            } else {
-                url = entry['url'];
-            }
+            url = entry['url'];
+
+            if (path)
+                url += '/' + path;
 
             if (entry['requires_auth']) {
                 if (!this.state.authorized()) {
