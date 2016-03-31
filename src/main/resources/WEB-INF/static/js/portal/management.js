@@ -220,7 +220,7 @@
         deleteSession: function (e) {
             $.application.load({
                 function: this.deleteSessionInternal,
-                args: { id : $(e).data('session')},
+                args: [$(e).data('session')],
                 object: this
             });
         },

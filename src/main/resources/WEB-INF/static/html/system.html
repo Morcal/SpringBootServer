@@ -1,12 +1,12 @@
 
 <div class="form-group">
     <label for="private-key" class="control-label">Server Private Key</label>
-    <input type="text" id="private-key" name="private-key"
+    <input type="text" id="private-key"
            class="form-control" placeholder="server private key" data-toggle="tooltip" data-container="body"
            data-title="server private key can not be empty."/>
     <div class="checkbox">
         <label>
-            <input type="checkbox" id="server-allow-nat" name="allow-nat">
+            <input type="checkbox" id="server-allow-nat">
             Allow user login in NATed environment
         </label>
     </div>
@@ -15,34 +15,34 @@
 <div class="form-group">
     <div class="checkbox">
         <label>
-            <input type="checkbox" id="enable-session-ttl" name="enable-session-ttl">
+            <input type="checkbox" id="enable-session-ttl">
             Enable session TTL. (if enabled, session while be removed when TTL reached)
         </label>
     </div>
     <label for="session-ttl-value" class="control-label">Session TTL (seconds)</label>
-    <input type="text" id="session-ttl-value" name="session-ttl-value"
+    <input type="text" id="session-ttl-value"
            class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
            data-title="Username can not be empty."/>
     <label for="session-token-ttl" class="control-label">Session Token TTL (seconds)</label>
-    <input type="text" id="session-token-ttl" name="session-token-ttl"
+    <input type="text" id="session-token-ttl"
            class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
            data-title="Username can not be empty."/>
 
     <div class="checkbox">
         <label>
-            <input type="checkbox" id="enable-session-heartbeat" name="enable-session-ttl">
+            <input type="checkbox" id="enable-session-heartbeat">
             Enable session heartbeat. (if enabled, session while be removed when TTL reached)
         </label>
     </div>
     <label for="session-heartbeat-interval" class="control-label">Session heartbeat interval (seconds)</label>
-    <input type="text" id="session-heartbeat-interval" name="session-heartbeat-interval"
+    <input type="text" id="session-heartbeat-interval"
            class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
            data-title="Username can not be empty."/>
 </div>
 
 <div class="form-group">
     <label for="portal-server-version" class="control-label">Version</label>
-    <select id="portal-server-version" name="portal-server-version">
+    <select id="portal-server-version">
         <option>V1</option>
         <option>V2</option>
     </select>
@@ -50,14 +50,14 @@
 
 <div class="form-group">
     <label for="portal-server-listen-port" class="control-label">Listen Port</label>
-    <input id="portal-server-listen-port" name="portal-server-listen-port"
+    <input id="portal-server-listen-port"
            class="form-control" placeholder="Listen port"
            data-toggle="tooltip" data-container="body"/>
 </div>
 
 <div class="form-group">
     <label for="portal-server-shared-secret" class="control-label">Shared secret</label>
-    <input id="portal-server-shared-secret" name="portal-server-shared-secret"
+    <input id="portal-server-shared-secret"
            class="form-control" placeholder="shared secret"
            data-toggle="tooltip" data-container="body"/>
 </div>
@@ -65,7 +65,7 @@
 <div class="form-group">
     <div class="checkbox">
         <label>
-            <input type="checkbox" id="enable-rate-limiting" name="enable-rate-limiting">
+            <input type="checkbox" id="enable-rate-limiting">
             Enable rate limiting.
         </label>
     </div>
@@ -74,13 +74,13 @@
 <div class="form-group">
     <div class="form-group">
         <label for="activity-most-recent" class="control-label">Keep activity log for most recent of days</label>
-        <input id="activity-most-recent" name="activity-most-recent"
+        <input id="activity-most-recent"
                class="form-control" placeholder="most recent days"
                data-toggle="tooltip" data-container="body"/>
     </div>
     <div class="form-group">
         <label for="min-activity-severity" class="control-label">Minimum Activity severity</label>
-        <select id="min-activity-severity" name="min-activity-severity">
+        <select id="min-activity-severity">
             <option>FATAL</option>
             <option>ERROR</option>
             <option>WARN</option>
@@ -94,7 +94,7 @@
 <div class="form-group">
     <div class="checkbox">
         <label>
-            <input type="checkbox" id="enable-cluster" name="enable-cluster">
+            <input type="checkbox" id="enable-cluster">
             Enable cluster.
         </label>
     </div>
@@ -102,7 +102,7 @@
 
 <div class="form-group">
     <label for="cluster-redis-sentinels" class="control-label">REDIS sentinels, if cluster enabled.</label>
-    <input id="cluster-redis-sentinels" name="cluster-redis-sentinels"
+    <input id="cluster-redis-sentinels"
            class="form-control" placeholder="REDIS cluster sentinels, ip:port,ip:port"
            data-toggle="tooltip" data-container="body"/>
 </div>
@@ -111,5 +111,13 @@
     $('#session-heartbeat-interval').change(function () {
         //alert($(this).val());
         $.logging.debug('changed!')
-    }).change();
+    });
+
+    $('#private-key').change(function () {
+        $.application.load({
+            function: $.portal.configuration.saveConfiguration,
+            object: $.portal.configuration,
+            args: ['server.private-key', $(this).val() ]
+        });
+    });
 </script>

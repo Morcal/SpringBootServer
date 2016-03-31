@@ -59,7 +59,7 @@
          * @returns {*}
          */
         openSystemConfiguration: function () {
-            return $.portal.connector.request('configure')
+            return $.portal.connector.request('get-config')
                 .done(function (response) {
                     var config = response['server_configuration'],
                         session = config['session'],
@@ -319,6 +319,13 @@
             dialog.find('#enable-certificate').show().prop('disabled', true);
             dialog.find('#disable-certificate').hide();
             dialog.modal('show');
+        },
+
+        saveConfiguration: function (key, value) {
+            return $.portal.connector.request('configure', {
+                key: key,
+                value: value
+            });
         }
     };
 

@@ -19,7 +19,7 @@
             this.load({
                 function: $.portal.connector.create,
                 object: $.portal.connector,
-                args: '/portal/admin/api'
+                args: ['/portal/admin/api']
             }).done(function () {
                 $('#login-dialog').modal('show');
             });
@@ -90,7 +90,7 @@
             loading.fadeIn();
 
             try {
-                return runnable.function.call(obj, args).always(function () {
+                return runnable.function.apply(obj, args).always(function () {
                     loading.fadeOut();
                 });
             } catch (e) {

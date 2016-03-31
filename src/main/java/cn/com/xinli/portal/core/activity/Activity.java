@@ -235,6 +235,7 @@ public class Activity {
     public enum AdminAction {
         AUTHORIZE("authorize"),
         LOGIN("login"),
+        GET_CONFIG("get-config"),
         CONFIGURE("configure");
 
         /**

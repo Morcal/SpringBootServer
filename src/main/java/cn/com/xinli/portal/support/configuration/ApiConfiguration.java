@@ -124,6 +124,7 @@ public class ApiConfiguration {
         registration.registerApi(deleteSession());
         registration.registerApi(searchNas());
         registration.registerApi(getNas());
+        registration.registerApi(getConfiguration());
         registration.registerApi(configureSystem());
         registration.registerApi(searchActivity());
         registration.registerApi(getActivity());
@@ -170,12 +171,28 @@ public class ApiConfiguration {
      * Create configure system api entry point.
      * @return api entry point.
      */
+    private EntryPoint getConfiguration() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.AdminAction.GET_CONFIG.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CONFIGURE),
+                RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create configure system api entry point.
+     * @return api entry point.
+     */
     private EntryPoint configureSystem() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.AdminAction.CONFIGURE.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CONFIGURE),
-                RequestMethod.GET.name(),
+                RequestMethod.POST.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);
