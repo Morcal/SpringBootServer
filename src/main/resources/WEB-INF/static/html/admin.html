@@ -91,8 +91,20 @@ Login modal dialog.
 <script src="../js/portal/management.js"></script>
 <script src="../js/portal/application.js"></script>
 
-<!--<script type="text/javascript">-->
-<!--</script>-->
+<script type="text/javascript">
+    $('.navbar').load('/html/navbar.html');
+    $('#nas-dialog').load('/html/nas-dialog.html');
+    $('#activity-dialog').load('/html/activity-dialog.html');
+    $('#certificate-dialog').load('/html/certificate-dialog.html');
+    $('#nav-sidebar').load('/html/sidebar.html');
+    $('#dashboard').load('/html/dashboard.html');
+    $('#configuration-nas').load('/html/nas.html');
+    $('#configuration-certificate').load('/html/certificate.html');
+    $('#configuration-system').load('/html/system.html');
+    $('#management-session').load('/html/session.html');
+    $('#management-activity').load('/html/activity.html');
+    $('#login-dialog').load('/html/login.html');
+</script>
 
 <script type="text/javascript">
     $(document).ready(function () {
@@ -101,18 +113,6 @@ Login modal dialog.
 //        $('#configuration-nas-search').affix();
 
         /* Create ui elements. */
-        $('.navbar').load('/html/navbar.html');
-        $('#nas-dialog').load('/html/nas-dialog.html');
-        $('#activity-dialog').load('/html/activity-dialog.html');
-        $('#certificate-dialog').load('/html/certificate-dialog.html');
-        $('#nav-sidebar').load('/html/sidebar.html');
-        $('#dashboard').load('/html/dashboard.html');
-        $('#configuration-nas').load('/html/nas.html');
-        $('#configuration-certificate').load('/html/certificate.html');
-        $('#configuration-system').load('/html/system.html');
-        $('#management-session').load('/html/session.html');
-        $('#management-activity').load('/html/activity.html');
-        $('#login-dialog').load('/html/login.html');
 
         $.application.init();
     });
