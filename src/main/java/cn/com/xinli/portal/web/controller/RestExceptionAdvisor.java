@@ -245,6 +245,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
                 .setDescription(e.getMessage())
                 .build();
 
+        e.printStackTrace();
         if (logger.isDebugEnabled()) {
             logger.debug("handle runtime exception: {} -> {} ", e.getMessage(), rs);
         }

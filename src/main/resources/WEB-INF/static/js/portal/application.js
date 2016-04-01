@@ -29,8 +29,9 @@
          * Display alert message.
          * @param title
          * @param msg
+         * @param parent
          */
-        alert: function (title, msg) {
+        alert: function (title, msg, parent) {
             var html;
 
             if (msg) {
@@ -45,7 +46,11 @@
                 '<p>' + msg + '</p>' +
                 '</div>';
 
-            $('.doc .container').prepend(html).alert();
+            if (parent) {
+                $(parent).prepend(html).alert();
+            } else {
+                $('.doc .container').prepend(html).alert();
+            }
         },
 
         /**

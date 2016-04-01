@@ -60,7 +60,7 @@ public abstract class CredentialsEncoder {
     @Override
     public String toString() {
         return "CredentialsEncoder{" +
-                ", id=" + id +
+                "id=" + id +
                 '}';
     }
 }

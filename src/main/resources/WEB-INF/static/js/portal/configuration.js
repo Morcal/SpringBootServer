@@ -136,7 +136,7 @@
                 '<td>' + device['name'] + '</td>' +
                 '<td>' + device['nas_type'] + '</td>' +
                 '<td>' + ip + '</td>' +
-                '<td>' +
+                '<td style="padding: 3px;">' +
                 '<button type="button" class="btn btn-default" data-nas="' + id + '"' +
                 ' onclick="$.portal.configuration.openNas(this);" aria-label="Left Align">' +
                 '<span class="glyphicon glyphicon-edit" aria-hidden="true" style="padding-right: 8px;"></span>Edit</button>' +
@@ -181,22 +181,35 @@
                 });
         },
 
-        openTranslation: function (trans) {
+        createNas: function (nas) {
+            return $.portal.connector.request('create-nas', null, nas, 'JSON');
+        },
 
+        saveNas: function (nas) {
+            return $.portal.connector.request('update-nas', nas['id'], nas, 'JSON');
+        },
+
+        openTranslationDialog: function (trans) {
+            var dialog = $('#nas-translation-dialog');
+
+            dialog.find('#translation-modifier-target').val(0);
+            dialog.find('#translation-modifier-position').val(0);
+            dialog.find('#translation-modifier-value').val("");
+            dialog.modal('show');
         },
 
         deleteNas: function (nas) {
             return $.portal.connector.request('remove-nas', nas );
         },
 
-        createNas: function () {
+        createNasDialog: function () {
             var dialog = $('#nas-dialog');
 
             dialog.find('div h4').html('Create new NAS Device');
             dialog.find('input').val('');
             dialog.find('select').val(0);
             dialog.find('#delete-nas').prop('disabled', true);
-            dialog.find('#nas-open-translation').prop('disabled', true);
+            //dialog.find('#nas-open-translation').prop('disabled', true);
             dialog.modal('show');
         },
 
@@ -253,16 +266,19 @@
          * @returns {string} html.
          */
         createCertificateTableRow: function (certificate) {
-            var id = certificate['id'];
+            var id = certificate['id'],
+                disabled = certificate['disabled'],
+                cls = disabled ? 'danger' : '';
 
             return '' +
-                '<tr>' +
+                '<tr class="' + cls + '">' +
                 '<td>' + id + '</td>' +
                 '<td>' + certificate['app_id'] + '</td>' +
                 '<td>' + certificate['vendor'] + '</td>' +
                 '<td>' + certificate['os'] + '</td>' +
                 '<td>' + certificate['version'] + '</td>' +
-                '<td>' +
+                '<td>' + certificate['disabled'] + '</td>' +
+                '<td style="padding: 3px;">' +
                 '<button type="button" class="btn btn-default" data-certificate="' + id + '"' +
                 ' onclick="$.portal.configuration.openCertificate(this);" aria-label="Left Align">' +
                 '<span class="glyphicon glyphicon-edit" aria-hidden="true" style="padding-right: 8px;"></span>Edit</button>' +
@@ -285,6 +301,9 @@
                         certificate = response['certificates'][0];
 
                     dialog.find('div h4').html('Certificate ' + certificate['id']);
+                    dialog.find('#create-certificate').hide();
+                    dialog.find('#save-certificate').show();
+                    dialog.find('input[type="hidden"]').val(certificate['id']);
                     dialog.find('#certificate-app-id').val(certificate['app_id']);
                     dialog.find('#certificate-vendor').val(certificate['vendor']);
                     dialog.find('#certificate-os').val(certificate['os']);
@@ -294,7 +313,7 @@
                     secret.parent().show();
 
                     if (certificate['disabled']) {
-                        dialog.find('#enable-certificate').show();
+                        dialog.find('#enable-certificate').show().prop('disabled', false);
                         dialog.find('#disable-certificate').hide();
                     } else {
                         dialog.find('#enable-certificate').hide();
@@ -310,18 +329,26 @@
          * Open create certificate dialog.
          * <p>Reset all input components and display 'enable' button.
          */
-        createCertificate: function () {
+        createCertificateDialog: function () {
             var dialog = $('#certificate-dialog');
 
             dialog.find('div h4').html('Create new certificate');
             dialog.find('input').val('');
             dialog.find('select').val(0);
+            dialog.find('#create-certificate').show();
+            dialog.find('#save-certificate').hide();
             dialog.find('#enable-certificate').show().prop('disabled', true);
             dialog.find('#disable-certificate').hide();
             dialog.find('#certificate-shared-secret').parent().hide();
             dialog.modal('show');
         },
 
+        /**
+         * Save server configuration.
+         * @param key
+         * @param value
+         * @returns {*}
+         */
         saveConfiguration: function (key, value) {
             return $.portal.connector.request('configure', null, {
                 key: key,
@@ -329,13 +356,30 @@
             });
         },
 
-        saveCertificate: function (app, vendor, os, version) {
+        /**
+         * Create certificate.
+         * @param app
+         * @param vendor
+         * @param os
+         * @param version
+         * @returns {*}
+         */
+        createCertificate: function (app, vendor, os, version) {
             return $.portal.connector.request('create-certificate', null, {
-                "app-id": app,
+                app_id: app,
                 vendor: vendor,
                 os: os,
                 version: version
             });
+        },
+
+        /**
+         * Save(update) certificate.
+         * @param certificate
+         * @returns {*}
+         */
+        saveCertificate: function (certificate) {
+            return $.portal.connector.request('update-certificate', certificate['id'], certificate, 'JSON');
         }
     };
 

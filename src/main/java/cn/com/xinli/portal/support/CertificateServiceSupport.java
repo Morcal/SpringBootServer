@@ -46,9 +46,7 @@ public class CertificateServiceSupport implements CertificateService, Certificat
     }
 
     @Override
-    public void disableCertificate(Long id) throws CertificateNotFoundException {
-        Certificate certificate = certificateStore.get(id);
-        certificate.setDisabled(true);
+    public void save(Certificate certificate) throws CertificateNotFoundException {
         certificateStore.put(certificate);
     }
 

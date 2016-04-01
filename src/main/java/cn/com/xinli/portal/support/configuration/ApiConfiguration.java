@@ -59,6 +59,7 @@ public class ApiConfiguration {
     public static final String REST_ADMIN_API_LOGIN = "login";
     public static final String ADMIN_API_VERSION = "v1.0";
     public static final String ADMIN_API_NAS = "nas";
+    public static final String ADMIN_API_SEARCH_NAS = "search/nas";
     public static final String ADMIN_API_TRANSLATION = "translations";
     public static final String ADMIN_API_MODIFIER = "modifiers";
     public static final String ADMIN_API_ACTIVITY = "activities";
@@ -125,6 +126,8 @@ public class ApiConfiguration {
         registration.registerApi(deleteSession());
         registration.registerApi(searchNas());
         registration.registerApi(getNas());
+        registration.registerApi(createNas());
+        registration.registerApi(updateNas());
         registration.registerApi(getConfiguration());
         registration.registerApi(configureSystem());
         registration.registerApi(searchActivity());
@@ -132,6 +135,7 @@ public class ApiConfiguration {
         registration.registerApi(searchCertificates());
         registration.registerApi(getCertificates());
         registration.registerApi(createCertificate());
+        registration.registerApi(updateCertificate());
         registration.registerApi(getSystemStatistics());
 
         return registration;
@@ -250,6 +254,38 @@ public class ApiConfiguration {
     }
 
     /**
+     * Create api entry for adding NAS device.
+     * @return api entry point.
+     */
+    private EntryPoint createNas() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.NasAction.ADD.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create api entry for updating NAS device.
+     * @return api entry point.
+     */
+    private EntryPoint updateNas() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.NasAction.UPDATE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
      * Define get nas entry point.
      * @return authorize entry point.
      */
@@ -257,7 +293,7 @@ public class ApiConfiguration {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
                 Activity.NasAction.SEARCH.alias(),
-                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_SEARCH_NAS),
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
@@ -343,7 +379,22 @@ public class ApiConfiguration {
                 true);
         logger.info("Creating: {}.", api);
         return api;
+    }
 
+    /**
+     * Create api entry for updating certificate.
+     * @return api entry point.
+     */
+    private EntryPoint updateCertificate() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.CertificateAction.UPDATE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_CERTIFICATE),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
     }
 
     /**

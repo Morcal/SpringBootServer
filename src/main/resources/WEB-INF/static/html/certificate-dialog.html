@@ -12,6 +12,7 @@
                     <label for="certificate-app-id" class="control-label">App Id</label>
                     <input type="text" id="certificate-app-id" name="certificate-app-id"
                            class="form-control" placeholder="app id" data-toggle="tooltip" data-container="body"/>
+                    <input type="hidden"/>
                 </div>
 
                 <div class="form-group collapse">
@@ -23,7 +24,7 @@
                 <div class="form-group">
                     <label for="certificate-vendor" class="control-label">Vendor</label>
                     <input type="text" id="certificate-vendor" name="certificate-vendor"
-                           class="form-control" placeholder="app id" data-toggle="tooltip" data-container="body"/>
+                           class="form-control" placeholder="vendor name" data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group">
@@ -43,7 +44,7 @@
 
         <div class="modal-footer">
             <button id="disable-certificate" type="button" class="btn btn-danger" aria-label="Left Align"
-                    style="width: 150px; float:left;">
+                    style="width: 150px; float:left;" data-updating-text="Disabling...">
                 <span class="glyphicon glyphicon-ban-circle" aria-hidden="true" style="padding-right: 8px;"></span>Disable
             </button>
 
@@ -53,41 +54,96 @@
             </button>
 
             <button id="save-certificate" type="button" class="btn btn-primary" aria-label="Left Align"
-                    style="width: 150px;" data-saving-text="Saving...">
+                    style="width: 150px;" data-updating-text="Saving...">
                 <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
+            </button>
+
+            <button id="create-certificate" type="button" class="btn btn-primary collapse" aria-label="Left Align"
+                    style="width: 150px;" data-creating-text="Creating...">
+                <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Create
             </button>
         </div>
     </div>
 </div>
 
 <script language="javascript">
-
-    function saveCertificate(args) {
-        return $.application.load({
-            function: $.portal.configuration.saveCertificate,
-            object: $.portal.configuration,
-            args: args
-        });
-    }
-
-    $('#save-certificate').click(function () {
-        var app = $('#certificate-app-id'),
+    function getCertificate() {
+        var dialog = $('#certificate-dialog'),
+                app = $('#certificate-app-id'),
                 vendor = $('#certificate-vendor'),
                 os = $('#certificate-os'),
-                version = $('#certificate-version'),
-                btn = $('#save-certificate');
+                version = $('#certificate-version');
 
         if ($.utils.isEmpty(app) || $.utils.isEmpty(vendor) ||
                 $.utils.isEmpty(os) || $.utils.isEmpty(version)) {
-            $.application.alert('Error', 'Some fields is empty.');
             return false;
         }
 
-        btn.button('saving');
-        saveCertificate([ app.val(), vendor.val(), os.val(), version.val() ])
-                .done(function () {
-                    btn.button('reset');
-                    $('#certificate-dialog').modal('hide');
-                });
+        return {
+            app_id: app.val(),
+            vendor: vendor.val(),
+            os: os.val(),
+            version: version.val()
+        };
+    }
+
+    function saveCertificate(btn, arg) {
+        var certificate = getCertificate(), dialog = $('#certificate-dialog'),
+                id = dialog.find('input[type="hidden"]').val();
+
+        if (!certificate) {
+            $.application.alert('Error', 'Some fields is empty.', dialog.find('div.modal-body'));
+            return false;
+        }
+
+        btn.button('updating');
+
+        certificate.id = id;
+        if (arg) {
+            certificate.disabled = arg['disabled'];
+        }
+
+        return $.application.load({
+            function: $.portal.configuration.saveCertificate,
+            object: $.portal.configuration,
+            args: [certificate]
+        }).done(function () {
+            btn.button('reset');
+            $('#certificate-dialog').modal('hide');
+            $('#certificate-search-btn').click();
+        });
+    }
+
+    $('#create-certificate').click(function () {
+        var btn = $(this), certificate = getCertificate(), dialog = $('#certificate-dialog');
+
+        if (!certificate) {
+            $.application.alert('Error', 'Some fields is empty.', dialog.find('div.modal-body'));
+            return false;
+        }
+
+        btn.button('creating');
+
+        return $.application.load({
+            function: $.portal.configuration.createCertificate,
+            object: $.portal.configuration,
+            args: [ certificate.app_id, certificate.vendor, certificate.os, certificate.version ]
+        }).done(function () {
+            btn.button('reset');
+            $('#certificate-dialog').modal('hide');
+            $('#certificate-search-btn').click();
+        });
+    });
+
+    $('#disable-certificate').click(function () {
+        saveCertificate($(this), {disabled: true});
+    });
+
+    $('#enable-certificate').click(function () {
+        saveCertificate($(this), {disabled: false});
+    });
+
+    $('#save-certificate').click(function () {
+        saveCertificate($(this));
     });
 </script>

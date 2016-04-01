@@ -1,4 +1,3 @@
-
 <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -10,14 +9,15 @@
         <div class="modal-body">
             <form id="nas-form">
                 <div class="form-group">
-                    <label for="nas-name" class="control-label">NAS Name:</label>
+                    <label for="nas-name" class="control-label">NAS Name</label>
                     <input type="text" id="nas-name" name="nas-name"
                            class="form-control" placeholder="NAS name" data-toggle="tooltip" data-container="body"
                            data-title="NAS name can not be empty."/>
+                    <input type="hidden"/>
                 </div>
 
                 <div class="form-group">
-                    <label for="nas-type" class="control-label">NAS Type:</label>
+                    <label for="nas-type" class="control-label">NAS Type</label>
                     <select id="nas-type" class="form-control" onchange="$.portal.configuration.changeNasType(this);">
                         <option>HUAWEI</option>
                         <option>CMCC</option>
@@ -26,15 +26,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="nas-ipv4" class="control-label">IPv4 Address:</label>
-                    <input id="nas-ipv4" name="nas-ipv4"
+                    <label for="nas-ipv4" class="control-label">IPv4 Address</label>
+                    <input id="nas-ipv4"
                            class="form-control" placeholder="IPv4 Address"
                            data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group">
-                    <label for="nas-ipv6" class="control-label">IPv6 Address:</label>
-                    <input id="nas-ipv6" name="nas-ipv4"
+                    <label for="nas-ipv6" class="control-label">IPv6 Address</label>
+                    <input id="nas-ipv6"
                            class="form-control" placeholder="IPv6 Address"
                            data-toggle="tooltip" data-container="body"/>
                 </div>
@@ -42,7 +42,8 @@
                 <div class="form-group">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" id="nas-auth-with-domain" name="nas-auth-with-domain">Authenticate with domain
+                            <input type="checkbox" id="nas-auth-with-domain">Authenticate
+                            with domain
                         </label>
                     </div>
                 </div>
@@ -50,21 +51,21 @@
                 <!-- HUAWEI specific content. -->
                 <div class="form-group huawei collapse">
                     <label for="huawei-nas-shared-secret" class="control-label">Shared secret</label>
-                    <input id="huawei-nas-shared-secret" name="shared_secret"
+                    <input id="huawei-nas-shared-secret"
                            class="form-control" placeholder="shared secret"
                            data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group huawei collapse">
                     <label for="huawei-nas-listen-port" class="control-label">Listen Port</label>
-                    <input id="huawei-nas-listen-port" name="huawei-nas-listen-port"
+                    <input id="huawei-nas-listen-port"
                            class="form-control" placeholder="shared secret"
                            data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group huawei collapse">
                     <label for="huawei-nas-auth-type" class="control-label">Authentication Type</label>
-                    <select id="huawei-nas-auth-type" name="huawei-nas-auth-type">
+                    <select id="huawei-nas-auth-type">
                         <option>CHAP</option>
                         <option>PAP</option>
                     </select>
@@ -72,15 +73,16 @@
 
                 <div class="form-group huawei collapse">
                     <label for="huawei-nas-version" class="control-label">Version</label>
-                    <select id="huawei-nas-version" name="huawei-nas-version">
+                    <select id="huawei-nas-version">
                         <option>V1</option>
                         <option>V2</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <button id="nas-open-translation" type="button" class="btn btn-default" aria-label="Left Align"
-                            onclick="$.portal.configuration.openTranslation();">
+                    <button id="nas-open-translation" type="button" data-translation=""
+                            class="btn btn-default" aria-label="Left Align"
+                            onclick="$.portal.configuration.openTranslationDialog(this);">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit Translation
                     </button>
                 </div>
@@ -88,11 +90,18 @@
         </div>
 
         <div class="modal-footer">
-            <button id="delete-nas" type="button" class="btn btn-danger" aria-label="Left Align" style="width: 150px; float:left;">
+            <button id="delete-nas" type="button" class="btn btn-danger"
+                    data-updating-text="Deleting..." aria-label="Left Align" style="width: 150px; float:left;">
                 <span class="glyphicon glyphicon-trash" aria-hidden="true" style="padding-right: 8px;"></span>Delete
             </button>
 
-            <button id="save-nas" type="button" class="btn btn-primary" aria-label="Left Align" style="width: 150px;">
+            <button id="create-nas" type="button" class="btn btn-primary collapse"
+                    data-creating-text="Creating..." aria-label="Left Align" style="width: 150px;">
+                <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
+            </button>
+
+            <button id="save-nas" type="button" class="btn btn-primary"
+                    data-updating-text="Saving..." aria-label="Left Align" style="width: 150px;">
                 <span class="glyphicon glyphicon-save" aria-hidden="true" style="padding-right: 8px;"></span>Save
             </button>
         </div>
@@ -101,7 +110,95 @@
 
 
 <script language="javascript">
+    function getNas() {
+        var dialog = $('#nas-dialog'),
+                name = $('#nas-name'),
+                type = $('#nas-type'),
+                ipv4 = $('#nas-ipv4'),
+                ipv6 = $('#nas-ipv6'),
+                domain = $('#nas-auth-with-domain'),
+                secret = $('#huawei-nas-shared-secret'),
+                listen = $('#huawei-nas-listen-port'),
+                auth = $('#huawei-nas-auth-type'),
+                version = $('#huawei-nas-version');
+        if ($.utils.isEmpty(name) || $.utils.isEmpty(type) ||
+                ($.utils.isEmpty(ipv4) && $.utils.isEmpty(ipv6)) ||
+                $.utils.isEmpty(secret) || $.utils.isEmpty(listen) ||
+                $.utils.isEmpty(auth) || $.utils.isEmpty(version)) {
+            return false;
+        }
+
+        switch (type.val()) {
+            case 'HUAWEI':
+                return {
+                    nas_type: type.val(),
+                    name: name.val(),
+                    ipv4_address: ipv4.val(),
+                    ipv6_address: ipv6.val(),
+                    portal_shared_secret: secret.val(),
+                    listen_port: listen.val(),
+                    authentication_type: auth.val(),
+                    version: version.val(),
+                    translation: {
+                        modifiers: [],
+                        encoder: {
+                            encoder_type: 'NO-OP'
+                        },
+                        authenticate_with_domain: domain.is(':checked')
+                    }
+                };
+
+            case 'CMCC':
+            case 'RADIUS':
+            default:
+                break;
+        }
+
+        return false;
+    }
+
     $('#delete-nas').click(function () {
         $.portal.configuration.deleteNas($(this).data('nas'));
+    });
+
+    $('#create-nas').click(function () {
+        var btn = $(this), nas = getNas();
+
+        if (!nas) {
+            $.application.alert('Error', 'Some fields is blank.', dialog.find('div.modal-body'));
+            return false;
+        }
+
+        btn.button('creating');
+
+        return $.application.load({
+            function: $.portal.configuration.createNas,
+            object: $.portal.configuration,
+            args: [nas]
+        }).done(function () {
+            btn.button('reset');
+            $('#nas-dialog').modal('hide');
+            $('#nas-search-btn').click();
+        });
+    });
+
+    $('#save-nas').click(function () {
+        var nas = getNas(), btn = $(this);
+
+        if (!nas) {
+            $.application.alert('Error', 'Some fields is blank.', dialog.find('div.modal-body'));
+            return false;
+        }
+
+        btn.button('updating');
+        return $.application.load({
+            function: $.portal.configuration.saveNas,
+            object: $.portal.configuration,
+            args: [nas]
+        }).done(function () {
+            btn.button('reset');
+            $('#nas-dialog').modal('hide');
+            $('#nas-search-btn').click();
+        });
     });
 </script>

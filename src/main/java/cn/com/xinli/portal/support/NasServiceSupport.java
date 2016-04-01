@@ -1,5 +1,6 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.credentials.*;
 import cn.com.xinli.portal.core.nas.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +50,12 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     @Autowired
     private NasStore nasStore;
 
+    private Nas createNasInternal(Nas nas) {
+        nasStore.put(nas);
+        nasStore.reload();
+        return nas;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(nasStore);
@@ -86,13 +90,21 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
 
     @Override
     public Nas create(Nas nas) {
-        nasStore.put(nas);
-        return nas;
+        CredentialsTranslation translation = nas.getTranslation();
+        if (translation == null) {
+            translation = new CredentialsTranslation();
+            translation.setEncoder(new CredentialsEncoders.NoOpEncoder());
+            translation.setAuthenticateWithDomain(false);
+            translation.setModifiers(Collections.emptyList());
+            nas.setTranslation(translation);
+        }
+        return createNasInternal(nas);
     }
 
     @Override
     public void delete(Nas nas) throws NasNotFoundException {
         nasStore.delete(nas.getId());
+        nasStore.reload();
     }
 
     @Override
@@ -103,6 +115,16 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     @Override
     public Stream<Nas> all() {
         return nasStore.devices();
+    }
+
+    @Override
+    public void save(Nas nas) {
+        nasStore.put(nas);
+    }
+
+    @Override
+    public Stream<Nas> search(String query) throws RemoteException {
+        return nasStore.search(query);
     }
 
     /**
@@ -186,7 +208,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
         huaweiNas.setSharedSecret(nasConfig.getSharedSecret());
         huaweiNas.setVersion(nasConfig.getVersion());
         huaweiNas.setTranslation(translation);
-        Nas nas = create(huaweiNas);
+        Nas nas = createNasInternal(huaweiNas);
 
         if (logger.isDebugEnabled()) {
             logger.debug("nas created: {}", nas);

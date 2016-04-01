@@ -100,7 +100,7 @@ public class CredentialsTranslation {
      */
     @JsonIgnore
     public boolean isEmpty() {
-        return modifiers.isEmpty();
+        return modifiers == null || modifiers.isEmpty();
     }
 
     boolean trimDomainIfPresent(Credentials credentials) {

@@ -108,13 +108,18 @@
          * @returns {*}
          */
         request: function (action, path, data, options) {
-            var opt, url, entry, deferred = $.Deferred(), that = this;
+            var opt, url, entry, deferred = $.Deferred(), that = this,
+                json = typeof options === 'string' && options == 'JSON';
 
             if (!this.provider || !this.state)
                 throw new Error('connector not created yet.');
 
-            options = options || {};
             data = data || {};
+
+            if (json)
+                data = JSON.stringify(data);
+
+            options = options || {};
             entry = this.entry(action);
 
             if (!entry)
@@ -139,6 +144,8 @@
 
                 $.extend(opt, {
                     beforeSend: function (xhr) {
+                        if (json)
+                            xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
                         xhr.setRequestHeader('X-Xinli-Auth', that.state.createAuth());
                     }
                 });

@@ -215,15 +215,11 @@ public class EhcacheNasStore implements NasStore {
         Objects.requireNonNull(nas, Nas.EMPTY_NAS);
         addDevice(nas);
 
-        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
-
         CredentialsTranslation translation = nas.getTranslation();
         if (translation != null) {
-            nas.setTranslation(translation);
-
             CredentialsEncoder encoder = translation.getEncoder();
             if (encoder != null) {
-                credentialsEncoderRepository.save(translation.getEncoder());
+                credentialsEncoderRepository.save(encoder);
             }
 
             if (!translation.isEmpty()) {

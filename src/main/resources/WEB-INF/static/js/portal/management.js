@@ -119,7 +119,7 @@
                 '<td>' + activity['action'] + '</td>' +
                 '<td>' + new Date(activity['created']).toLocaleString() + '</td>' +
                 //'<td>' + activity['result'] + '</td>' +
-                '<td>' +
+                '<td style="padding: 3px;">' +
                 '<button type="button" class="btn btn-default" data-activity="' + id + '"' +
                 ' onclick="$.portal.management.openActivity(this);" aria-label="Left Align">' +
                 '<span class="glyphicon glyphicon-eye-open" aria-hidden="true" style="padding-right: 8px;"></span>Detail</button>' +
@@ -204,7 +204,7 @@
                 '<td>' + session['credentials']['ip'] + '</td>' +
                 '<td>' + session['credentials']['mac'] + '</td>' +
                 '<td>' + new Date(session['start_date']).toLocaleString() + '</td>' +
-                '<td>' +
+                '<td style="padding: 3px;">' +
                 '<button type="button" class="btn btn-danger" data-session="' + id + '"' +
                 ' onclick="$.portal.management.deleteSession(this);" aria-label="Left Align">' +
                 '<span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>Stop</button>' +

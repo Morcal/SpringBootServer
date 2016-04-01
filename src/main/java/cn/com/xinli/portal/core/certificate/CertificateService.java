@@ -31,9 +31,9 @@ public interface CertificateService {
 
     /**
      * Disable an existed certificate.
-     * @param id certificate id.
+     * @param certificate certificate.
      */
-    void disableCertificate(Long id) throws CertificateNotFoundException;
+    void save(Certificate certificate) throws CertificateNotFoundException;
 
     /**
      * Load certificate by client id, aka app id.

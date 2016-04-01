@@ -72,7 +72,7 @@ public class CertificateController {
     @ResponseBody
     @RequestMapping(value = "/certificates", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
-    public RestResponse createCertificate(@RequestParam("app-id") String appId,
+    public RestResponse createCertificate(@RequestParam("app_id") String appId,
                                           @RequestParam("vendor") String vendor,
                                           @RequestParam("os") String os,
                                           @RequestParam("version") String version) {
@@ -89,4 +89,28 @@ public class CertificateController {
                 .build();
     }
 
+    /**
+     * Update certificate.
+     * @param id certificate id.
+     * @param certificate certificate.
+     * @return certificate response.
+     * @throws CertificateNotFoundException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/certificates/{id}", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse updateCertificate(@PathVariable("id") long id,
+                                          @RequestBody Certificate certificate)
+            throws CertificateNotFoundException {
+        Certificate c = certificateService.get(id);
+        c.setAppId(certificate.getAppId());
+        c.setDisabled(certificate.isDisabled());
+        c.setOs(certificate.getOs());
+        c.setVersion(certificate.getVersion());
+        c.setVendor(certificate.getVendor());
+        certificateService.save(c);
+
+        return AdminResponseBuilders.certificateResponseBuilder(Stream.of(c))
+                .build();
+    }
 }

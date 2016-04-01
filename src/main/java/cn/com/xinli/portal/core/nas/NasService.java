@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.nas;
 
+import cn.com.xinli.portal.core.RemoteException;
+
 import java.util.stream.Stream;
 
 /**
@@ -42,5 +44,9 @@ public interface NasService {
 
     Nas find(String name) throws NasNotFoundException;
 
+    void save(Nas nas);
+
     Stream<Nas> all();
+
+    Stream<Nas> search(String query) throws RemoteException;
 }
