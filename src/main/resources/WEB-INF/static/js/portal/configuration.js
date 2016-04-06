@@ -71,6 +71,7 @@
 
                     dialog.find('#private-key').val(config['private_key']);
                     dialog.find('#server-allow-nat').val(config['allow_nat']);
+                    dialog.find('#server-check-redirect-url').prop('checked', config['check_redirect_url']);
                     dialog.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
                     dialog.find('#session-ttl-value').val(session['ttl']);
                     dialog.find('#session-token-ttl').val(session['token_ttl']);

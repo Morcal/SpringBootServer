@@ -2,6 +2,7 @@ package cn.com.xinli.portal.core.credentials;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.RemoteException;
 
 /**
  * Invalid credentials exception.
@@ -14,7 +15,7 @@ import cn.com.xinli.portal.core.PortalException;
  *
  * @author zhoupeng 2016/1/18.
  */
-public class CredentialsException extends PortalException {
+public class CredentialsException extends RemoteException {
     public CredentialsException(String message) {
         super(PortalError.INVALID_CREDENTIALS, message);
     }

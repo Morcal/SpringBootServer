@@ -2,6 +2,7 @@ package cn.com.xinli.portal.core.nas;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.ServerException;
 
 /**
  * NAS not found exception.
@@ -13,7 +14,7 @@ import cn.com.xinli.portal.core.PortalException;
  *
  * @author zhoupeng 2016/1/19.
  */
-public class NasNotFoundException extends PortalException {
+public class NasNotFoundException extends ServerException {
     public NasNotFoundException(long id) {
         this("id:" + id);
     }

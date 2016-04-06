@@ -43,6 +43,7 @@ public class SystemController {
 
     @Autowired
     private Runtime runtime;
+
     /**
      * Retrieve system configuration.
      * @return rest response.
@@ -100,6 +101,13 @@ public class SystemController {
                 .build();
     }
 
+    /**
+     * Configure server configuration.
+     * @param key server configuration key.
+     * @param value server configuration value.
+     * @return rest response.
+     * @throws PortalException
+     */
     @ResponseBody
     @RequestMapping(value = "/configuration", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")

@@ -36,7 +36,7 @@ public class ActivityController {
     /**
      * Search auditing logging activities.
      * @param query query string.
-     * @return activity repsonse.
+     * @return activity response.
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)

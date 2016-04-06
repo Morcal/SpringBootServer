@@ -1,14 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PWS Main page.</title>
-    <meta name="X-PWS-Scheme" content="version=1.0;scheme=http;apiuri=/portal/api;server=223.99.248.25;host=223.99.248.25;port=9090">
-    <link rel="stylesheet" type="text/css" href="../css/main.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="X-PWS-Scheme" content="version=1.0;meta=X-PWS-Scheme;header=X-PWS-Scheme;scheme=http;apiuri=/portal/api;server=192.168.3.52;host=192.168.3.52;port=8080">
+
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <title>Portal主页</title>
 </head>
 <body>
-    Portal Web Server Main page.
-    <div class="red-background">
-    	<div>This should be red.</div>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="javascript:void(0);">Portal Web Server</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="banner download-background-img"></div>
+            </div>
+            <div class="col-md-6">
+                <div class="download-content">
+                    <div><h2>下载手机客户端</h2></div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a class="btn btn-success btn-lg btn-download" href="https://store.apple.com" target="_blank">
+                                <span>iOS</span></a>
+                        </div>
+                        <div class="col-md-6">
+                            <a class="btn btn-success btn-lg btn-download" href="/download/android" target="_blank">
+                                <span>Android</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

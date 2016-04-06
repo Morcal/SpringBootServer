@@ -122,7 +122,7 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
         tail.addRecord(record);
     }
 
-    private static final Random random = new Random(System.currentTimeMillis());
+    //private static final Random random = new Random(System.currentTimeMillis());
 
     /**
      * Create statistics history.
@@ -177,10 +177,9 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
             }
 
             AggregateRecord<T> r = createAggregateRecord(c.getTime());
-            final long duration = getDurationInMilliseconds();
-            r.setValue(
-                    getHistoryDefaultValueName(),
-                    Math.abs(random.nextLong() % (duration / 2)) + (duration / 3));
+            //final long duration = getDurationInMilliseconds();
+            r.setValue(getHistoryDefaultValueName(), 0);
+                    //Math.abs(random.nextLong() % (duration / 2)) + (duration / 3));
             aggregated.add(r);
         }
     }

@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.core.radius;
 
 import cn.com.xinli.portal.core.PortalError;
-import cn.com.xinli.portal.core.PortalException;
+import cn.com.xinli.portal.core.ServerException;
 
 /**
  * RADIUS server not found exception.
@@ -10,7 +10,7 @@ import cn.com.xinli.portal.core.PortalException;
  *
  * @author zhoupeng 2016/2/1.
  */
-public class RadiusNotFoundException extends PortalException {
+public class RadiusNotFoundException extends ServerException {
     public RadiusNotFoundException(String message) {
         super(PortalError.RADIUS_NOT_FOUND, message);
     }

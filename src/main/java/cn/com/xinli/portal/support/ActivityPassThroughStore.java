@@ -10,8 +10,6 @@ import cn.com.xinli.portal.util.QueryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -77,8 +75,11 @@ public class ActivityPassThroughStore implements ActivityStore {
 
     @Override
     public Stream<Activity> all() {
-        Page<Activity> page = activityRepository.findAll(new PageRequest(0, 25));
-        return page.getContent().stream();
+//        PageRequest request = new PageRequest(0, 25, Sort.Direction.DESC, "created");
+//        Page<Activity> page = activityRepository.findAll(request);
+//        return page.getContent().stream();
+
+        return activityRepository.findTop25ByOrderByCreatedDesc();
     }
 
     @Override

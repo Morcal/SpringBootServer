@@ -85,6 +85,9 @@ public class SessionControllerImpl implements SessionController {
         context.setIp(ip);
         context.setMac(mac);
         context.setNasIp("0.0.0.0");
+        if (logger.isTraceEnabled()) {
+            logger.trace("Default context created: {}", context);
+        }
         return context;
     }
 
@@ -116,7 +119,7 @@ public class SessionControllerImpl implements SessionController {
         credentials.setMac(mac);
 
         String nasIp = redirection.getParameter(Redirection.NAS_IP);
-        if (!StringUtils.isEmpty(nasIp)) {
+        if (StringUtils.isEmpty(nasIp)) {
             /*
              * Redirect url does not contain NAS IP,
              * so retrieve nas from locator.
@@ -129,6 +132,10 @@ public class SessionControllerImpl implements SessionController {
              */
             nasLocator.map(ip, mac, nasIp);
             context.setNasIp(nasIp);
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("context created: {}", context);
         }
 
         return context;

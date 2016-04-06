@@ -122,11 +122,17 @@
                 '<td style="padding: 3px;">' +
                 '<button type="button" class="btn btn-default" data-activity="' + id + '"' +
                 ' onclick="$.portal.management.openActivity(this);" aria-label="Left Align">' +
-                '<span class="glyphicon glyphicon-eye-open" aria-hidden="true" style="padding-right: 8px;"></span>Detail</button>' +
+                '<span class="glyphicon glyphicon-eye-open" aria-hidden="true" style="padding-right: 8px;"></span>' +
+                'Detail</button>' +
                 '</td>' +
                 '</tr>';
         },
 
+        /**
+         * Open activity dialog.
+         * @param e
+         * @returns {*}
+         */
         openActivity: function (e) {
             var act = $(e).data('activity');
 
@@ -225,6 +231,11 @@
             });
         },
 
+        /**
+         * Internal delete session.
+         * @param session
+         * @returns {*}
+         */
         deleteSessionInternal: function (session) {
             var that = this;
             return $.portal.connector.request('disconnect', session, { args: [session]})

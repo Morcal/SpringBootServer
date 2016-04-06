@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.*;
@@ -22,10 +23,12 @@ import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * PWS web mvc configuration.
- * <p>
- * Spring-web-mvc configuration enable supports for
+ *
+ * <p>Spring-web-mvc configuration enable supports for
  * <ul>
  *     <li>static contents</li>
  *     Configure a {@link WebContentInterceptor} for path "/static/*"
@@ -40,7 +43,7 @@ import org.springframework.web.servlet.view.RedirectView;
  *     "/html/**" with "classpath:/WEB-INF/static/html/"
  *     "/css/**" with "classpath:/WEB-INF/static/css/"
  * </ul>
- * <p>
+ *
  * <p>Project: xpws
  *
  * @author zhoupeng 2015/12/15.
@@ -48,7 +51,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @Configuration
 @EnableWebMvc
 @EnableSpringDataWebSupport
-public class MvcConfiguration extends WebMvcAutoConfiguration.WebMvcAutoConfigurationAdapter {
+public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfiguration.WebMvcAutoConfigurationAdapter*/ {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(MvcConfiguration.class);
 
@@ -106,17 +109,17 @@ public class MvcConfiguration extends WebMvcAutoConfiguration.WebMvcAutoConfigur
         return resolver;
     }
 
-//    @Bean
-//    public CacheControl cacheControl() {
-//        return CacheControl.maxAge(31556926, TimeUnit.SECONDS);
-//    }
-//
-//    @Bean
-//    public WebContentInterceptor webContentInterceptor() {
-//        WebContentInterceptor webContentInterceptor = new WebContentInterceptor();
-//        webContentInterceptor.addCacheMapping(cacheControl(), "/static/*");
-//        return webContentInterceptor;
-//    }
+    @Bean
+    public CacheControl cacheControl() {
+        return CacheControl.maxAge(31556926, TimeUnit.SECONDS);
+    }
+
+    @Bean
+    public WebContentInterceptor webContentInterceptor() {
+        WebContentInterceptor webContentInterceptor = new WebContentInterceptor();
+        webContentInterceptor.addCacheMapping(cacheControl(), "/static/*");
+        return webContentInterceptor;
+    }
 
     /**
      * The default error page view.
@@ -157,25 +160,27 @@ public class MvcConfiguration extends WebMvcAutoConfiguration.WebMvcAutoConfigur
 //        return resolver;
 //    }
 
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(webContentInterceptor());
-//    }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(webContentInterceptor());
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/html/**")
-                .addResourceLocations("classpath:/WEB-INF/static/html/")
-                .setCachePeriod(0);
+                .addResourceLocations("classpath:/WEB-INF/static/html/");
+//                .setCachePeriod(0);
         registry.addResourceHandler("/css/**").
-                addResourceLocations("classpath:/WEB-INF/static/css/")
-                .setCachePeriod(0);
+                addResourceLocations("classpath:/WEB-INF/static/css/");
+//                .setCachePeriod(0);
         registry.addResourceHandler("/js/**")
-                .addResourceLocations("classpath:/WEB-INF/static/js/")
-                .setCachePeriod(0);
+                .addResourceLocations("classpath:/WEB-INF/static/js/");
+//                .setCachePeriod(0);
         registry.addResourceHandler("/fonts/**")
-                .addResourceLocations("classpath:/WEB-INF/static/fonts/")
-                .setCachePeriod(0);
+                .addResourceLocations("classpath:/WEB-INF/static/fonts/");
+//                .setCachePeriod(0);
+        registry.addResourceHandler("/img/**")
+                .addResourceLocations("classpath:/WEB-INF/static/img/");
     }
 
     @Override
@@ -185,9 +190,8 @@ public class MvcConfiguration extends WebMvcAutoConfiguration.WebMvcAutoConfigur
 
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {
-        registry.enableContentNegotiation(true);
-        //registry.viewResolver(viewResolver());
+//        registry.enableContentNegotiation(true);
+        registry.viewResolver(viewResolver());
     }
-
 }
 

@@ -67,4 +67,6 @@ public interface ActivityRepository extends PagingAndSortingRepository<Activity,
 
     @Query("select a from Activity a where a.source like :v")
     Stream<Activity> search(@Param("v") String query);
+
+    Stream<Activity> findTop25ByOrderByCreatedDesc();
 }

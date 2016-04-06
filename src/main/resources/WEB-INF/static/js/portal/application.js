@@ -166,7 +166,8 @@
             if (target !== 'Dashboard')
                 $.portal.dashboard.pause();
             else
-                $.portal.dashboard.play();
+                //$.portal.dashboard.play(true);
+                $.portal.dashboard.update();
 
             return true;
         }

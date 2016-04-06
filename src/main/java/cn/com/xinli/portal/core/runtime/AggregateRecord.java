@@ -3,6 +3,7 @@ package cn.com.xinli.portal.core.runtime;
 import java.util.Date;
 
 /**
+ * Aggregate Record.
  * @author zhoupeng, created on 2016/3/27.
  */
 public interface AggregateRecord<T extends Record> {

@@ -6,34 +6,45 @@
 
     Chart.defaults.global.responsive = true;
     Chart.defaults.global.animation = false;
-    //Chart.defaults.global.maintainAspectRatio = false;
 
     var Dashboard = function () {},
         TotalSessionChart = function () {},
         LoadChart = function () {};
 
     Dashboard.prototype = {
+        /**
+         * Create dashboard.
+         */
         create: function () {
             this.sessionChart = new TotalSessionChart();
             this.loadChart = new LoadChart();
             this.timer = $.timer({
                 action: this.update,
-                time: 3000,
+                time: 10000,
                 autostart: false
             });
             this.update();
         },
 
+        /**
+         * Pause auto-refresh.
+         */
         pause: function () {
             this.timer.pause();
             $.logging.debug('dashboard timer paused.');
         },
 
+        /**
+         * Continue to auto-refresh.
+         */
         play: function () {
             this.timer.play(true);
             $.logging.debug('dashboard timer continue to play.');
         },
 
+        /**
+         * Update dashboard.
+         */
         update: function () {
             var dashboard = $.portal.dashboard;
             if (dashboard.firing)
@@ -62,6 +73,10 @@
                 });
         },
 
+        /**
+         * Update devices.
+         * @param response
+         */
         updateDevices: function (response) {
             var index, device, html, devices = response['devices'],
                 parent;
@@ -83,12 +98,13 @@
                     '<tr><td>average response time</td><td><code>' + device['average_response_time'] + '</code></td></tr>' +
                     '</tbody></table>';
                 parent.append(html);
-                parent.append(html);
-                parent.append(html);
-                parent.append(html);
             }
         },
 
+        /**
+         * Update total session chart.
+         * @param response
+         */
         updateTotalSessionChart: function (response) {
             var index, chartData, report = response['total']['report'],
                 datasets = [],
@@ -120,6 +136,10 @@
             }
         },
 
+        /**
+         * Update system load chart.
+         * @param response
+         */
         updateLoadChart: function (response) {
             var index, chartData, report = response['load']['report'],
                 datasets = [],
@@ -154,26 +174,52 @@
         }
     };
 
+    /**
+     * Total session chart.
+     * @type {{create: TotalSessionChart.create, update: TotalSessionChart.update}}
+     */
     TotalSessionChart.prototype = {
+        /**
+         * Create chart.
+         * @param data
+         * @param option
+         */
         create: function (data, option) {
             var ctx = $('#session-chart').get(0).getContext('2d');
             this.option = option;
             this.chart = new Chart(ctx).Line(data, option);
         },
 
+        /**
+         * Update chart.
+         * @param data
+         */
         update: function (data) {
             this.chart.destroy();
             this.create(data, this.option);
         }
     };
 
+    /**
+     * System load chart.
+     * @type {{create: LoadChart.create, update: LoadChart.update}}
+     */
     LoadChart.prototype =  {
+        /**
+         * Create chart.
+         * @param data
+         * @param option
+         */
         create: function (data, option) {
             var ctx = $('#load-chart').get(0).getContext('2d');
             this.option = option;
             this.chart = new Chart(ctx).Bar(data, option);
         },
 
+        /**
+         * Update chart.
+         * @param data
+         */
         update: function (data) {
             this.chart.destroy();
             this.create(data, this.option);

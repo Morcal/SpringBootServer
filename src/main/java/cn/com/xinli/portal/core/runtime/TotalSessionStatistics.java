@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TotalSessionStatistics extends AbstractStatistics<SessionStatistics.SessionRecord> {
     /** Record every 1 hour. */
-    private static final int RECORD_HISTORY_IN = 5;
+    private static final int RECORD_HISTORY_IN = 1;
 
     /** Record recent 24 hours. */
     private static final int RECORD_HISTORY_LENGTH = 24;
@@ -46,7 +46,7 @@ public class TotalSessionStatistics extends AbstractStatistics<SessionStatistics
 
     @Override
     protected TimeUnit getHistoryRecordDurationTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.HOURS;
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord> {
     /** Record every 1 minute. */
-    private static final int RECORD_HISTORY_IN = 5;
+    private static final int RECORD_HISTORY_IN = 1;
 
     /** Record recent 5 minutes. */
     private static final int RECORD_HISTORY_LENGTH = 10;
@@ -73,7 +73,7 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
 
     @Override
     protected TimeUnit getHistoryRecordDurationTimeUnit() {
-        return TimeUnit.SECONDS;
+        return TimeUnit.MINUTES;
     }
 
     @Override

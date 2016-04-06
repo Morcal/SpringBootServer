@@ -10,13 +10,20 @@
             Allow user login in NATed environment
         </label>
     </div>
+
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" id="server-check-redirect-url">
+            Check redirect url when connect. (If checked, server will reject user when login in NATed environment)
+        </label>
+    </div>
 </div>
 
 <div class="form-group">
     <div class="checkbox">
         <label>
             <input type="checkbox" id="enable-session-ttl">
-            Enable session TTL. (if enabled, session while be removed when TTL reached)
+            Enable session TTL. (if checked, session while be removed when TTL reached)
         </label>
     </div>
     <label for="session-ttl-value" class="control-label">Session TTL (seconds)</label>
@@ -41,7 +48,7 @@
 </div>
 
 <div class="form-group">
-    <label for="portal-server-version" class="control-label">Version</label>
+    <label for="portal-server-version" class="control-label">Portal Server Version</label>
     <select id="portal-server-version">
         <option>V1</option>
         <option>V2</option>
@@ -49,14 +56,14 @@
 </div>
 
 <div class="form-group">
-    <label for="portal-server-listen-port" class="control-label">Listen Port</label>
+    <label for="portal-server-listen-port" class="control-label">Portal Server Listen Port</label>
     <input id="portal-server-listen-port"
            class="form-control" placeholder="Listen port"
            data-toggle="tooltip" data-container="body"/>
 </div>
 
 <div class="form-group">
-    <label for="portal-server-shared-secret" class="control-label">Shared secret</label>
+    <label for="portal-server-shared-secret" class="control-label">Portal Server Shared secret</label>
     <input id="portal-server-shared-secret"
            class="form-control" placeholder="shared secret"
            data-toggle="tooltip" data-container="body"/>
@@ -122,6 +129,10 @@
 
     $('#server-allow-nat').change(function () {
         saveConfiguration(['nat.allowed', $(this).is(':checked') ]);
+    });
+
+    $('#server-check-redirect-url').change(function () {
+        saveConfiguration(['server.check-redirect-url', $(this).is(':checked')]);
     });
 
     $('#enable-session-ttl').change(function () {
