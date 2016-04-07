@@ -1,0 +1,29 @@
+
+安装
+    将压缩包解压至目录
+    假设解压目录为/home/xinli/xpws
+    修改启动脚本 /home/xinli/xpws/startup.sh
+    修改 JAVA_HOME=/opt/jvm/current 为jdk 1.8 目录
+    修改 LOG_FILE=/opt/xpws/logs/xpws.log 为/home/xinli/xpws/logs/xpws.log
+
+
+启动
+    cd /home/xinli/xpws
+    ./startup.sh
+
+停止
+
+    ps ax | grep java
+    kill 1913 假设java进程号为1913
+
+配置服务器
+    假设服务器地址为 1.85.6.2
+    使用支持HTML5的浏览器 建议firefox或chrome打开 http://1.85.6.2:8080/portal/admin
+    密码为 s3cr3t.
+
+    需要修改的配置至少包括增加一个或多个NAS设备。
+
+    修改服务器默认端口
+    需修改/home/xinli/xpws/jar/application.properties
+    修改 server.port=8080 为其他端口
+
