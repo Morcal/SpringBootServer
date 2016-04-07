@@ -4,7 +4,7 @@
  * <p>PWS includes a embedded portal-server which accepts incoming
  * portal request and respond accordingly. Developers can enable
  * this mimic portal-server as HUAWEI NAS/BRAS by enabling
- * system configuration in pws.properties.
+ * system configuration in "dev" profile.
  *
  * <p>Both HUAWEI Protocol {@link cn.com.xinli.portal.transport.huawei.Version#V1} and
  * {@link cn.com.xinli.portal.transport.huawei.Version#V2} are implemented as

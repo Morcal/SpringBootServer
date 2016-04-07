@@ -70,12 +70,12 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
     }
 
     /**
-     * Get aggregated value in category.
+     * Get aggregated sum value in category.
      *
      * @param name category name.
      * @return aggregated value.
      */
-    public long getValue(String name) {
+    public long sum(String name) {
         long value = 0;
 
         for (AggregateRecord<T> r : getAggregated()) {
@@ -83,6 +83,18 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
         }
 
         return value;
+    }
+
+    /**
+     * Get current aggregated record value.
+     * @param name value name.
+     * @return value.
+     */
+    public long current(String name) {
+        if (aggregated.isEmpty())
+            return 0L;
+
+        return aggregated.get(aggregated.size() - 1).getValue(name);
     }
 
     /**
@@ -122,13 +134,10 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
         tail.addRecord(record);
     }
 
-    //private static final Random random = new Random(System.currentTimeMillis());
-
     /**
      * Create statistics history.
      */
     public void createHistory() {
-
         long now = System.currentTimeMillis();
         long last = 0L;
 
@@ -177,9 +186,7 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
             }
 
             AggregateRecord<T> r = createAggregateRecord(c.getTime());
-            //final long duration = getDurationInMilliseconds();
             r.setValue(getHistoryDefaultValueName(), 0);
-                    //Math.abs(random.nextLong() % (duration / 2)) + (duration / 3));
             aggregated.add(r);
         }
     }
@@ -191,6 +198,10 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
         if (!supports(record.getClass())) {
             logger.error("record not supported, record type: {}", record.getClass().getName());
             return;
+        }
+
+        if (aggregated.isEmpty()) {
+            createHistory();
         }
 
         final AggregateRecord<T> head = aggregated.get(0),

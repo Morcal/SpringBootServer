@@ -34,6 +34,11 @@ public abstract class BaseAggregateRecord<T extends Record> implements Aggregate
         }
     }
 
+    private void ensureValueName(String name) {
+        if (StringUtils.isEmpty(name) || !aggregated.containsKey(name))
+            throw new IllegalArgumentException(name + " not aggregated.");
+    }
+
     @Override
     public Date getRecordedDate() {
         return recordedAt;

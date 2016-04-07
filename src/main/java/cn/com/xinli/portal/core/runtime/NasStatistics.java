@@ -45,23 +45,23 @@ public class NasStatistics extends AbstractStatistics<NasStatistics.NasRecord> {
 
     @JsonProperty("requests")
     public long getRequests() {
-        return getValue("requests");
+        return sum("requests");
     }
 
     @JsonProperty("errors")
     public long getErrors() {
-        return getValue("errors");
+        return sum("errors");
     }
 
     @JsonProperty("timeouts")
     public long getTimeouts() {
-        return getValue("timeout");
+        return sum("timeout");
     }
 
     @JsonProperty("average_response_time")
     public long getAverageResponseTime() {
         long c = getRequests();
-        long t = getValue("response time");
+        long t = sum("response time");
         if (c == 0L)
             return 0L;
 
@@ -122,7 +122,7 @@ public class NasStatistics extends AbstractStatistics<NasStatistics.NasRecord> {
         /** If operation results timeout. */
         private boolean timeout;
 
-        protected NasRecord(boolean error) {
+        public NasRecord(boolean error) {
             super(error);
         }
 
@@ -148,6 +148,15 @@ public class NasStatistics extends AbstractStatistics<NasStatistics.NasRecord> {
 
         public void setTimeout(boolean timeout) {
             this.timeout = timeout;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + " NasRecord{" +
+                    "nasId=" + nasId +
+                    ", responseTime=" + responseTime +
+                    ", timeout=" + timeout +
+                    '}';
         }
     }
 

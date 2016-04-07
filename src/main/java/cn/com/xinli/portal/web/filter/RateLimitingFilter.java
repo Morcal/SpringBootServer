@@ -5,7 +5,6 @@ import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
 import cn.com.xinli.portal.core.ratelimiting.TrackStore;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;

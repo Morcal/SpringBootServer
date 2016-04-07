@@ -60,6 +60,8 @@
                 .done(function (response) {
                     $('#session-summary').find('h1>code').html(response['total']['current']);
                     dashboard.updateDevices(response);
+                    dashboard.updateLoad(response);
+                    dashboard.updateSession(response);
                     dashboard.updateLoadChart(response);
                     dashboard.updateTotalSessionChart(response);
                 })
@@ -71,6 +73,35 @@
                     dashboard.timer.play(true);
                     $.logging.debug('restart timer.');
                 });
+        },
+
+        /**
+         * Update session table.
+         * @param response
+         */
+        updateSession: function (response) {
+            var s = response['session'];
+
+            $('#session-created').html(s['created']);
+            $('#session-removed').html(s['removed']);
+            $('#session-ntf-logout').html(s['ntf_logout']);
+            $('#session-errors').html(s['errors']);
+        },
+
+        /**
+         * Update system load table.
+         * @param response
+         */
+        updateLoad: function (response) {
+            var load = response['load'],
+                table = $('#load-statistics').find('table');
+
+            $('#current-sessions').html(response['total']['current']);
+            $('#load-total-requests').html(load['total']);
+            $('#load-art').html(load['average_response_time']);
+            $('#load-requests').html(load['requests']);
+            $('#load-errors').html(load['errors']);
+            $('#load-max-rt').html(load['max_response_time']);
         },
 
         /**
@@ -95,7 +126,7 @@
                     '<tr><td>requests</td><td><code>' + device['requests'] + '</code></td></tr>' +
                     '<tr><td>errors</td><td><code>' + device['errors'] + '</code></td></tr>' +
                     '<tr><td>timeout</td><td><code>' + device['timeouts'] + '</code></td></tr>' +
-                    '<tr><td>average response time</td><td><code>' + device['average_response_time'] + '</code></td></tr>' +
+                    '<tr><td>A.R.T</td><td><code>' + device['average_response_time'] + '</code>ms</td></tr>' +
                     '</tbody></table>';
                 parent.append(html);
             }
@@ -145,7 +176,7 @@
                 datasets = [],
                 ds = report['datasets'];
 
-            $.logging.debug('updating system laod chart...');
+            $.logging.debug('updating system load chart...');
 
             for (index = 0; index < ds.length; index++) {
                 datasets.push({

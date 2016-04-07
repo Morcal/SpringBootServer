@@ -39,7 +39,7 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
      */
     @JsonProperty("requests")
     public long getRequests() {
-        return getValue("requests");
+        return current("requests");
     }
 
     /**
@@ -48,7 +48,7 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
      */
     @JsonProperty("errors")
     public long getErrors() {
-        return getValue("errors");
+        return current("errors");
     }
 
     /**
@@ -58,11 +58,16 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
     @JsonProperty("average_response_time")
     public long getAverageResponseTime() {
         long c = getRequests();
-        long t = getValue("response time");
+        long t = current("response time");
         if (c == 0L)
             return 0L;
 
         return t / c;
+    }
+
+    @JsonProperty("max_response_time")
+    public long getMaxResponseTime() {
+        return current("max response time");
     }
 
     @JsonProperty("report")
@@ -114,14 +119,23 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
         public void setResponseTime(long responseTime) {
             this.responseTime = responseTime;
         }
+
+        @Override
+        public String toString() {
+            return super.toString() + " LoadRecord{" +
+                    "responseTime=" + responseTime +
+                    '}';
+        }
     }
 
     /**
      * Aggregated session record.
      */
     public class AggregatedSessionRecord extends BaseAggregateRecord<LoadRecord> {
+        /** constructor. */
         AggregatedSessionRecord(Date recordedAt) {
             super(recordedAt);
+            setValue("max response time", 0L);
         }
 
         @Override
@@ -129,13 +143,17 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
             totalRequests.incrementAndGet();
             increment("requests");
             increment("response time", record.responseTime);
+
+            if (record.responseTime > getValue("max response time"))
+                setValue("max response time", record.responseTime);
+
             if (record.isError())
                 increment("errors");
         }
 
         @Override
         protected String[] supportedValueTypes() {
-            return new String[] { "requests", "errors", "response time" };
+            return new String[] { "requests", "errors", "response time", "max response time" };
         }
     }
 }

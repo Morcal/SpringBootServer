@@ -20,22 +20,22 @@ public class SessionStatistics extends AbstractStatistics<SessionStatistics.Sess
 
     @JsonProperty("created")
     public long getCreated() {
-        return getValue("created");
+        return sum("created");
     }
 
     @JsonProperty("removed")
     public long getRemoved() {
-        return getValue("removed");
+        return sum("removed");
     }
 
     @JsonProperty("ntf_logout")
     public long getNtfLogout() {
-        return getValue("ntf logout");
+        return sum("ntf logout");
     }
 
     @JsonProperty("errors")
     public long getErrors() {
-        return getValue("errors");
+        return sum("errors");
     }
 
     @Override
@@ -75,6 +75,7 @@ public class SessionStatistics extends AbstractStatistics<SessionStatistics.Sess
         public enum Action {
             USER_CREATE_SESSION,
             USER_DELETE_SESSION,
+            SYSTEM_DELETE_SESSION,
             NAS_NTF_LOGOUT
         }
 
@@ -90,6 +91,13 @@ public class SessionStatistics extends AbstractStatistics<SessionStatistics.Sess
 
         public void setAction(Action action) {
             this.action = action;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + " SessionRecord{" +
+                    "action=" + action +
+                    '}';
         }
     }
 

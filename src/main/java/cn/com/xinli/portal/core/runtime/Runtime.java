@@ -33,10 +33,6 @@ public class Runtime {
         return dateFormat.format(date);
     }
 
-    public void addSessionRecord(SessionStatistics.SessionRecord record) {
-        sessionStatistics.addRecord(record);
-    }
-
     public Map<Long, NasStatistics> getNasStatisticsMap() {
         return Collections.unmodifiableMap(nasStatisticsMap);
     }
@@ -54,10 +50,19 @@ public class Runtime {
     }
 
     /**
+     * Add a session record.
+     * @param record session record.
+     */
+    public synchronized void addSessionRecord(SessionStatistics.SessionRecord record) {
+        sessionStatistics.addRecord(record);
+        totalSessionStatistics.addRecord(record);
+    }
+
+    /**
      * Add a nas record.
      * @param record nas record.
      */
-    public void addNasRecord(NasStatistics.NasRecord record) {
+    public synchronized void addNasRecord(NasStatistics.NasRecord record) {
         Objects.requireNonNull(record, "Nas record can not be null.");
 
         synchronized (nasStatisticsMap) {
@@ -72,7 +77,7 @@ public class Runtime {
      * Add a load record.
      * @param record load record.
      */
-    public void addLoadRecord(LoadStatistics.LoadRecord record) {
+    public synchronized void addLoadRecord(LoadStatistics.LoadRecord record) {
         loadStatistics.addRecord(record);
     }
 

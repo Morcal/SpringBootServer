@@ -89,7 +89,7 @@ public class Redirection {
      */
     public static Redirection parse(String url) throws RemoteException {
         if (StringUtils.isEmpty(url)) {
-            throw new IllegalArgumentException("Url can not be empty.");
+            throw new RemoteException(PortalError.INVALID_REQUEST, "Url can not be empty.");
         }
 
         try {

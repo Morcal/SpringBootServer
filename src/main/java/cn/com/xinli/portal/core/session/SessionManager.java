@@ -4,8 +4,6 @@ import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.credentials.Credentials;
 
-import java.util.concurrent.Future;
-
 /**
  * Session manager.
  *

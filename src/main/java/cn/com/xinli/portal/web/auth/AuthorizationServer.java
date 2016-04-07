@@ -43,7 +43,7 @@ public interface AuthorizationServer {
      * Verify incoming request's ip address.
      *
      * <p>Server only perform ip validation check when
-     * configurations enabled "pws.nat.allowed" option to false.
+     * configurations enabled "nat.allowed" option to false.
      *
      * @param realIp real ip from nginx.
      * @param ip ip address client claimed.

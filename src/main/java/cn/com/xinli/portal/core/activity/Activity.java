@@ -212,7 +212,7 @@ public class Activity {
     public enum SystemAction {
         GET_SYSTEM_STATISTICS("get-statistics"),
         DELETE_OLD_ACTIVITIES("delete-activities"),
-        NTF_LOGOUT("ntf-lgout");
+        NTF_LOGOUT("ntf-logout");
 
         /**
          * Action name alias.

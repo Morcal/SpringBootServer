@@ -50,4 +50,12 @@ public class BaseRecord implements Record {
     public Date getRecordedDate() {
         return createdAt;
     }
+
+    @Override
+    public String toString() {
+        return "BaseRecord{" +
+                "createdAt=" + createdAt +
+                ", error=" + error +
+                '}';
+    }
 }
