@@ -139,7 +139,7 @@ public class Environment implements ApplicationEventPublisherAware {
         logger.info("context refresh event: {}", event);
         nasService.init();
         sessionService.init();
-        runtime.init(nasService.all());
+        runtime.createDeviceStatistics(nasService.all());
 
         applicationEventPublisher.publishEvent(new EnvironmentInitializedEvent(this));
     }

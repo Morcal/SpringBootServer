@@ -1,8 +1,10 @@
 package cn.com.xinli.portal.support;
 
+import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.credentials.*;
 import cn.com.xinli.portal.core.nas.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +82,7 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     }
 
     @Override
-    public Nas find(String name) throws NasNotFoundException {
+    public Nas findByName(String name) throws NasNotFoundException {
         Optional<Nas> nas = nasStore.devices()
                 .filter(n -> n.getName().equals(name))
                 .findFirst();
@@ -89,7 +91,17 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
     }
 
     @Override
-    public Nas create(Nas nas) {
+    public Nas findByAddress(String ip) throws NasNotFoundException {
+        if (StringUtils.isEmpty(ip)) {
+            throw new IllegalArgumentException("nas device ip can not be blank.");
+        }
+        return nasStore.find(ip);
+    }
+
+    @Override
+    public Nas create(Nas nas) throws NasNotFoundException, RemoteException {
+        Objects.requireNonNull(nas, Nas.EMPTY_NAS);
+
         CredentialsTranslation translation = nas.getTranslation();
         if (translation == null) {
             translation = new CredentialsTranslation();
@@ -98,12 +110,23 @@ public class NasServiceSupport implements NasService, NasManager, NasLocator, In
             translation.setModifiers(Collections.emptyList());
             nas.setTranslation(translation);
         }
+
+        final String ip = nas.getIp();
+        try {
+            findByAddress(ip);
+            throw new RemoteException(PortalError.NAS_IP_OVERLAPPED);
+        } catch (NasNotFoundException e) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("nas ip address checked.");
+            }
+        }
+
         return createNasInternal(nas);
     }
 
     @Override
-    public void delete(Nas nas) throws NasNotFoundException {
-        nasStore.delete(nas.getId());
+    public void delete(long id) throws NasNotFoundException {
+        nasStore.delete(id);
         nasStore.reload();
     }
 

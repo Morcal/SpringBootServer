@@ -98,6 +98,15 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
     }
 
     /**
+     * Generate report.
+     * @return report.
+     */
+    protected Report generateReport(String[] names) {
+        createHistory();
+        return Reporter.report(names, getAggregated());
+    }
+
+    /**
      * Create a new aggregated
      *
      * @param record record.
@@ -137,9 +146,10 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
     /**
      * Create statistics history.
      */
-    public void createHistory() {
+    private synchronized void createHistory() {
         long now = System.currentTimeMillis();
         long last = 0L;
+        final int recordLength = getHistoryRecordingLength();
 
         if (!aggregated.isEmpty()) {
             AggregateRecord<T> tail = aggregated.get(aggregated.size() - 1);
@@ -148,8 +158,8 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
 
         long diff = now - last;
 
-        int missing = last == 0 ? getHistoryRecordingLength() : (int) (diff / getDurationInMilliseconds());
-        missing = missing > getHistoryRecordingLength() ? getHistoryRecordingLength() : missing;
+        int missing = last == 0 ? recordLength : (int) (diff / getDurationInMilliseconds());
+        missing = missing > recordLength ? recordLength : missing;
 
         int temp = missing;
         if (temp > 0) {
@@ -200,9 +210,7 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
             return;
         }
 
-        if (aggregated.isEmpty()) {
-            createHistory();
-        }
+        createHistory();
 
         final AggregateRecord<T> head = aggregated.get(0),
                 tail = aggregated.get(aggregated.size() - 1);

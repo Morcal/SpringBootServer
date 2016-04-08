@@ -151,7 +151,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @return session provider.
      * @throws ServerException
      */
-    private SessionProvider find(Nas nas) throws ServerException {
+    private SessionProvider getSessionProvider(Nas nas) throws ServerException {
         for (SessionProvider provider : sessionProviders) {
             if (provider.supports(nas)) {
                 return provider;
@@ -212,7 +212,7 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             logger.trace("authenticating: {}", credentials);
         }
 
-        SessionProvider provider = find(nas);
+        SessionProvider provider = getSessionProvider(nas);
         Session session = provider.authenticate(nas, credentials);
 
         /* Populate certificate. */
@@ -251,10 +251,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
      * @throws PortalException
      */
     private void removeSessionInternal(Session session) throws PortalException {
-        Nas nas = nasService.find(session.getNas().getName());
+        Nas nas = nasService.get(session.getNas().getId());
         long id = session.getId();
 
-        SessionProvider provider = find(nas);
+        SessionProvider provider = getSessionProvider(nas);
         provider.disconnect(session);
 
         /* Only put to cache if no exceptions or rollback occurred. */

@@ -82,14 +82,35 @@ public class Runtime {
     }
 
     /**
-     * Initialize system runtime.
+     * Create system runtime device statistics.
+     * @param devices devices.
      */
-    public void init(Stream<Nas> devices) {
-        devices.forEach(n -> {
-            synchronized (nasStatisticsMap) {
-                NasStatistics nas = new NasStatistics(n.getId(), n.getName());
-                nasStatisticsMap.put(n.getId(), nas);
-            }
-        });
+    public void createDeviceStatistics(Stream<Nas> devices) {
+        synchronized (nasStatisticsMap) {
+            devices.forEach(n -> {
+                if (!nasStatisticsMap.containsKey(n.getId())) {
+                    NasStatistics nas = new NasStatistics(n.getId(), n.getName());
+                    nasStatisticsMap.put(n.getId(), nas);
+                }
+            });
+        }
+    }
+
+    /**
+     * Remove device statistics.
+     * @param devices devices.
+     */
+    public void removeDeviceStatistics(Stream<Nas> devices) {
+        devices.forEach(n -> removeDeviceStatistics(n.getId()));
+    }
+
+    /**
+     * Remove device statistics.
+     * @param id device id.
+     */
+    public void removeDeviceStatistics(long id) {
+        synchronized (nasStatisticsMap) {
+            nasStatisticsMap.remove(id);
+        }
     }
 }

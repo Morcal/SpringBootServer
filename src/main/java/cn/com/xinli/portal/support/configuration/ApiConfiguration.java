@@ -128,6 +128,7 @@ public class ApiConfiguration {
         registration.registerApi(getNas());
         registration.registerApi(createNas());
         registration.registerApi(updateNas());
+        registration.registerApi(deleteNas());
         registration.registerApi(getConfiguration());
         registration.registerApi(configureSystem());
         registration.registerApi(searchActivity());
@@ -295,6 +296,22 @@ public class ApiConfiguration {
                 Activity.NasAction.SEARCH.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_SEARCH_NAS),
                 RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Define delete nas entry point.
+     * @return authorize entry point.
+     */
+    private EntryPoint deleteNas() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.NasAction.DELETE.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_NAS),
+                RequestMethod.DELETE.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);

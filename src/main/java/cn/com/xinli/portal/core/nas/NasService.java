@@ -42,7 +42,21 @@ public interface NasService {
      */
     Nas get(Long id) throws NasNotFoundException;
 
-    Nas find(String name) throws NasNotFoundException;
+    /**
+     * Find Nas device by name.
+     * @param name nas device name.
+     * @return nas matches name.
+     * @throws NasNotFoundException
+     */
+    Nas findByName(String name) throws NasNotFoundException;
+
+    /**
+     * Find nas device by ip address.
+     * @param ip ip address.
+     * @return nas device if found.
+     * @throws NasNotFoundException
+     */
+    Nas findByAddress(String ip) throws NasNotFoundException;
 
     void save(Nas nas);
 

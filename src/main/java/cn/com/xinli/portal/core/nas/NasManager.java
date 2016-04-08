@@ -1,5 +1,7 @@
 package cn.com.xinli.portal.core.nas;
 
+import cn.com.xinli.portal.core.RemoteException;
+
 /**
  * NAS manager.
  *
@@ -13,14 +15,14 @@ public interface NasManager {
      * @param nas nas.
      * @return nas.
      */
-    Nas create(Nas nas);
+    Nas create(Nas nas) throws NasNotFoundException, RemoteException;
 
     /**
      * Delete a NAS configuration.
      *
-     * @param nas NAS id to delete.
+     * @param id NAS id to delete.
      */
-    void delete(Nas nas) throws NasNotFoundException;
+    void delete(long id) throws NasNotFoundException;
 
     /**
      * Create NAS domain rule for NAS.

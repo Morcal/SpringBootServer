@@ -123,7 +123,7 @@ public class DevEnvironment {
             ensureHuaweiNasConfiguration(mock);
 
             /* Find nas configuration for mocking. */
-            HuaweiNas nas = (HuaweiNas) nasService.find(mockNasName);
+            HuaweiNas nas = (HuaweiNas) nasService.findByName(mockNasName);
 
             Endpoint endpoint = new Endpoint();
             endpoint.setPort(nas.getListenPort());
@@ -164,7 +164,7 @@ public class DevEnvironment {
         }
 
         try {
-            Nas nas = nasService.find(nasConfig.getName());
+            Nas nas = nasService.findByName(nasConfig.getName());
             logger.debug("NAS found, {}", nas);
         } catch (NasNotFoundException e) {
             logger.debug("NAS not found, creating... name: {}", nasConfig);

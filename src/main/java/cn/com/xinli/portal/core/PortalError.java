@@ -45,6 +45,7 @@ public enum PortalError {
     PWS_CONFIGURATION_BLANK(22, "pws configuration is blank"),
     INVALID_NAS_CONFIGURATION(31, "invalid nas configuration"),
     NAS_NOT_FOUND(32, "nas not found"),
+    NAS_IP_OVERLAPPED(33, "nas with ip address already exists"),
     NEED_SSL(41, "need ssl"),
     REDUNDANT_API_REGISTRATION(61, "redundant api registration"),
     REDUNDANT_API_ENTRY(62, "redundant api entry"),

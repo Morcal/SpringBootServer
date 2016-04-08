@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author zhoupeng, created on 2016/3/27.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord> {
+public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord> implements Reportable {
     /** Record every 1 minute. */
     private static final int RECORD_HISTORY_IN = 1;
 
@@ -71,9 +71,9 @@ public class LoadStatistics extends AbstractStatistics<LoadStatistics.LoadRecord
     }
 
     @JsonProperty("report")
-    public Report getReport() {
-        createHistory();
-        return Reporter.report(new String[] { "requests"}, getAggregated());
+    @Override
+    public Report report() {
+        return generateReport(new String[] { "requests" });
     }
 
     @Override

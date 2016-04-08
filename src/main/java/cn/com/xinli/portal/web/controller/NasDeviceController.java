@@ -7,6 +7,7 @@ import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasService;
 import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
 import cn.com.xinli.portal.web.rest.NasResponse;
+import cn.com.xinli.portal.web.rest.RestResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -69,7 +70,7 @@ public class NasDeviceController {
     @ResponseBody
     @RequestMapping(value = "/nas", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
-    public NasResponse createNas(@RequestBody Nas nas) {
+    public NasResponse createNas(@RequestBody Nas nas) throws NasNotFoundException, RemoteException {
         Nas created = nasManager.create(nas);
         return AdminResponseBuilders.nasResponseBuilder(Stream.of(created)).build();
     }
@@ -94,5 +95,19 @@ public class NasDeviceController {
         nasService.save(device);
 
         return AdminResponseBuilders.nasResponseBuilder(Stream.of(device)).build();
+    }
+
+    /**
+     * Delete a nas device.
+     * @param id nas id to delete.
+     * @return rest response.
+     * @throws NasNotFoundException
+     */
+    @ResponseBody
+    @RequestMapping(value = "/nas/{id}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse deleteNas(@PathVariable("id") long id) throws NasNotFoundException {
+        nasManager.delete(id);
+        return new RestResponse();
     }
 }

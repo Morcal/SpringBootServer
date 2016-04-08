@@ -159,6 +159,7 @@
                         device = response['devices'][0];
 
                     dialog.find('div h4').html('NAS ' + device['id'] + ' Detail');
+                    dialog.find('#nas-id').val(device['id']);
                     dialog.find('#nas-name').val(device['name']);
                     dialog.find('#nas-type').val(device['nas_type']);
                     dialog.find('#nas-ipv4').val(device['ipv4_address']);
@@ -182,12 +183,23 @@
                 });
         },
 
+        /**
+         * Create new ans device.
+         * @param nas
+         * @returns {*}
+         */
         createNas: function (nas) {
             return $.portal.connector.request('create-nas', null, nas, 'JSON');
         },
 
+        /**
+         * Update nas device.
+         * @param nas
+         * @returns {*}
+         */
         saveNas: function (nas) {
-            return $.portal.connector.request('update-nas', nas['id'], nas, 'JSON');
+            var id = $('#nas-id').val();
+            return $.portal.connector.request('update-nas', id, nas, 'JSON');
         },
 
         openTranslationDialog: function (trans) {
@@ -199,10 +211,18 @@
             dialog.modal('show');
         },
 
-        deleteNas: function (nas) {
-            return $.portal.connector.request('remove-nas', nas );
+        /**
+         * Delete nas device.
+         * @param id nas device id.
+         * @returns {*}
+         */
+        deleteNas: function (id) {
+            return $.portal.connector.request('delete-nas', id, { id: id });
         },
 
+        /**
+         * Open create nas device dialog.
+         */
         createNasDialog: function () {
             var dialog = $('#nas-dialog');
 
@@ -214,6 +234,10 @@
             dialog.modal('show');
         },
 
+        /**
+         * Handle nas type changed.
+         * @param e
+         */
         changeNasType: function (e) {
             var value = $(e).val(),
                 dialog = $('#nas-dialog');

@@ -13,7 +13,7 @@
                     <input type="text" id="nas-name" name="nas-name"
                            class="form-control" placeholder="NAS name" data-toggle="tooltip" data-container="body"
                            data-title="NAS name can not be empty."/>
-                    <input type="hidden"/>
+                    <input id="nas-id" type="hidden"/>
                 </div>
 
                 <div class="form-group">
@@ -110,6 +110,9 @@
 
 
 <script language="javascript">
+    /**
+     * Get nas from dialog inputs.
+     */
     function getNas() {
         var dialog = $('#nas-dialog'),
                 name = $('#nas-name'),
@@ -157,12 +160,29 @@
         return false;
     }
 
+    /**
+     * Handle "delete" button click.
+     */
     $('#delete-nas').click(function () {
-        $.portal.configuration.deleteNas($(this).data('nas'));
+        var btn = $(this), id = $('#nas-id').val();
+
+        btn.button('updating');
+        return $.application.load({
+            function: $.portal.configuration.deleteNas,
+            object: $.portal.configuration,
+            args: [id]
+        }).done(function () {
+            btn.button('reset');
+            $('#nas-dialog').modal('hide');
+            $('#nas-search-btn').click();
+        });
     });
 
+    /**
+     * Handle "create" button.
+     */
     $('#create-nas').click(function () {
-        var btn = $(this), nas = getNas();
+        var btn = $(this), nas = getNas(), dialog = $('#nas-dialog');
 
         if (!nas) {
             $.application.alert('Error', 'Some fields is blank.', dialog.find('div.modal-body'));
@@ -182,8 +202,11 @@
         });
     });
 
+    /**
+     * Handle "save" button click.
+     */
     $('#save-nas').click(function () {
-        var nas = getNas(), btn = $(this);
+        var nas = getNas(), btn = $(this), dialog = $('#nas-dialog');
 
         if (!nas) {
             $.application.alert('Error', 'Some fields is blank.', dialog.find('div.modal-body'));
