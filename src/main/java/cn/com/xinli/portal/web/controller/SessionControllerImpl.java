@@ -188,7 +188,7 @@ public class SessionControllerImpl implements SessionController {
         Token ctx = contextTokenService.allocateToken(contextTokenService.encode(context));
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, session, authentication, true, ctx);
+                serverConfiguration, session, authentication, true, ctx, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("connect -> {} ", rs);
@@ -207,7 +207,7 @@ public class SessionControllerImpl implements SessionController {
         logger.trace("get session {{}}.", session.getId());
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, session, (AccessAuthentication) principal, false, null);
+                serverConfiguration, session, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("get -> {} ", rs);
@@ -229,7 +229,7 @@ public class SessionControllerImpl implements SessionController {
 
         /* send updated session information. */
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, updated, (AccessAuthentication) principal, false, null);
+                serverConfiguration, updated, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("update -> {} ", rs);
@@ -249,7 +249,7 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session removed {}.", id);
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, null, (AccessAuthentication) principal, false, null);
+                serverConfiguration, null, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("disconnect -> {} ", rs);
@@ -296,14 +296,16 @@ public class SessionControllerImpl implements SessionController {
         }
 
         RestResponse rs;
-
+        boolean networkChanged = false;
         Context c = null;
         Token ctx = contextTokenService.verifyToken(context);
+
         if (ctx != null) {
             /* context token is not null only if token is valid and session exists. */
             c = contextTokenService.decode(ctx.getExtendedInformation());
             if (!StringUtils.equals(c.getIp(), ip)) {
-                throw new RemoteException(PortalError.NETWORK_CHANGED);
+                networkChanged = true;
+                //throw new RemoteException(PortalError.NETWORK_CHANGED);
             }
         }
 
@@ -312,7 +314,7 @@ public class SessionControllerImpl implements SessionController {
 
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.buildSessionResponse(
-                    serverConfiguration, null, (AccessAuthentication) principal, false, null);
+                    serverConfiguration, null, (AccessAuthentication) principal, false, null, false);
         } else {
             Session session = opt.get();
 
@@ -328,7 +330,7 @@ public class SessionControllerImpl implements SessionController {
             logger.info("session found, id: {}", session.getId());
 
             rs = RestResponseBuilders.buildSessionResponse(
-                    serverConfiguration, session, (AccessAuthentication) principal, true, ctx);
+                    serverConfiguration, session, (AccessAuthentication) principal, true, ctx, networkChanged);
         }
 
         if (logger.isDebugEnabled()) {

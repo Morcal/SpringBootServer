@@ -19,7 +19,7 @@ public class ActivityConfiguration {
 
     /** Minimum severity to save auditing logs. */
     @JsonProperty("min_severity")
-    private Activity.Severity minimumSevertiy;
+    private Activity.Severity minimumSeverity;
 
     public int getMostRecent() {
         return mostRecent;
@@ -29,19 +29,19 @@ public class ActivityConfiguration {
         this.mostRecent = mostRecent;
     }
 
-    public Activity.Severity getMinimumSevertiy() {
-        return minimumSevertiy;
+    public Activity.Severity getMinimumSeverity() {
+        return minimumSeverity;
     }
 
-    public void setMinimumSevertiy(Activity.Severity minimumSevertiy) {
-        this.minimumSevertiy = minimumSevertiy;
+    public void setMinimumSeverity(Activity.Severity minimumSeverity) {
+        this.minimumSeverity = minimumSeverity;
     }
 
     @Override
     public String toString() {
         return "ActivityConfiguration{" +
                 "mostRecent=" + mostRecent +
-                ", minimumSevertiy=" + minimumSevertiy +
+                ", minimumSeverity=" + minimumSeverity +
                 '}';
     }
 }

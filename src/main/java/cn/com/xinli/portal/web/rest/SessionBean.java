@@ -49,6 +49,10 @@ public class SessionBean {
     @JsonProperty("accounting")
     private Object accounting;
 
+    /** If network changed. */
+    @JsonProperty("network_changed")
+    private boolean networkChanged = false;
+
     public String getId() {
         return id;
     }
@@ -129,6 +133,14 @@ public class SessionBean {
         this.context = context;
     }
 
+    public boolean isNetworkChanged() {
+        return networkChanged;
+    }
+
+    public void setNetworkChanged(boolean networkChanged) {
+        this.networkChanged = networkChanged;
+    }
+
     @Override
     public String toString() {
         return "SessionBean{" +
@@ -139,6 +151,7 @@ public class SessionBean {
                 ", startTime=" + startTime +
                 ", keepAliveInterval=" + keepAliveInterval +
                 ", context='" + context + '\'' +
+                ", networkChanged=" + networkChanged +
                 ", authentication=" + authentication +
                 ", authorization=" + authorization +
                 ", accounting=" + accounting +

@@ -68,7 +68,6 @@ public class Session {
     /** Last modified time (UNIX epoch time), do not save in database. */
     @Transient
     private long lastModified = 0L;
-
     /** Extended information. */
     @Column(name = "extended_information")
     private String extendedInformation;
@@ -143,27 +142,6 @@ public class Session {
         this.extendedInformation = extendedInformation;
     }
 
-//        public String cacheId() {
-//        return "session:" + id;
-//    }
-//
-//    public static long fromCacheId(String id) {
-//        if (StringUtils.isEmpty(id)) {
-//            throw new IllegalArgumentException("cache id can not be blank.");
-//        }
-//
-//        String value[] = id.split(":");
-//        if (value.length != 2) {
-//            throw new IllegalArgumentException("invalid session cache id.");
-//        }
-//
-//        try {
-//            return Long.parseLong(value[1]);
-//        } catch (NumberFormatException e) {
-//            throw new IllegalArgumentException("invalid session cache id.");
-//        }
-//    }
-
     /**
      * Create a paired information for ip and mac.
      *
@@ -194,6 +172,7 @@ public class Session {
                 ", startTime=" + startTime +
                 ", certificate=" + certificate +
                 ", lastModified=" + lastModified +
+                ", extendedInformation='" + extendedInformation + '\'' +
                 '}';
     }
 }

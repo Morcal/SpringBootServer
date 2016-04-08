@@ -19,7 +19,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
      * Load configuration from properties.
      * @throws ServerException
      */
-    public void load(Configuration config) throws ServerException, ServerConfigurationNotExistsException {
+    public void load(Configuration config) throws ServerException {
         setPrivateKey(config.getEntryValue(Configuration.SERVER_PRIVATE_KEY));
         setCheckRedirectUrl(config.getEntryValue(Configuration.SERVER_CHECK_REDIRECT_URL));
         setMainPageRedirectUrl(config.getEntryValue(Configuration.MAIN_PAGE_REDIRECT_URL));
@@ -30,7 +30,7 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         /* Create activity configuration. */
         ActivityConfiguration activity = new ActivityConfiguration();
         activity.setMostRecent(config.getEntryValue(Configuration.ACTIVITY_MOST_RECENT));
-        activity.setMinimumSevertiy(config.getEntryValue(Configuration.ACTIVITY_LOGGING_MIN_SEVERITY));
+        activity.setMinimumSeverity(config.getEntryValue(Configuration.ACTIVITY_LOGGING_MIN_SEVERITY));
         setActivityConfiguration(activity);
 
         /* Create session configuration. */
@@ -87,5 +87,14 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         String userMac = config.getEntryValue(Configuration.REDIRECT_USER_MAC);
         redirectConfiguration.setUserMac(userMac.split(","));
         setRedirectConfiguration(redirectConfiguration);
+
+        /* Create app configuration. */
+        AppConfiguration app = new AppConfiguration();
+        app.setiOSAppFileName(config.getEntryValue(Configuration.DOWNLOAD_IOS_APP));
+        app.setAndroidAppFileName(config.getEntryValue(Configuration.DOWNLOAD_ANDROID_APP));
+        app.setLinuxAppFileName(config.getEntryValue(Configuration.DOWNLOAD_LINUX_APP));
+        app.setMacAppFileName(config.getEntryValue(Configuration.DOWNLOAD_MAC_APP));
+        app.setWindowsAppFileName(config.getEntryValue(Configuration.DOWNLOAD_WINDOWS_APP));
+        setAppConfiguration(app);
     }
 }

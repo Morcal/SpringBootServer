@@ -27,7 +27,7 @@ public class AuthenticationFailureEventHandler implements ApplicationListener<Au
     @Override
     public void onApplicationEvent(AuthenticationFailureEvent event) {
         if (event.getSeverity().ordinal() <=
-                serverConfiguration.getActivityConfiguration().getMinimumSevertiy().ordinal()) {
+                serverConfiguration.getActivityConfiguration().getMinimumSeverity().ordinal()) {
             Activity activity = new Activity();
             activity.setAction(Activity.SessionAction.AUTHENTICATE.name());
             activity.setFacility(Activity.Facility.PORTAL);

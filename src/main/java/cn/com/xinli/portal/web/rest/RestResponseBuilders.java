@@ -54,14 +54,16 @@ public class RestResponseBuilders {
      * @param requiresKeepAlive session requires Keep Alive.
      * @param keepAliveInterval session keep Alive Interval.
      * @param context session context token.
+     * @param networkChanged if network already changed.
      * @return builder
      */
     private static SessionBuilder sessionBuilder(Session session,
                                                  Token token,
                                                  boolean requiresKeepAlive,
                                                  int keepAliveInterval,
-                                                 Token context) {
-        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval, context);
+                                                 Token context,
+                                                 boolean networkChanged) {
+        return new SessionBuilder(session, token, requiresKeepAlive, keepAliveInterval, context, networkChanged);
     }
 
     /**
@@ -87,7 +89,8 @@ public class RestResponseBuilders {
                                                     Session session,
                                                     AccessAuthentication authentication,
                                                     boolean grantToken,
-                                                    Token context) {
+                                                    Token context,
+                                                    boolean networkChanged) {
         RestResponseBuilders.SessionResponseBuilder builder = RestResponseBuilders.successBuilder();
 
         builder.setAccessTokenTtl(serverConfiguration.getRestConfiguration().getTokenTtl())
@@ -100,6 +103,7 @@ public class RestResponseBuilders {
                 .setKeepAliveInterval(serverConfiguration.getSessionConfiguration().getHeartbeatInterval())
                 .setGrantToken(grantToken)
                 .setContext(context)
+                .setNetworkChanged(networkChanged)
                 .build();
     }
 
@@ -201,6 +205,7 @@ public class RestResponseBuilders {
         private Session session = null;
         private boolean grantToken = false;
         private boolean requiresKeepAlive;
+        private boolean networkChanged;
         private int keepAliveInterval;
         private Token context = null;
 
@@ -245,6 +250,11 @@ public class RestResponseBuilders {
             return this;
         }
 
+        public SessionResponseBuilder setNetworkChanged(boolean networkChanged) {
+            this.networkChanged = networkChanged;
+            return this;
+        }
+
         @Override
         protected SessionResponse buildInternal() {
             SessionResponse response = new SessionResponse();
@@ -257,14 +267,15 @@ public class RestResponseBuilders {
                         accessAuthentication.getSessionToken(),
                         requiresKeepAlive,
                         keepAliveInterval,
-                        context);
+                        context,
+                        networkChanged);
                 builder.setSessionTokenTtl(sessionTokenTtl);
                 response.setSession(builder.build());
             }
 
             if (accessAuthentication == null || !grantToken) {
                 SessionBuilder builder =
-                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval, context);
+                        sessionBuilder(session, null, requiresKeepAlive, keepAliveInterval, context, networkChanged);
                 builder.setSessionTokenTtl(sessionTokenTtl);
                 response.setSession(builder.build());
             }
@@ -342,18 +353,21 @@ public class RestResponseBuilders {
         private final boolean requiresKeepAlive;
         private final int keepAliveInterval;
         private final Token context;
+        private final boolean networkChanged;
 
         public SessionBuilder(Session session,
                               Token token,
                               boolean requiresKeepAlive,
                               int keepAliveInterval,
-                              Token context) {
+                              Token context,
+                              boolean networkChanged) {
             super(false);
             this.session = session;
             this.token = token;
             this.requiresKeepAlive = requiresKeepAlive;
             this.keepAliveInterval = keepAliveInterval;
             this.context = context;
+            this.networkChanged = networkChanged;
         }
 
         @Override
@@ -366,6 +380,7 @@ public class RestResponseBuilders {
                 session.setStartTime(this.session.getStartTime().getTime() / 1000L);
                 session.setKeepAliveInterval(keepAliveInterval);
                 session.setKeepAlive(requiresKeepAlive);
+                session.setNetworkChanged(networkChanged);
                 if (token != null) {
                     session.setToken(token.getKey());
                     session.setTokenExpiresIn(sessionTokenTtl);

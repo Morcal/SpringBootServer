@@ -8,7 +8,7 @@
     };
 
     Configuration.prototype = {
-        pages: ['nas', 'certificate', 'system'],
+        pages: ['nas', 'certificate', 'system', 'app'],
 
         init: function () {
         },
@@ -47,6 +47,8 @@
                     return this.openSystemConfiguration();
                 case 'certificate':
                     return this.searchCertificates('');
+                case 'app':
+                    return this.openAppConfiguration();
                 default:
                     break;
             }
@@ -67,24 +69,44 @@
                         rate = config['rate_limiting'],
                         server = config['portal_server'],
                         activity = config['activity'],
-                        dialog = $('#configuration-system');
+                        parent = $('#configuration-system');
 
-                    dialog.find('#private-key').val(config['private_key']);
-                    dialog.find('#server-allow-nat').val(config['allow_nat']);
-                    dialog.find('#server-check-redirect-url').prop('checked', config['check_redirect_url']);
-                    dialog.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
-                    dialog.find('#session-ttl-value').val(session['ttl']);
-                    dialog.find('#session-token-ttl').val(session['token_ttl']);
-                    dialog.find('#enable-session-heartbeat').prop('checked', session['enable_heart_beat']);
-                    dialog.find('#session-heartbeat-interval').val(session['heart_beat_interval']);
-                    dialog.find('#portal-server-version').val(server['version']);
-                    dialog.find('#portal-server-listen-port').val(server['port']);
-                    dialog.find('#portal-server-shared-secret').val(server['shared_secret']);
-                    dialog.find('#enable-rate-limiting').prop('checked', config['enable_rate_limiting']);
-                    dialog.find('#activity-most-recent').val(activity['most_recent']);
-                    dialog.find('#min-activity-severity').val(activity['min_severity']);
-                    dialog.find('#enable-cluster').prop('checked', config['enable_cluster']);
-                    dialog.find('#cluster-redis-sentinels').val(config['cluster_sentinels']);
+                    parent.find('#private-key').val(config['private_key']);
+                    parent.find('#server-allow-nat').val(config['allow_nat']);
+                    parent.find('#server-check-redirect-url').prop('checked', config['check_redirect_url']);
+                    parent.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
+                    parent.find('#session-ttl-value').val(session['ttl']);
+                    parent.find('#session-token-ttl').val(session['token_ttl']);
+                    parent.find('#enable-session-heartbeat').prop('checked', session['enable_heart_beat']);
+                    parent.find('#session-heartbeat-interval').val(session['heart_beat_interval']);
+                    parent.find('#portal-server-version').val(server['version']);
+                    parent.find('#portal-server-listen-port').val(server['port']);
+                    parent.find('#portal-server-shared-secret').val(server['shared_secret']);
+                    parent.find('#enable-rate-limiting').prop('checked', config['enable_rate_limiting']);
+                    parent.find('#activity-most-recent').val(activity['most_recent']);
+                    parent.find('#min-activity-severity').val(activity['min_severity']);
+                    parent.find('#enable-cluster').prop('checked', config['enable_cluster']);
+                    parent.find('#cluster-redis-sentinels').val(config['cluster_sentinels']);
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status ,err);
+                });
+        },
+
+        /**
+         * Open app configuration.
+         * @returns {*}
+         */
+        openAppConfiguration: function () {
+            return $.portal.connector.request('get-config')
+                .done(function (response) {
+                    var apps = response['server_configuration']['apps'],
+                        parent = $('#configuration-app');
+
+                    parent.find('#ios-app').val(apps['ios_app']);
+                    parent.find('#android-app').val(apps['android_app']);
+                    parent.find('#mac-app').val(apps['mac_app']);
+                    parent.find('#linux-app').val(apps['linux_app']);
+                    parent.find('#windows-app').val(apps['windows_app']);
                 }).fail(function (xhr, status, err) {
                     $.application.displayRemoteError(xhr.responseText, status ,err);
                 });

@@ -25,10 +25,13 @@ public class Configuration {
     public static final String SERVER_CHECK_REDIRECT_URL = "server.check-redirect-url";
     public static final String SERVER_ADMIN_DEFAULT_USERNAME = "server.admin.default.username";
     public static final String SERVER_ADMIN_DEFAULT_PASSWORD = "server.admin.default.password";
+
     /** Main page redirect url. */
     public static final String MAIN_PAGE_REDIRECT_URL = "main-page.redirect.url";
+
     /** Allow nat. */
     public static final String NAT_ALLOWED = "nat.allowed";
+
     /** Rest configurations. */
     public static final String REST_HOST = "rest.host";
     public static final String REST_SERVER = "rest.server";
@@ -37,13 +40,16 @@ public class Configuration {
     public static final String REST_META = "rest.meta";
     public static final String REST_CHALLENGE_TTL = "rest.challenge.ttl";
     public static final String REST_TOKEN_TTL = "rest.token.ttl";
+
     /** Cluster configurations. */
     public static final String CLUSTER_ENABLED = "cluster.enabled";
     public static final String CLUSTER_REDIS_MASTER = "cluster.redis.master";
     public static final String CLUSTER_REDIS_SENTINELS = "cluster.redis.sentinels";
+
     /** Activity configurations. */
     public static final String ACTIVITY_MOST_RECENT = "activity.most-recent";
     public static final String ACTIVITY_LOGGING_MIN_SEVERITY = "activity.logging.minimum.severity";
+
     /** Session configurations. */
     public static final String SESSION_TTL_ENABLED = "session.ttl.enabled";
     public static final String SESSION_TTL_VALUE = "session.ttl.value";
@@ -52,10 +58,12 @@ public class Configuration {
     public static final String SESSION_HEARTBEAT_INTERVAL = "session.heartbeat.interval";
     public static final String SESSION_UPDATE_MIN_INTERVAL = "session.update.min-interval";
     public static final String SESSION_REMOVE_QUEUE_MAX_LENGTH = "session.remove.queue.max-length";
+
     /** Rate-limiting configurations. */
     public static final String RATE_LIMITING_ENABLED = "rate-limiting.enabled";
     public static final String RATE_LIMITING_RATE = "rate-limiting.rate";
     public static final String RATE_LIMITING_TTL = "rate-limiting.ttl";
+
     /** Portal server configurations. */
     public static final String PORTAL_SERVER_HOST = "portal-server.host";
     public static final String PORTAL_SERVER_NAME = "portal-server.name";
@@ -63,24 +71,34 @@ public class Configuration {
     public static final String PORTAL_SERVER_LISTEN_PORT = "portal-server.listen.port";
     public static final String PORTAL_SERVER_CORE_THREADS = "portal-server.core-threads";
     public static final String PORTAL_SERVER_SHARED_SECRET = "portal-server.shared-secret";
+
     /** Redirect configurations. */
     public static final String REDIRECT_USER_IP = "redirect.user.ip";
     public static final String REDIRECT_USER_MAC = "redirect.user.mac";
     public static final String REDIRECT_NAS_IP = "redirect.nas.ip";
-    
+
+    /** App download configurations. */
+    public static final String DOWNLOAD_IOS_APP = "app.download.ios";
+    public static final String DOWNLOAD_ANDROID_APP = "app.download.android";
+    public static final String DOWNLOAD_MAC_APP = "app.download.mac";
+    public static final String DOWNLOAD_LINUX_APP = "app.download.linux";
+    public static final String DOWNLOAD_WINDOWS_APP = "app.download.windows";
+
+    /** Internal configuration entries. */
     private final Map<String, ConfigurationEntry> entries = new HashMap<>();
 
+    /** Configuration metadata. */
     private static final EntryMetadata[] metadata = {
-                /* Server private key. */
+            /* Server private key. */
             EntryMetadata.of(SERVER_PRIVATE_KEY, ValueType.STRING),
             EntryMetadata.of(SERVER_CHECK_REDIRECT_URL, ValueType.BOOLEAN),
             EntryMetadata.of(SERVER_ADMIN_DEFAULT_USERNAME, ValueType.STRING),
             EntryMetadata.of(SERVER_ADMIN_DEFAULT_PASSWORD, ValueType.STRING),
-                /* Main page redirect url. */
+            /* Main page redirect url. */
             EntryMetadata.of(MAIN_PAGE_REDIRECT_URL, ValueType.STRING),
-                /* Allow nat. */
+            /* Allow nat. */
             EntryMetadata.of(NAT_ALLOWED, ValueType.BOOLEAN),
-                /* Rest configurations. */
+            /* Rest configurations. */
             EntryMetadata.of(REST_HOST, ValueType.STRING),
             EntryMetadata.of(REST_SERVER, ValueType.STRING),
             EntryMetadata.of(REST_SCHEME, ValueType.STRING),
@@ -88,14 +106,14 @@ public class Configuration {
             EntryMetadata.of(REST_META, ValueType.STRING),
             EntryMetadata.of(REST_CHALLENGE_TTL, ValueType.INTEGER),
             EntryMetadata.of(REST_TOKEN_TTL, ValueType.INTEGER),
-                /* Cluster configurations. */
+            /* Cluster configurations. */
             EntryMetadata.of(CLUSTER_ENABLED, ValueType.BOOLEAN),
             EntryMetadata.of(CLUSTER_REDIS_MASTER, ValueType.STRING),
             EntryMetadata.of(CLUSTER_REDIS_SENTINELS, ValueType.STRING),
-                /* Activity configurations. */
+            /* Activity configurations. */
             EntryMetadata.of(ACTIVITY_MOST_RECENT, ValueType.INTEGER),
             EntryMetadata.of(ACTIVITY_LOGGING_MIN_SEVERITY, ValueType.SEVERITY),
-                /* Session configurations. */
+            /* Session configurations. */
             EntryMetadata.of(SESSION_TTL_ENABLED, ValueType.BOOLEAN),
             EntryMetadata.of(SESSION_TTL_VALUE, ValueType.INTEGER),
             EntryMetadata.of(SESSION_TOKEN_TTL, ValueType.INTEGER),
@@ -103,21 +121,27 @@ public class Configuration {
             EntryMetadata.of(SESSION_HEARTBEAT_INTERVAL, ValueType.INTEGER),
             EntryMetadata.of(SESSION_UPDATE_MIN_INTERVAL, ValueType.INTEGER),
             EntryMetadata.of(SESSION_REMOVE_QUEUE_MAX_LENGTH, ValueType.INTEGER),
-                /* Rate-limiting configurations. */
+            /* Rate-limiting configurations. */
             EntryMetadata.of(RATE_LIMITING_ENABLED, ValueType.BOOLEAN),
             EntryMetadata.of(RATE_LIMITING_RATE, ValueType.INTEGER),
             EntryMetadata.of(RATE_LIMITING_TTL, ValueType.INTEGER),
-                /* Portal server configurations. */
+            /* Portal server configurations. */
             EntryMetadata.of(PORTAL_SERVER_NAME, ValueType.STRING),
             EntryMetadata.of(PORTAL_SERVER_HOST, ValueType.STRING),
             EntryMetadata.of(PORTAL_SERVER_PROTOCOL_VERSION, ValueType.STRING),
             EntryMetadata.of(PORTAL_SERVER_LISTEN_PORT, ValueType.INTEGER),
             EntryMetadata.of(PORTAL_SERVER_CORE_THREADS, ValueType.INTEGER),
             EntryMetadata.of(PORTAL_SERVER_SHARED_SECRET, ValueType.STRING),
-                /* redirect configurations. */
+            /* redirect configurations. */
             EntryMetadata.of(REDIRECT_USER_IP, ValueType.STRING),
             EntryMetadata.of(REDIRECT_USER_MAC, ValueType.STRING),
             EntryMetadata.of(REDIRECT_NAS_IP, ValueType.STRING),
+            /* App download configurations. */
+            EntryMetadata.of(DOWNLOAD_ANDROID_APP, ValueType.STRING),
+            EntryMetadata.of(DOWNLOAD_IOS_APP, ValueType.STRING),
+            EntryMetadata.of(DOWNLOAD_MAC_APP, ValueType.STRING),
+            EntryMetadata.of(DOWNLOAD_LINUX_APP, ValueType.STRING),
+            EntryMetadata.of(DOWNLOAD_WINDOWS_APP, ValueType.STRING),
     };
 
     public static Collection<String> keys() {

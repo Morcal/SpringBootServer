@@ -127,24 +127,6 @@ public class PortalErrorTranslator {
 
         return PortalError.of(entry.get().portalError);
     }
-//
-//    /**
-//     * Translate {@link TransportError}s to {@link PortalError}s.
-//     *
-//     * @param error protocol error.
-//     * @return portal error.
-//     * @throws ServerException If no portal error defined for protocol error.
-//     */
-//    private PortalError translate(TransportError error) throws ServerException {
-//        Optional<ProtocolEntry> entry = Stream.of(protocolTable)
-//                .filter(e -> e.protocolError == error.getValue())
-//                .findAny();
-//
-//        entry.orElseThrow(() -> new ServerException(
-//                PortalError.UNKNOWN_TRANSPORT_ERROR, String.valueOf(error)));
-//
-//        return PortalError.of(entry.get().portalError);
-//    }
 
     /**
      * Check if text contains any one of given string array.
@@ -161,27 +143,11 @@ public class PortalErrorTranslator {
         return false;
     }
 
-//    /**
-//     * Translate portal authentication error.
-//     *
-//     * @param text error text.
-//     * @return portal error.
-//     * @throws ServerException If no portal error defined for portal message text.
-//     */
-//    private PortalError translateAuthenticationError(String text) throws ServerException {
-//        Optional<MessageEntry> entry = Stream.of(messageTable)
-//                .filter(e -> contains(text, e.identifiers))
-//                .findAny();
-//
-//        entry.orElseThrow(() ->
-//                new ServerException(PortalError.UNKNOWN_TRANSPORT_ERROR, text));
-//
-//        return PortalError.of(entry.get().error);
-//    }
-
     /**
      * Translator internal entry.
+     *
      * <p>This class uses partial content of message as identifier.
+     *
      * <p>Each entry contains one or more partial content of error message.
      * If error message (from Portal service nodes, such as NAS/BRAS, AAA)
      * contains one of signatures defined in an entry, that error message will
@@ -230,6 +196,7 @@ public class PortalErrorTranslator {
 
     /**
      * HTTP status codes translator internal entry.
+     *
      * <p>When exceptions/errors occurred when process clients' requests,
      * PWS respond an error message with specific HTTP status code.
      * This class defines Entry of the translation table.

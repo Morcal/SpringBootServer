@@ -8,7 +8,7 @@
 
     Login.prototype = {
         /**
-         * Verfiy login username and password.
+         * Verify login username and password.
          * @param username username.
          * @param password password.
          * @returns {boolean} true if username and password provided and not empty.
@@ -20,14 +20,12 @@
             if ($.utils.isEmpty(username)) {
                 username.focus();
                 username.tooltip('show');
-                e.preventDefault();
                 return false;
             }
 
             if ($.utils.isEmpty(password)) {
                 password.focus();
                 password.tooltip('show');
-                e.preventDefault();
                 return false;
             }
 

@@ -63,6 +63,9 @@ public class ServerConfiguration {
     @JsonProperty("redirect")
     private RedirectConfiguration redirectConfiguration;
 
+    @JsonProperty("apps")
+    private AppConfiguration appConfiguration;
+
     public boolean isEnableCluster() {
         return enableCluster;
     }
@@ -183,6 +186,14 @@ public class ServerConfiguration {
         this.defaultAdminUsername = defaultAdminUsername;
     }
 
+    public AppConfiguration getAppConfiguration() {
+        return appConfiguration;
+    }
+
+    public void setAppConfiguration(AppConfiguration appConfiguration) {
+        this.appConfiguration = appConfiguration;
+    }
+
     @Override
     public String toString() {
         return "ServerConfiguration{" +
@@ -194,6 +205,7 @@ public class ServerConfiguration {
                 ", checkRedirectUrl=" + checkRedirectUrl +
                 ", defaultAdminUsername='" + defaultAdminUsername + '\'' +
                 ", defaultAdminPasswordMd5='" + defaultAdminPassword + '\'' +
+                ", appConfiguration=" + appConfiguration +
                 ", activityConfiguration=" + activityConfiguration +
                 ", clusterConfiguration=" + clusterConfiguration +
                 ", portalServerConfiguration=" + portalServerConfiguration +

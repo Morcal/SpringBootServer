@@ -28,7 +28,7 @@ public class AuthenticationSuccessEventHandler
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         if (event.getSeverity().ordinal() <=
-                serverConfiguration.getActivityConfiguration().getMinimumSevertiy().ordinal()) {
+                serverConfiguration.getActivityConfiguration().getMinimumSeverity().ordinal()) {
             Activity activity = new Activity();
             activity.setAction(Activity.SessionAction.AUTHENTICATE.name());
             activity.setFacility(Activity.Facility.PORTAL);

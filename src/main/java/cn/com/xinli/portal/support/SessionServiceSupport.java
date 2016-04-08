@@ -28,7 +28,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Session Service Support.
@@ -81,14 +80,11 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     /** Remove queue. */
     private final BlockingQueue<Session> removeQueue;
 
-    private AtomicInteger currentSessions;
-
     @Autowired
     public SessionServiceSupport(ServerConfiguration serverConfiguration) {
         updateMinInterval = serverConfiguration.getSessionConfiguration().getMinUpdateInterval();
         removeQueue = new ArrayBlockingQueue<>(
                 serverConfiguration.getSessionConfiguration().getRemoveQueueMaxLength());
-        currentSessions = new AtomicInteger(0);
         /* Remover executor. */
         ExecutorService executor = Executors.newFixedThreadPool(
                 2,
@@ -104,11 +100,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     @Override
     public boolean exists(long id) {
         return sessionStore.exists(id);
-    }
-
-    @Override
-    public int currentSessions() {
-        return currentSessions.get();
     }
 
     /**
@@ -221,9 +212,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         /* Only put to cache if no exceptions or rollback occurred. */
         sessionStore.put(session);
 
-        int current = currentSessions.incrementAndGet();
-        logger.info("current sessions: {}.", current);
-
         return session;
     }
 
@@ -260,9 +248,6 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         /* Only put to cache if no exceptions or rollback occurred. */
         sessionStore.delete(id);
         logger.debug("Session {} removed.", id);
-
-        int current = currentSessions.decrementAndGet();
-        logger.info("current sessions: {}.", current);
     }
 
     /**

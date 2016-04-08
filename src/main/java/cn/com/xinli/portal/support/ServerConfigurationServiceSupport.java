@@ -56,7 +56,7 @@ public class ServerConfigurationServiceSupport implements ServerConfigurationSer
      * be called to apply those modifications.
      */
     @PostConstruct
-    public void init() throws ServerException, ServerConfigurationNotExistsException {
+    public void init() throws ServerException {
         if (!isServerConfigured()) {
             logger.warn("server configuration not exists, using defaults.");
             /* Server configuration never been saved yet. */
@@ -96,8 +96,7 @@ public class ServerConfigurationServiceSupport implements ServerConfigurationSer
     }
 
     @Override
-    public void updateConfigurationEntry(String key, String value)
-            throws ServerConfigurationNotExistsException, ServerException {
+    public void updateConfigurationEntry(String key, String value) throws ServerException {
 
         ConfigurationEntry entry = configuration.getEntry(key);
 

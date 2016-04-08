@@ -47,6 +47,7 @@ public enum PortalError {
     NAS_NOT_FOUND(32, "nas not found"),
     NAS_IP_OVERLAPPED(33, "nas with ip address already exists"),
     NEED_SSL(41, "need ssl"),
+    APP_NOT_AVAILABLE(42, "app not available"),
     REDUNDANT_API_REGISTRATION(61, "redundant api registration"),
     REDUNDANT_API_ENTRY(62, "redundant api entry"),
 
