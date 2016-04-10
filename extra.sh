@@ -11,6 +11,8 @@ rm -rf target
 tar zxf jar.tar.gz
 cp -r target/classes/* jar/
 
-cp backup/main.html jar/WEB-INF/static/html/
+if [ -d backup ] && [ -f backup/main.html ]; then
+    cp backup/main.html jar/WEB-INF/static/html/
+fi
 
 rm -rf target

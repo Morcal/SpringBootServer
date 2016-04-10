@@ -22,4 +22,25 @@ if [ ! -x "$PRG_DIR"/"$EXECUTABLE" ]; then
         exit 1
 fi
 
-exec "$PRG_DIR"/"$EXECUTABLE" "$@"
+EXECUTABLE=`readlink -e "$PRG_DIR"/"$EXECUTABLE"`
+
+start_portal() {
+        echo Enter directory $1
+        cd $1
+
+        if [ ! -d logs ]; then
+                echo Creating logs directory...
+                mkdir logs
+        fi
+
+        if [ ! -d apps ]; then
+                echo Creating apps directory...
+                mkdir apps
+        fi
+
+        echo Starting portal application...
+
+        exec $2 "$@"
+}
+
+start_portal ${PRG_DIR} ${EXECUTABLE}

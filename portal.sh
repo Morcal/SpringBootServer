@@ -14,11 +14,13 @@ while [ -h "$PRG" ] ; do
         fi
 done
 
-PORTAL_HOME=`dirname "$PRG"`/..
+PORTAL_HOME=`dirname "$PRG"`
 MAIN_CLASS=cn.com.xinli.portal.PortalApplication
-JAVA_HOME=/opt/jvm/current
+JAVA_HOME=`readlink -e /opt/jvm/current`
 JAVA=${JAVA_HOME}/bin/java
 LOG_FILE=${PORTAL_HOME}/logs/xpws.log
 
-nohup ${JAVA} -Djava.security.egd=/dev/urandom -Djava.ext.dirs=${JAVA_HOME}/jre/lib/ext:lib -cp jar ${MAIN_CLASS} >> ${LOG_FILE} 2>&1 &
+echo Using ${JAVA}.
+echo Starting portal in ${PORTAL_HOME}, java path: ${JAVA_HOME}.
 
+nohup ${JAVA} -Djava.security.egd=/dev/urandom -Djava.ext.dirs=${JAVA_HOME}/jre/lib/ext:lib -cp jar ${MAIN_CLASS} >> ${LOG_FILE} 2>&1 &

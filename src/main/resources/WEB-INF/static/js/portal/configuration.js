@@ -51,7 +51,7 @@
             bar.find('.progress-bar').css(
                 'width',
                 progress + '%'
-            );
+            ).html(progress + '%');
         },
 
         /**
@@ -80,12 +80,14 @@
                     $.portal.configuration.updateUploadProgress(progress);
                 },
                 done: function (e, data) {
-                    $('#loading').modal('hide');
                     $(input).val(data.result['app']['filepath']);
                 },
                 fail: function () {
                     $.application.alert('Upload failed',
-                        'Check if upload file is large than limit or server disk is full.');
+                        'Check if <code>apps</code> directory exists, upload file is large than limit or server disk is full.');
+                },
+                always: function () {
+                    $('#loading').modal('hide');
                 }
             });
         },

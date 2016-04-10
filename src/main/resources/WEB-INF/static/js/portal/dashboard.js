@@ -114,6 +114,9 @@
 
             $.logging.debug('updating devices...');
 
+            if (devices.length < 1)
+                return;
+
             parent = $('#devices-summary').children('div');
             parent.children().remove();
 

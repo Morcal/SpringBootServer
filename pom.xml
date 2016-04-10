@@ -148,11 +148,11 @@
                             <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/main/scripts</directory>
+                                    <directory>${basedir}/src/main/scripts</directory>
                                     <filtering>true</filtering>
                                 </resource>
                                 <resource>
-                                    <directory>${basedir}/main/conf</directory>
+                                    <directory>${basedir}/src/main/conf</directory>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
