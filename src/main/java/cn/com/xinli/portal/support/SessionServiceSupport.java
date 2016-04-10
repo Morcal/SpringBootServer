@@ -5,7 +5,7 @@ import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.certificate.Certificate;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
 import cn.com.xinli.portal.core.nas.Nas;
@@ -81,10 +81,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
     private final BlockingQueue<Session> removeQueue;
 
     @Autowired
-    public SessionServiceSupport(ServerConfiguration serverConfiguration) {
-        updateMinInterval = serverConfiguration.getSessionConfiguration().getMinUpdateInterval();
+    public SessionServiceSupport(ServerConfigurationService scs) {
+        updateMinInterval = scs.getServerConfiguration().getSessionConfiguration().getMinUpdateInterval();
         removeQueue = new ArrayBlockingQueue<>(
-                serverConfiguration.getSessionConfiguration().getRemoveQueueMaxLength());
+                scs.getServerConfiguration().getSessionConfiguration().getRemoveQueueMaxLength());
         /* Remover executor. */
         ExecutorService executor = Executors.newFixedThreadPool(
                 2,

@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.web.rest;
 
 import cn.com.xinli.portal.core.certificate.CertificateService;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.web.auth.AuthorizationServer;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.auth.challenge.ChallengeManager;
@@ -35,7 +35,7 @@ public class RestAuthorizationServer implements AuthorizationServer {
     private CertificateService certificateService;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     public boolean certificated(String clientId) {
@@ -61,7 +61,7 @@ public class RestAuthorizationServer implements AuthorizationServer {
 
     @Override
     public boolean verifyIp(String realIp, String ip, String remote) {
-        if (!serverConfiguration.isAllowNat()) {
+        if (!serverConfigurationService.getServerConfiguration().isAllowNat()) {
             if ((!StringUtils.isEmpty(realIp) || !StringUtils.isEmpty(ip)) &&
                     !AddressUtil.validateIp(realIp, ip, remote)) {
                 if (logger.isDebugEnabled()) {

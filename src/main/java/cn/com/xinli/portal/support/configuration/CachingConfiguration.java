@@ -3,6 +3,7 @@ package cn.com.xinli.portal.support.configuration;
 import cn.com.xinli.portal.core.Context;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.session.Session;
@@ -91,7 +92,7 @@ public class CachingConfiguration {
     private static final String TOKEN_KEY_DELIMITER = ":";
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Bean
     public Serializer<Session> sessionSerializer() {
@@ -130,6 +131,7 @@ public class CachingConfiguration {
 
     @Bean
     public EhcacheManagerAdapter ehcacheManagerAdapter() {
+        final ServerConfiguration serverConfiguration = serverConfigurationService.getServerConfiguration();
         EhcacheManagerAdapter adapter = new EhcacheManagerAdapter(PWS_CACHE_NAME);
 
         /* Create session cache. */
@@ -138,8 +140,8 @@ public class CachingConfiguration {
         /* Create session search cache. */
         adapter.createCache(SESSION_SEARCH_CACHE_NAME,
                 MAX_SESSION_SEARCH_CACHE_ENTRIES, new SessionSearchable(),
-                serverConfiguration.getSessionConfiguration().isEnableTtl(),
-                serverConfiguration.getSessionConfiguration().getTtl());
+                serverConfigurationService.getServerConfiguration().getSessionConfiguration().isEnableTtl(),
+                serverConfigurationService.getServerConfiguration().getSessionConfiguration().getTtl());
 
         /* Create certificate cache. */
         adapter.createCache(CERTIFICATE_CACHE_NAME, DEFAULT_MAX_SUPPORTED);
@@ -161,11 +163,11 @@ public class CachingConfiguration {
 
         /* Create challenge cache. */
         adapter.createCache(CHALLENGE_CACHE_NAME, MAX_CHALLENGE_CACHE_ENTRIES, true,
-                serverConfiguration.getRestConfiguration().getChallengeTtl());
+                serverConfigurationService.getServerConfiguration().getRestConfiguration().getChallengeTtl());
 
         /* Create rate limiting cache. */
         adapter.createCache(RATE_LIMITING_CACHE_NAME, MAX_RATE_LIMITING_CACHE_ENTRIES, true,
-                serverConfiguration.getRateLimitingConfiguration().getTtl());
+                serverConfigurationService.getServerConfiguration().getRateLimitingConfiguration().getTtl());
 
         return adapter;
     }

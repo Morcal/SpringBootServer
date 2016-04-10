@@ -1,7 +1,7 @@
 package cn.com.xinli.portal.web.auth.token;
 
 import cn.com.xinli.portal.core.Serializer;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.session.SessionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class SessionTokenService extends AbstractTokenService {
     private Serializer<TokenKey> delimiterTokenKeySerializer;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     protected TokenScope getTokenScope() {
@@ -58,7 +58,7 @@ public class SessionTokenService extends AbstractTokenService {
 
     @Override
     protected int getTokenTtl() {
-        return serverConfiguration.getSessionConfiguration().getTokenTtl();
+        return serverConfigurationService.getServerConfiguration().getSessionConfiguration().getTokenTtl();
     }
 
 }

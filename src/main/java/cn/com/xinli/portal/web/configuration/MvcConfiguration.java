@@ -1,8 +1,11 @@
 package cn.com.xinli.portal.web.configuration;
 
+import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.configuration.RestConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.support.configuration.ApiConfiguration;
+import cn.com.xinli.portal.web.controller.WebExceptionAdvisor;
 import cn.com.xinli.portal.web.rest.Scheme;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -14,14 +17,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,7 +63,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfig
     private static final int DEFAULT_WEB_SERVER_PORT = 80;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @EventListener
     public void onEmbeddedServletContainerInitialized(EmbeddedServletContainerInitializedEvent event) {
@@ -67,7 +73,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfig
 
     @Bean
     public Scheme scheme() {
-        RestConfiguration config = serverConfiguration.getRestConfiguration();
+        RestConfiguration config = serverConfigurationService.getServerConfiguration().getRestConfiguration();
         Scheme scheme = new Scheme();
         scheme.setUri(ApiConfiguration.API_PATH);
         scheme.setVersion("1.0");
@@ -82,6 +88,7 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfig
 
     @Bean
     public View mainPageView() {
+        final ServerConfiguration serverConfiguration = serverConfigurationService.getServerConfiguration();
         if (!StringUtils.isEmpty(serverConfiguration.getMainPageRedirectUrl())) {
             return new RedirectView(serverConfiguration.getMainPageRedirectUrl());
         } else {
@@ -137,28 +144,6 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfig
        return new InternalResourceView("/html/error.html");
     }
 
-//    /**
-//     * Default exception resolver.
-//     *
-//     * <p>By default, all unhandled exceptions thrown from web application modules
-//     * will be handled here, and PWS will display an error page.</p>
-//     *
-//     * <p>REST modules should handle unhandled exceptions thrown from REST modules
-//     * differently and separately.</p>
-//     *
-//     * @see cn.com.xinli.portal.web.controller.RestExceptionAdvisor
-//     * @return {@link HandlerExceptionResolver}
-//     */
-//    @Bean
-//    public HandlerExceptionResolver simpleMappingExceptionResolver() {
-//        SimpleMappingExceptionResolver resolver = new SimpleMappingExceptionResolver();
-//        Properties mapping = new Properties();
-//        mapping.setProperty("PortalException", "error");
-//        resolver.setExceptionMappings(mapping);
-//        resolver.setDefaultErrorView(WebExceptionAdvisor.DEFAULT_ERROR_VIEW);
-//        return resolver;
-//    }
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(webContentInterceptor());
@@ -168,16 +153,12 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter /*WebMvcAutoConfig
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/html/**")
                 .addResourceLocations("classpath:/WEB-INF/static/html/");
-//                .setCachePeriod(0);
         registry.addResourceHandler("/css/**").
                 addResourceLocations("classpath:/WEB-INF/static/css/");
-//                .setCachePeriod(0);
         registry.addResourceHandler("/js/**")
                 .addResourceLocations("classpath:/WEB-INF/static/js/");
-//                .setCachePeriod(0);
         registry.addResourceHandler("/fonts/**")
                 .addResourceLocations("classpath:/WEB-INF/static/fonts/");
-//                .setCachePeriod(0);
         registry.addResourceHandler("/img/**")
                 .addResourceLocations("classpath:/WEB-INF/static/img/");
     }

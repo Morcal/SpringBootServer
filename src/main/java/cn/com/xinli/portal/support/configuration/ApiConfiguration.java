@@ -67,6 +67,7 @@ public class ApiConfiguration {
     public static final String ADMIN_API_CERTIFICATE = "certificates";
     public static final String ADMIN_API_SEARCH_CERTIFICATE = "search/certificates";
     public static final String ADMIN_API_STATISTICS = "statistics";
+    public static final String ADMIN_API_APP = "apps";
 
     /**
      * Create portal api entry point url.
@@ -138,6 +139,8 @@ public class ApiConfiguration {
         registration.registerApi(createCertificate());
         registration.registerApi(updateCertificate());
         registration.registerApi(getSystemStatistics());
+        registration.registerApi(uploadApp());
+        registration.registerApi(deleteApp());
 
         return registration;
     }
@@ -424,6 +427,38 @@ public class ApiConfiguration {
                 Activity.SystemAction.GET_SYSTEM_STATISTICS.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_STATISTICS),
                 RequestMethod.GET.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create upload app entry point.
+     * @return api entry point.
+     */
+    private EntryPoint uploadApp() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.SystemAction.UPLOAD_APP.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_APP),
+                RequestMethod.POST.name(),
+                "JSON",
+                true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+    /**
+     * Create upload app entry point.
+     * @return api entry point.
+     */
+    private EntryPoint deleteApp() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
+                Activity.SystemAction.DELETE_APP.alias(),
+                url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_APP),
+                RequestMethod.DELETE.name(),
                 "JSON",
                 true);
         logger.info("Creating: {}.", api);

@@ -7,6 +7,7 @@ import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateService;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasLocator;
@@ -74,7 +75,11 @@ public class SessionControllerImpl implements SessionController {
     private CertificateService certificateService;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
+
+    private ServerConfiguration getServerConfiguration() {
+        return serverConfigurationService.getServerConfiguration();
+    }
 
     /**
      * Create default context for empty redirect url.
@@ -166,7 +171,7 @@ public class SessionControllerImpl implements SessionController {
         Certificate certificate = certificateService.loadCertificate(app);
 
         Context context;
-        if (serverConfiguration.isCheckRedirectUrl()) {
+        if (serverConfigurationService.getServerConfiguration().isCheckRedirectUrl()) {
             context = createContext(credentials, redirectUrl);
         } else {
             context = createDefaultContext(ip, mac);
@@ -188,7 +193,7 @@ public class SessionControllerImpl implements SessionController {
         Token ctx = contextTokenService.allocateToken(contextTokenService.encode(context));
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, session, authentication, true, ctx, false);
+                getServerConfiguration(), session, authentication, true, ctx, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("connect -> {} ", rs);
@@ -207,7 +212,7 @@ public class SessionControllerImpl implements SessionController {
         logger.trace("get session {{}}.", session.getId());
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, session, (AccessAuthentication) principal, false, null, false);
+                getServerConfiguration(), session, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("get -> {} ", rs);
@@ -229,7 +234,7 @@ public class SessionControllerImpl implements SessionController {
 
         /* send updated session information. */
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, updated, (AccessAuthentication) principal, false, null, false);
+                getServerConfiguration(), updated, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("update -> {} ", rs);
@@ -249,7 +254,7 @@ public class SessionControllerImpl implements SessionController {
         logger.info("session removed {}.", id);
 
         RestResponse rs = RestResponseBuilders.buildSessionResponse(
-                serverConfiguration, null, (AccessAuthentication) principal, false, null, false);
+                getServerConfiguration(), null, (AccessAuthentication) principal, false, null, false);
 
         if (logger.isDebugEnabled()) {
             logger.debug("disconnect -> {} ", rs);
@@ -314,7 +319,7 @@ public class SessionControllerImpl implements SessionController {
 
         if (!opt.isPresent()) {
             rs = RestResponseBuilders.buildSessionResponse(
-                    serverConfiguration, null, (AccessAuthentication) principal, false, null, false);
+                    getServerConfiguration(), null, (AccessAuthentication) principal, false, null, false);
         } else {
             Session session = opt.get();
 
@@ -330,7 +335,7 @@ public class SessionControllerImpl implements SessionController {
             logger.info("session found, id: {}", session.getId());
 
             rs = RestResponseBuilders.buildSessionResponse(
-                    serverConfiguration, session, (AccessAuthentication) principal, true, ctx, networkChanged);
+                    getServerConfiguration(), session, (AccessAuthentication) principal, true, ctx, networkChanged);
         }
 
         if (logger.isDebugEnabled()) {

@@ -238,7 +238,7 @@
          */
         deleteSessionInternal: function (session) {
             var that = this;
-            return $.portal.connector.request('disconnect', session, { args: [session]})
+            return $.portal.connector.request('disconnect', session)
                 .done(function () {
                     that.searchSessions($('#session-search').val());
                 }).fail(function (xhr, status, err) {

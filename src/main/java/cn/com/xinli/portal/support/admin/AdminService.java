@@ -4,6 +4,7 @@ import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.util.Asserts;
 import cn.com.xinli.portal.util.CodecUtils;
 import org.apache.commons.codec.binary.Hex;
@@ -24,7 +25,7 @@ import java.util.Objects;
 public class AdminService {
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     /**
      * Perform CHAP authentication.
@@ -41,8 +42,9 @@ public class AdminService {
             return false;
         }
 
-        final String expectUsername = serverConfiguration.getDefaultAdminUsername(),
-                expectPassword = serverConfiguration.getDefaultAdminPassword();
+        final ServerConfiguration serverConfiguration = serverConfigurationService.getServerConfiguration();
+        final String expectUsername = serverConfigurationService.getServerConfiguration().getDefaultAdminUsername(),
+                expectPassword = serverConfigurationService.getServerConfiguration().getDefaultAdminPassword();
 
         /* Calculate CHAP password. */
         final String expectPasswordMd5 = new String(

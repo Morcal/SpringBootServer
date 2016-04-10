@@ -1,70 +1,107 @@
 
-<div class="form-group">
-    <div>
-            <p>App packages must be stored in jar/WEB-INF or sub directory in jar/WEB-INF.</p>
-            <p>App packages file path are based on jar/WEB-INF. For example, portal-android.apk
-            was stored in <code>/jar/WEB-INF/download/portal-android.apk</code>, then file path is
-            <code>/download/portal-android.apk</code></p>
+<div class="col-sm-9">
+    <div class="form-group">
+        <div>
+            <span class="label label-success">Tips</span>
+            <p>Uploaded App files are saved in <code>apps</code> directory automatically. <br/>
+            Associated download configurations will be generated accordingly.</p>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="ios-app" class="control-label">iOS app </label>
+        <div class="input-group">
+            <span class="input-group-btn">
+                <label class="btn btn-warning" for="ios-app-file">
+                    <input id="ios-app-file" type="file" style="display:none;">Browse
+                </label>
+            </span>
+            <input id="ios-app" type="text" class="form-control" placeholder="Not uploaded yet..." readonly>
+            <span class="input-group-btn">
+                <button id="delete-ios-app" type="button" class="btn btn-danger">Delete</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="android-app" class="control-label">Android app </label>
+        <div class="input-group">
+            <span class="input-group-btn">
+                <label class="btn btn-warning" for="android-app-file">
+                    <input id="android-app-file" type="file" style="display:none;">Browse
+                </label>
+            </span>
+            <input id="android-app" type="text" class="form-control" placeholder="Not uploaded yet..." readonly>
+            <span class="input-group-btn">
+                <button id="delete-android-app" type="button" class="btn btn-danger">Delete</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="mac-app" class="control-label">Mac app </label>
+        <div class="input-group">
+            <span class="input-group-btn">
+                <label class="btn btn-warning" for="mac-app-file">
+                    <input id="mac-app-file" type="file" style="display:none;">Browse
+                </label>
+            </span>
+            <input id="mac-app" type="text" class="form-control" placeholder="Not uploaded yet..." readonly>
+            <span class="input-group-btn">
+                <button id="delete-mac-app" type="button" class="btn btn-danger">Delete</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="linux-app" class="control-label">Linux app </label>
+        <div class="input-group">
+            <span class="input-group-btn">
+                <label class="btn btn-warning" for="linux-app-file">
+                    <input id="linux-app-file" type="file" style="display:none;">Browse
+                </label>
+            </span>
+            <input id="linux-app" type="text" class="form-control" placeholder="Not uploaded yet..." readonly>
+            <span class="input-group-btn">
+                <button id="delete-linux-app" type="button" class="btn btn-danger">Delete</button>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="windows-app" class="control-label">Windows app </label>
+        <div class="input-group">
+            <span class="input-group-btn">
+                <label class="btn btn-warning" for="windows-app-file">
+                    <input id="windows-app-file" type="file" style="display:none;">Browse
+                </label>
+            </span>
+            <input id="windows-app" type="text" class="form-control" placeholder="Not uploaded yet..." readonly>
+            <span class="input-group-btn">
+                <button id="delete-windows-app" type="button" class="btn btn-danger">Delete</button>
+            </span>
+        </div>
     </div>
 </div>
 
-<div class="form-group">
-    <label for="ios-app" class="control-label">iOS app file path</label>
-    <input type="text" id="ios-app" class="form-control" placeholder="iOS app file path"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <label for="android-app" class="control-label">Android app file path</label>
-    <input type="text" id="android-app" class="form-control" placeholder="Android app file path"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <label for="mac-app" class="control-label">Mac app file path</label>
-    <input type="text" id="mac-app" class="form-control" placeholder="Mac app file path"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <label for="linux-app" class="control-label">Linux app file path</label>
-    <input type="text" id="linux-app" class="form-control" placeholder="Linux app file path"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <label for="windows-app" class="control-label">Windows app file path</label>
-    <input type="text" id="windows-app" class="form-control" placeholder="Windows app file path"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-
 <script language="javascript">
-    function saveAppConfig(args) {
-        $.application.load({
-            function: $.portal.configuration.saveConfiguration,
-            object: $.portal.configuration,
-            args: args
-        });
-    }
-
-    $('#ios-app').change(function () {
-        saveAppConfig(['app.download.ios', $(this).val()]);
+    $('#delete-ios-app').click(function () {
+        $.portal.configuration.deleteApp('ios');
     });
 
-    $('#android-app').change(function () {
-        saveAppConfig(['app.download.android', $(this).val()]);
+    $('#delete-android-app').click(function () {
+        $.portal.configuration.deleteApp('android');
     });
 
-    $('#mac-app').change(function () {
-        saveAppConfig(['app.download.mac', $(this).val()]);
+    $('#delete-mac-app').click(function () {
+        $.portal.configuration.deleteApp('mac');
     });
 
-    $('#linux-app').change(function () {
-        saveAppConfig(['app.download.linux', $(this).val()]);
+    $('#delete-linux-app').click(function () {
+        $.portal.configuration.deleteApp('linux');
     });
 
-    $('#windows-app').change(function () {
-        saveAppConfig(['app.download.windows', $(this).val()]);
+    $('#delete-windows-app').click(function () {
+        $.portal.configuration.deleteApp('windows');
     });
 </script>

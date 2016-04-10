@@ -212,6 +212,8 @@ public class Activity {
     public enum SystemAction {
         GET_SYSTEM_STATISTICS("get-statistics"),
         DELETE_OLD_ACTIVITIES("delete-activities"),
+        UPLOAD_APP("upload-app"),
+        DELETE_APP("delete-app"),
         NTF_LOGOUT("ntf-logout");
 
         /**

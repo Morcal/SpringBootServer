@@ -32,7 +32,8 @@ public class SystemRuntimeFilter extends OncePerRequestFilter {
         long start = System.currentTimeMillis();
         filterChain.doFilter(request, response);
 
-        if (!request.getRequestURI().contains("download")) {
+        /* Exclude app download/upload requests. */
+        if (!request.getRequestURI().contains("apps")) {
             long responseTime = System.currentTimeMillis() - start;
             LoadStatistics.LoadRecord record = new LoadStatistics.LoadRecord(false);
             record.setResponseTime(responseTime);

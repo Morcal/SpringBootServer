@@ -14,13 +14,12 @@
          * Initialize web application.
          */
         init: function () {
-            $.portal.configuration.init();
-
             this.load({
                 function: $.portal.connector.create,
                 object: $.portal.connector,
                 args: ['/portal/admin/api']
             }).done(function () {
+                $.portal.configuration.init();
                 $('#login-dialog').modal('show');
             });
         },

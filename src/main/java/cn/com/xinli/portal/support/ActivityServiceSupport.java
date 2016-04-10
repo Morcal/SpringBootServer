@@ -1,10 +1,10 @@
 package cn.com.xinli.portal.support;
 
 import cn.com.xinli.portal.core.activity.Activity;
-import cn.com.xinli.portal.core.activity.ActivityStore;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
-import cn.com.xinli.portal.support.aspect.SystemActivityAspect;
 import cn.com.xinli.portal.core.activity.ActivityService;
+import cn.com.xinli.portal.core.activity.ActivityStore;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
+import cn.com.xinli.portal.support.aspect.SystemActivityAspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class ActivityServiceSupport implements ActivityService {
     private ActivityStore activityStore;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     public void log(Activity activity) {
@@ -63,7 +63,8 @@ public class ActivityServiceSupport implements ActivityService {
     @Scheduled(cron = "0 0 4 * * *")
     public void deleteOldActivities() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -1 * serverConfiguration.getActivityConfiguration().getMostRecent());
+        calendar.add(Calendar.DATE,
+                -1 * serverConfigurationService.getServerConfiguration().getActivityConfiguration().getMostRecent());
         Date date = calendar.getTime();
         logger.info("Deleting old activities before {}", date);
 

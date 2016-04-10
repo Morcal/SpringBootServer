@@ -11,16 +11,16 @@ body {
 
 .banner {
     /*width: 500px;*/
-    height: 465px;
-    min-width: 545px;
-    min-height: 465px;
+    /*height: 465px;*/
+    min-width: 300px;
+    min-height: 300px;
 }
 
 .download-background-img {
     background: transparent url(/img/banner-ios.png) no-repeat;
-    background-size: auto auto;
+    background-size: contain;
 }
 
-.download-content {
-    padding-top: 125px;
+#download-app {
+    margin-top: 10%;
 }

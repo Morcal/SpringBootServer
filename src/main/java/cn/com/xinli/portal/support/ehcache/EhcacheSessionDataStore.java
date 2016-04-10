@@ -2,7 +2,7 @@ package cn.com.xinli.portal.support.ehcache;
 
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.Serializer;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.configuration.SessionConfiguration;
 import cn.com.xinli.portal.core.session.Session;
 import cn.com.xinli.portal.core.session.SessionNotFoundException;
@@ -76,7 +76,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
     private SessionCacheEventListener sessionCacheEventListener;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     public void init() {
@@ -97,7 +97,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
 
     @Scheduled(fixedDelay = 10_000L)
     public void evictExpiredSessions() {
-        if (serverConfiguration.getSessionConfiguration().isEnableTtl()) {
+        if (serverConfigurationService.getServerConfiguration().getSessionConfiguration().isEnableTtl()) {
 //            if (logger.isTraceEnabled()) {
 //                logger.trace("Evicting expired sessions.");
 //            }
@@ -155,7 +155,7 @@ public class EhcacheSessionDataStore implements SessionStore, InitializingBean {
         final byte[] value = sessionSerializer.serialize(session);
         Element element;
 
-        SessionConfiguration config = serverConfiguration.getSessionConfiguration();
+        SessionConfiguration config = serverConfigurationService.getServerConfiguration().getSessionConfiguration();
         if (config.isEnableTtl()) {
             element = new Element(
                     key,

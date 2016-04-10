@@ -2,7 +2,6 @@ package cn.com.xinli.portal;
 
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.configuration.PortalServerConfiguration;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.session.SessionProvider;
@@ -40,11 +39,6 @@ public class Bootstrap {
     @Autowired
     private ServerConfigurationService serverConfigurationService;
 
-    @Bean
-    public ServerConfiguration serverConfiguration() {
-        return serverConfigurationService.getServerConfiguration();
-    }
-
     /**
      * Setup system supported session providers.
      * @return list of session providers.
@@ -58,7 +52,6 @@ public class Bootstrap {
         return providers;
     }
 
-
     /**
      * Define portal server (receiving request from NAS).
      *
@@ -67,11 +60,12 @@ public class Bootstrap {
      *
      * @return internal portal server.
      * @throws NasNotFoundException
+     * @throws UnknownHostException
      */
     @Bean(name = "internalPortalServer", initMethod = "start", destroyMethod = "shutdown")
     @Autowired
     public PortalServer portalServer(InternalServerHandler internalServerHandler)
-            throws NasNotFoundException, ServerException, UnknownHostException {
+            throws ServerException, UnknownHostException {
         PortalServerConfiguration config =
                 serverConfigurationService.getServerConfiguration().getPortalServerConfiguration();
         Endpoint endpoint = new Endpoint();

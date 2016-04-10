@@ -19,8 +19,15 @@
             <div class="modal-header">
                 <h4>Loading...</h4>
             </div>
+            <div class="modal-body">
+                <div id="loading-progress-bar" class="progress in">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="0"
+                         aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                        0%
+                    </div>
+                </div>
+            </div>
             <div class="modal-footer">
-
             </div>
         </div>
     </div>
@@ -54,13 +61,13 @@ Login modal dialog.
     <div class="container">
         <div class="row">
             <!-- navigation sidebar. -->
-            <div id="nav-sidebar" class="col-md-3"></div>
+            <div id="nav-sidebar" class="col-sm-3"></div>
 
             <!-- Dashboard. -->
-            <div id="dashboard" class="col-md-12"></div>
+            <div id="dashboard" class="col-sm-12"></div>
 
             <!-- Configurations. -->
-            <div id="configuration" class="col-md-9 collapse">
+            <div id="configuration" class="col-sm-9 collapse">
                 <div id="configuration-nas" class="module-content"></div>
                 <div id="configuration-certificate" class="module-content collapse"></div>
                 <div id="configuration-system" class="module-content collapse"></div>
@@ -68,7 +75,7 @@ Login modal dialog.
             </div>
 
             <!-- Management. -->
-            <div id="management" class="col-md-9 collapse">
+            <div id="management" class="col-sm-9 collapse">
                 <div id="management-session" class="module-content"></div>
                 <div id="management-activity" class="module-content collapse"></div>
             </div>
@@ -81,8 +88,15 @@ Login modal dialog.
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="../js/jquery-2.2.1.js"></script>
 <script src="../js/bootstrap.js"></script>
+
+<script language="javascript">
+    $('#loading').modal('show');
+</script>
+
 <script src="../js/Chart.js"></script>
 <!--<script src="../js/Chart.HorizontalBar.js"></script>-->
+<script src="../js/jquery.ui.widget.js"></script>
+<script src="../js/jquery.fileupload.js"></script>
 <script src="../js/jquery.timer.js"></script>
 <script src="../js/utils.js"></script>
 <script src="../js/md5.js"></script>
@@ -119,6 +133,7 @@ Login modal dialog.
 //        $('#configuration-nas-search').affix();
 
         /* Create ui elements. */
+        $('#loading').modal('hide');
 
         $.application.init();
     });

@@ -3,7 +3,7 @@ package cn.com.xinli.portal.web.controller;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.support.admin.AdminCredentials;
 import cn.com.xinli.portal.support.admin.AdminService;
 import cn.com.xinli.portal.web.auth.AccessAuthentication;
@@ -59,7 +59,7 @@ public class AdminController {
     private AuthorizationServer authorizationServer;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     /**
      * Retrieve administration APIs.
@@ -104,7 +104,7 @@ public class AdminController {
 
             return AdminResponseBuilders.challengeResponseBuilder()
                     .setChallenge(challenge)
-                    .setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl())
+                    .setChallengeTtl(serverConfigurationService.getServerConfiguration().getRestConfiguration().getChallengeTtl())
                     .build();
         } else {
             throw new RemoteException(PortalError.UNSUPPORTED_RESPONSE_TYPE);

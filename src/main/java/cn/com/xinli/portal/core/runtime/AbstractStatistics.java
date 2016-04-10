@@ -215,14 +215,8 @@ public abstract class AbstractStatistics<T extends Record> implements Aggregated
         final AggregateRecord<T> head = aggregated.get(0),
                 tail = aggregated.get(aggregated.size() - 1);
 
-        long diff = record.getRecordedDate().getTime() - tail.getRecordedDate().getTime();
-
-        if (diff < 1) {
-            logger.warn("recorded time does not diff from existed record.");
-            return;
-        }
-
         final long duration = getDurationInMilliseconds();
+        long diff = record.getRecordedDate().getTime() - tail.getRecordedDate().getTime();
 
         if (diff < duration) {
             /* update last (current) aggregated record. */

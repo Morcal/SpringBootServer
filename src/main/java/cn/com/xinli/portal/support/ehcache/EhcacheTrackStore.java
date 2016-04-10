@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.support.ehcache;
 
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
 import cn.com.xinli.portal.core.ratelimiting.TrackStore;
 import net.sf.ehcache.Ehcache;
@@ -24,7 +24,7 @@ public class EhcacheTrackStore implements TrackStore {
     private Ehcache rateLimitingCache;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     void doPut(String remote, AccessTimeTrack track) {
         Element element = new Element(remote, track, 1, 1);
@@ -42,7 +42,7 @@ public class EhcacheTrackStore implements TrackStore {
         long now = System.currentTimeMillis();
         /* EhCache get/put operations are thread-safe. */
         AccessTimeTrack track = new AccessTimeTrack(
-                serverConfiguration.getRateLimitingConfiguration().getRate(), 1L);
+                serverConfigurationService.getServerConfiguration().getRateLimitingConfiguration().getRate(), 1L);
         track.trackAndCheckRate(now);
 
         doPut(remote, track);

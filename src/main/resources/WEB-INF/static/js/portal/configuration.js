@@ -8,9 +8,112 @@
     };
 
     Configuration.prototype = {
+        /** Internal pages. */
         pages: ['nas', 'certificate', 'system', 'app'],
 
+        /**
+         * Initialize configuration.
+         */
         init: function () {
+            this.setupFileUpload('#ios-app-file', '#ios-app', 'ios');
+            this.setupFileUpload('#android-app-file', '#android-app', 'android');
+            this.setupFileUpload('#mac-app-file', '#mac-app', 'mac');
+            this.setupFileUpload('#linux-app-file', '#linux-app', 'linux');
+            this.setupFileUpload('#windows-app-file', '#windows-app', 'windows');
+        },
+
+        /**
+         * Rest uploading.
+         */
+        resetLoading: function () {
+            var loading = $('#loading');
+
+            loading.find('div.modal-header>h4').html('Uploading...');
+            loading.find('div.progress-bar').html('0%').css('width', '0%');
+        },
+
+        /**
+         * Update uploading process.
+         * @param progress
+         */
+        updateUploadProgress: function (progress) {
+            var loading = $('#loading'),
+                bar = $('#loading-progress-bar');
+
+            if (!loading.is(':visible')) {
+                loading.modal('show');
+            }
+
+            if (!bar.hasClass(':visible')) {
+                bar.show();
+            }
+
+            bar.find('.progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        },
+
+        /**
+         * Set up file upload.
+         * @param f element or element id.
+         * @param input input text element.
+         * @param os operation system name.
+         */
+        setupFileUpload: function (f, input, os) {
+            var entry = $.portal.connector.entry('upload-app');
+
+            $(f).fileupload({
+                dataType: entry['response'].toLowerCase(),
+                url: entry['url'] + '/' + os,
+                paramName: 'file',
+                add: function (e, data) {
+                    data.formData = {
+                        os: os,
+                        filename: data.files[0].name
+                    };
+                    $.portal.configuration.resetLoading();
+                    data.submit();
+                },
+                progressall: function (e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $.portal.configuration.updateUploadProgress(progress);
+                },
+                done: function (e, data) {
+                    $('#loading').modal('hide');
+                    $(input).val(data.result['app']['filepath']);
+                },
+                fail: function () {
+                    $.application.alert('Upload failed',
+                        'Check if upload file is large than limit or server disk is full.');
+                }
+            });
+        },
+
+        /**
+         * Delete app.
+         * @param os
+         */
+        deleteApp: function (os) {
+            $.application.load({
+                function: $.portal.configuration.deleteAppInternal,
+                object: $.portal.configuration,
+                args: [os]
+            });
+        },
+
+        /**
+         * Internal delete app.
+         * @param os
+         * @returns {*}
+         */
+        deleteAppInternal: function (os) {
+            return $.portal.connector.request('delete-app', os)
+                .done(function () {
+                    $('#' + os + '-app').val('');
+                }).fail(function (xhr, status, err) {
+                    $.application.displayRemoteError(xhr.responseText, status, err);
+                });
         },
 
         /**
@@ -224,7 +327,7 @@
             return $.portal.connector.request('update-nas', id, nas, 'JSON');
         },
 
-        openTranslationDialog: function (trans) {
+        openTranslationDialog: function () {
             var dialog = $('#nas-translation-dialog');
 
             dialog.find('#translation-modifier-target').val(0);

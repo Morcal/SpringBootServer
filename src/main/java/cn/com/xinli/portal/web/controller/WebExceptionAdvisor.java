@@ -18,7 +18,7 @@ import org.springframework.web.servlet.View;
  *
  * @author zhoupeng 2015/12/19.
  */
-@ControllerAdvice(basePackages = "cn.com.xinli.portal.web")
+@ControllerAdvice(basePackages = "cn.com.xinli.portal.web.controller")
 public class WebExceptionAdvisor {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(WebExceptionAdvisor.class);

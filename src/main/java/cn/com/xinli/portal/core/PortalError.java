@@ -126,7 +126,12 @@ public enum PortalError {
     NETWORK_CHANGED(250, "session exists, network changed"),
     UNKNOWN_LOGIN_ERROR(291, "unknown login error"),
     UNKNOWN_LOGOUT_ERROR(292, "unknown logout error"),
-    UNKNOWN_PORTAL_ERROR(299, "unknown portal error");
+    UNKNOWN_PORTAL_ERROR(299, "unknown portal error"),
+
+    /* Administration service errors. */
+    INVALID_APP_FILENAME(311, "invalid app file name"),
+    EMPTY_APP_FILE(312, "empty app file"),
+    INVALID_OS(313, "empty app file");
 
     public static final String EMPTY_ERROR = "Portal error is empty.";
 

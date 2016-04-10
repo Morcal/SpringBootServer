@@ -53,6 +53,10 @@ public class AdminResponseBuilders {
         return new CertificateResponseBuilder(stream);
     }
 
+    public static AppResponseBuilder appResponseBuilder() {
+        return new AppResponseBuilder();
+    }
+
     public static SystemStatisticsBuilder systemStatisticsBuilder() {
         return new SystemStatisticsBuilder();
     }
@@ -267,6 +271,38 @@ public class AdminResponseBuilders {
         protected CertificateResponse buildInternal() {
             CertificateResponse response = new CertificateResponse();
             response.setStream(stream);
+            return response;
+        }
+    }
+
+    /**
+     * App response builder.
+     */
+    public static class AppResponseBuilder extends AdminResponseBuilder<AppResponse> {
+        private String os;
+        private String filepath;
+
+        AppResponseBuilder() {
+            super(false);
+        }
+
+        public AppResponseBuilder setOs(String os) {
+            this.os = os;
+            return this;
+        }
+
+        public AppResponseBuilder setFilepath(String filepath) {
+            this.filepath = filepath;
+            return this;
+        }
+
+        @Override
+        protected AppResponse buildInternal() {
+            AppResponse response = new AppResponse();
+            AppResponse.App app = new AppResponse.App();
+            app.setOs(os);
+            app.setFilepath(filepath);
+            response.setApp(app);
             return response;
         }
     }

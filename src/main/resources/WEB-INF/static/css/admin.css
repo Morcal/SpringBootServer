@@ -99,10 +99,10 @@ body > div.doc {
 /*margin-top: 15px;*/
 /*}*/
 
-#nav-sidebar {
-    width: 250px;
-    /*position: fixed;*/
-}
+/*#nav-sidebar {*/
+    /*width: 250px;*/
+    /*!*position: fixed;*!*/
+/*}*/
 
 #nav-sidebar .sidebar-content {
     padding-left: 20px;

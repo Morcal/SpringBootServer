@@ -2,7 +2,7 @@ package cn.com.xinli.portal.web.auth.event;
 
 import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityService;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -22,12 +22,12 @@ public class AuthenticationFailureEventHandler implements ApplicationListener<Au
     private ActivityService activityService;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     public void onApplicationEvent(AuthenticationFailureEvent event) {
         if (event.getSeverity().ordinal() <=
-                serverConfiguration.getActivityConfiguration().getMinimumSeverity().ordinal()) {
+                serverConfigurationService.getServerConfiguration().getActivityConfiguration().getMinimumSeverity().ordinal()) {
             Activity activity = new Activity();
             activity.setAction(Activity.SessionAction.AUTHENTICATE.name());
             activity.setFacility(Activity.Facility.PORTAL);

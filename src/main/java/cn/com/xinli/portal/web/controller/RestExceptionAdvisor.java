@@ -1,10 +1,9 @@
 package cn.com.xinli.portal.web.controller;
 
-import cn.com.xinli.portal.core.PlatformException;
-import cn.com.xinli.portal.core.session.SessionNotFoundException;
-import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.core.*;
+import cn.com.xinli.portal.core.session.SessionNotFoundException;
 import cn.com.xinli.portal.support.PortalErrorTranslator;
+import cn.com.xinli.portal.web.auth.AccessAuthentication;
 import cn.com.xinli.portal.web.rest.RestResponse;
 import cn.com.xinli.portal.web.rest.RestResponseBuilders;
 import org.slf4j.Logger;
@@ -46,7 +45,6 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author zhoupeng 2015/12/19.
  */
-@Service
 @ControllerAdvice(basePackages = "cn.com.xinli.portal.web.controller")
 public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
     /** Logger. */
@@ -205,6 +203,7 @@ public class RestExceptionAdvisor extends ResponseEntityExceptionHandler {
      * @param e {@link ServerException}
      * @return response json object.
      */
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ResponseBody
     @ExceptionHandler(value = {ServerException.class})
     public RestResponse handleServerException(HttpServletResponse response, ServerException e) {

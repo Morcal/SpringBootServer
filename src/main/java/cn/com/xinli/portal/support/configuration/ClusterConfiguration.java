@@ -2,6 +2,7 @@ package cn.com.xinli.portal.support.configuration;
 
 import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.nas.Nas;
 import cn.com.xinli.portal.core.nas.NasRule;
 import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
@@ -38,14 +39,15 @@ public class ClusterConfiguration {
     private static final int DEFAULT_REDIS_SENTINEL_PORT = 26379;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Bean
     public RedisConnectionFactory jedisConnectionFactory() {
+        final ServerConfiguration serverConfiguration = serverConfigurationService.getServerConfiguration();
         RedisSentinelConfiguration config = new RedisSentinelConfiguration()
-                .master(serverConfiguration.getClusterConfiguration().getRedisMaster());
+                .master(serverConfigurationService.getServerConfiguration().getClusterConfiguration().getRedisMaster());
 
-        for (String sentinel : serverConfiguration.getClusterConfiguration().getRedisSentinels()) {
+        for (String sentinel : serverConfigurationService.getServerConfiguration().getClusterConfiguration().getRedisSentinels()) {
             String[] sen = sentinel.split(":");
             config.sentinel(sen[0],
                     sen.length > 1 ? Integer.valueOf(sen[1]) : DEFAULT_REDIS_SENTINEL_PORT);

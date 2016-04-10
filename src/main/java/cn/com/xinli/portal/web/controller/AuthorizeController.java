@@ -2,7 +2,7 @@ package cn.com.xinli.portal.web.controller;
 
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.web.auth.AuthorizationServer;
 import cn.com.xinli.portal.web.auth.challenge.Challenge;
 import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
@@ -36,7 +36,7 @@ public class AuthorizeController {
     private AuthorizationServer authorizationServer;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     /**
      * Handle challenge requests.
@@ -83,7 +83,7 @@ public class AuthorizeController {
                         authorizationServer.createChallenge(clientId, scope, requireToken, needRefreshToken);
                 RestResponseBuilders.SessionResponseBuilder builder =
                         RestResponseBuilders.successBuilder().setChallenge(challenge);
-                builder.setChallengeTtl(serverConfiguration.getRestConfiguration().getChallengeTtl());
+                builder.setChallengeTtl(serverConfigurationService.getServerConfiguration().getRestConfiguration().getChallengeTtl());
 
                 return builder.build();
             }

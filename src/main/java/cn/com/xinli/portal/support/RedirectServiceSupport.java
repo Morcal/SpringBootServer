@@ -3,7 +3,7 @@ package cn.com.xinli.portal.support;
 import cn.com.xinli.portal.core.PortalError;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.configuration.RedirectConfiguration;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.redirection.RedirectService;
 import cn.com.xinli.portal.core.redirection.Redirection;
 import cn.com.xinli.portal.util.AddressUtil;
@@ -26,7 +26,7 @@ public class RedirectServiceSupport implements RedirectService {
     private final Logger logger = LoggerFactory.getLogger(RedirectServiceSupport.class);
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     String getParameter(Redirection redirection, String[] names) {
         for (String name : names) {
@@ -40,7 +40,8 @@ public class RedirectServiceSupport implements RedirectService {
 
     @Override
     public Redirection verify(Redirection redirection, String ip, String mac) throws RemoteException {
-        RedirectConfiguration configuration = serverConfiguration.getRedirectConfiguration();
+        RedirectConfiguration configuration =
+                serverConfigurationService.getServerConfiguration().getRedirectConfiguration();
         String userIp = getParameter(redirection, configuration.getUserIp()),
                 userMac = getParameter(redirection, configuration.getUserMac()),
                 nasIp = getParameter(redirection, configuration.getNasIp());

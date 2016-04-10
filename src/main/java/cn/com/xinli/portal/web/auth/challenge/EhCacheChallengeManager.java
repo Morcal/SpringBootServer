@@ -5,6 +5,7 @@ import cn.com.xinli.portal.core.certificate.Certificate;
 import cn.com.xinli.portal.core.certificate.CertificateNotFoundException;
 import cn.com.xinli.portal.core.certificate.CertificateService;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.support.configuration.CachingConfiguration;
 import cn.com.xinli.portal.web.util.SignatureUtil;
 import net.sf.ehcache.Ehcache;
@@ -34,7 +35,7 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
     private CertificateService certificateService;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     private Element createChallengeElement(Challenge challenge) {
         long now = System.currentTimeMillis();
@@ -46,7 +47,7 @@ public class EhCacheChallengeManager implements ChallengeService, ChallengeManag
                 now,
                 0,
                 true,
-                serverConfiguration.getRestConfiguration().getChallengeTtl(),
+                serverConfigurationService.getServerConfiguration().getRestConfiguration().getChallengeTtl(),
                 0,
                 now);
     }

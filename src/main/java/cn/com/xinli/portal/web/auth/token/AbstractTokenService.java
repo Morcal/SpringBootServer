@@ -2,7 +2,7 @@ package cn.com.xinli.portal.web.auth.token;
 
 import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.ServerException;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.util.DigestUtils;
 import cn.com.xinli.portal.web.configuration.SecurityConfiguration;
 import cn.com.xinli.portal.web.util.SecureRandomStringGenerator;
@@ -41,7 +41,7 @@ public abstract class AbstractTokenService implements TokenService, Initializing
     private SecureRandomStringGenerator secureRandomStringGenerator;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -79,7 +79,8 @@ public abstract class AbstractTokenService implements TokenService, Initializing
      * @return SHA summary.
      */
     private String sha(TokenKey key) throws ServerException {
-        return DigestUtils.sha256Hex(key.getContent() + serverConfiguration.getPrivateKey());
+        return DigestUtils.sha256Hex(
+                key.getContent() + serverConfigurationService.getServerConfiguration().getPrivateKey());
     }
 
     @Override

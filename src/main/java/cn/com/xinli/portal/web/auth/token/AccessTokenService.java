@@ -2,7 +2,7 @@ package cn.com.xinli.portal.web.auth.token;
 
 import cn.com.xinli.portal.core.Serializer;
 import cn.com.xinli.portal.core.certificate.CertificateService;
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,7 @@ public class AccessTokenService extends AbstractTokenService {
     private CertificateService certificateService;
 
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Autowired
     private Serializer<TokenKey> delimiterTokenKeySerializer;
@@ -42,6 +42,6 @@ public class AccessTokenService extends AbstractTokenService {
 
     @Override
     protected int getTokenTtl() {
-        return serverConfiguration.getRestConfiguration().getTokenTtl();
+        return serverConfigurationService.getServerConfiguration().getRestConfiguration().getTokenTtl();
     }
 }

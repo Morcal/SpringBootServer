@@ -1,6 +1,6 @@
 package cn.com.xinli.portal.support.redis;
 
-import cn.com.xinli.portal.core.configuration.ServerConfiguration;
+import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.ratelimiting.AccessTimeTrack;
 import cn.com.xinli.portal.core.ratelimiting.TrackStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Profile("cluster")
 public class RedisTrackStore implements TrackStore {
     @Autowired
-    private ServerConfiguration serverConfiguration;
+    private ServerConfigurationService serverConfigurationService;
 
     @Autowired
     private RedisTemplate<String, AccessTimeTrack> redisTrackTemplate;
@@ -46,7 +46,7 @@ public class RedisTrackStore implements TrackStore {
     @Override
     public void put(String remote) {
         AccessTimeTrack track = new AccessTimeTrack(
-                serverConfiguration.getRateLimitingConfiguration().getRate(), 1L);
+                serverConfigurationService.getServerConfiguration().getRateLimitingConfiguration().getRate(), 1L);
         doPut(remote, track);
     }
 

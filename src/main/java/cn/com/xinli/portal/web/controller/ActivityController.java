@@ -5,10 +5,8 @@ import cn.com.xinli.portal.core.activity.Activity;
 import cn.com.xinli.portal.core.activity.ActivityStore;
 import cn.com.xinli.portal.web.rest.ActivityResponse;
 import cn.com.xinli.portal.web.rest.AdminResponseBuilders;
-import cn.com.xinli.portal.web.rest.RestResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,12 +24,6 @@ public class ActivityController {
 
     @Autowired
     private ActivityStore activityStore;
-
-    @RequestMapping
-    public ResponseEntity<RestResponse> summary() {
-        //TODO implement summary.
-        return null;
-    }
 
     /**
      * Search auditing logging activities.

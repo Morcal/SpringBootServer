@@ -13,6 +13,5 @@ public interface ServerConfigurationService {
 
     ServerConfiguration getServerConfiguration();
 
-    void updateConfigurationEntry(String key, String value)
-            throws ServerConfigurationNotExistsException, ServerException;
+    void updateConfigurationEntry(String key, String value) throws ServerException;
 }
