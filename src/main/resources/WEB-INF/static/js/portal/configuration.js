@@ -175,7 +175,7 @@
                         parent = $('#configuration-system');
 
                     parent.find('#private-key').val(config['private_key']);
-                    parent.find('#server-allow-nat').val(config['allow_nat']);
+                    parent.find('#server-allow-nat').prop('checked', config['allow_nat']);
                     parent.find('#server-check-redirect-url').prop('checked', config['check_redirect_url']);
                     parent.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
                     parent.find('#session-ttl-value').val(session['ttl']);

@@ -94,16 +94,26 @@ public class AppController {
 
     /**
      * Download app file.
+     *
+     * <p>Execute this function will result in two results.
+     * <ul>
+     *     <li>Start downloading</li>
+     *     Server will produces {@link MediaType#APPLICATION_OCTET_STREAM_VALUE}, and client
+     *     (browsers or other agents) will start downloading file.
+     *
+     *     <li>Error result JSON</li>
+     *     If app is not available, may not be uploaded yet.
+     *     Server will produces a JSON error response by controller advisor.
+     * </ul>
      * @param os operation system name.
      * @param response response.
      * @return resource.
      * @throws IOException
      * @throws ServerException
      */
-    @RequestMapping(value = "/apps/{os}", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(value = "/apps/{os}", method = RequestMethod.GET)
     @ResponseBody
-    public Resource download(@PathVariable("os") String os,
+    public Object download(@PathVariable("os") String os,
                              HttpServletResponse response)
             throws IOException, ServerException, RemoteException {
 

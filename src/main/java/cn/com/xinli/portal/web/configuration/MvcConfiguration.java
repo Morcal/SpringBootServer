@@ -1,11 +1,9 @@
 package cn.com.xinli.portal.web.configuration;
 
-import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.configuration.RestConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.support.configuration.ApiConfiguration;
-import cn.com.xinli.portal.web.controller.WebExceptionAdvisor;
 import cn.com.xinli.portal.web.rest.Scheme;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -17,17 +15,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.CacheControl;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.*;
-import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import org.springframework.web.servlet.view.InternalResourceView;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**

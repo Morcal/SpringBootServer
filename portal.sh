@@ -14,12 +14,11 @@ while [ -h "$PRG" ] ; do
         fi
 done
 
-PRG_DIR=`dirname "$PRG"`
-EXECUTABLE=portal.sh
+PORTAL_HOME=`dirname "$PRG"`/..
+MAIN_CLASS=cn.com.xinli.portal.PortalApplication
+JAVA_HOME=/opt/jvm/current
+JAVA=${JAVA_HOME}/bin/java
+LOG_FILE=${PORTAL_HOME}/logs/xpws.log
 
-if [ ! -x "$PRG_DIR"/"$EXECUTABLE" ]; then
-        echo Cant find "$PRG_DIR"/"$EXECUTABLE".
-        exit 1
-fi
+nohup ${JAVA} -Djava.security.egd=/dev/urandom -Djava.ext.dirs=${JAVA_HOME}/jre/lib/ext:lib -cp jar ${MAIN_CLASS} >> ${LOG_FILE} 2>&1 &
 
-exec "$PRG_DIR"/"$EXECUTABLE" "$@"
