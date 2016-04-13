@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
 
 /**
  * Codec utility.
@@ -71,19 +72,41 @@ public class CodecUtils {
         }
     }
 
+    private static class Escape {
+        String expression;
+        char value;
+
+        static Escape of(String expression, char value) {
+            Escape escape = new Escape();
+            escape.expression = expression;
+            escape.value = value;
+            return escape;
+        }
+    }
+
+    private static final Escape[] PIN_PREFIX_REGEX = {
+            Escape.of("\\t", '\t'),
+            Escape.of("\\b", '\b'),
+            Escape.of("\\n", '\n'),
+            Escape.of("\\r", '\r'),
+            Escape.of("\\f", '\f'),
+    };
+
     /**
      * Unescape string.
      * @param text text.
      * @return unescaped string.
      */
     public static String unescapeString(String text) {
-        final char b = 'a';
-
         StringBuilder builder = new StringBuilder();
+
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == '\\' && i < text.length() - 1) {
-                char v = text.charAt(i + 1);
-                builder.append((char) (v - b));
+                for (Escape e : PIN_PREFIX_REGEX) {
+                    if (text.substring(i, i + 2).equals(e.expression)) {
+                        builder.append(e.value);
+                    }
+                }
                 i++;
             } else {
                 builder.append(text.charAt(i));
