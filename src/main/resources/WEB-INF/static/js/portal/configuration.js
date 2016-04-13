@@ -174,6 +174,7 @@
                         rate = config['rate_limiting'],
                         server = config['portal_server'],
                         activity = config['activity'],
+                        cred = config['credentials'],
                         parent = $('#configuration-system');
 
                     parent.find('#private-key').val(config['private_key']);
@@ -192,6 +193,9 @@
                     parent.find('#min-activity-severity').val(activity['min_severity']);
                     parent.find('#enable-cluster').prop('checked', config['enable_cluster']);
                     parent.find('#cluster-redis-sentinels').val(config['cluster_sentinels']);
+                    parent.find('#pin-required').prop('checked', cred['pin_required']);
+                    parent.find('#pin-prefix').val(cred['pin_prefix']);
+                    parent.find('#pin-shared-key').val(cred['pin_shared_key']);
                 }).fail(function (xhr, status, err) {
                     $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
@@ -224,6 +228,9 @@
          */
         searchNasDevices: function (query) {
             var that = this;
+
+            $('#no-nas-device').hide();
+
             return $.portal.connector.request('search-nas', null, {query: query})
                 .done(function (response) {
                     var devices, index, html,
@@ -234,8 +241,11 @@
                     /* Update navigation badge. */
                     $('#sidebar-nas').find('span').html(devices.length);
 
-                    if (!devices.length)
+                    if (!devices.length) {
+                        $('#no-nas-device').show();
                         return;
+                    }
+
                     html = '<tbody>';
                     for (index = 0; index < devices.length; index++) {
                         html += that.createNasTableRow(devices[index]);
@@ -388,6 +398,9 @@
          */
         searchCertificates: function (query) {
             var that = this;
+
+            $('#no-certificates').hide();
+
             return $.portal.connector.request('search-certificate', null, {query: query})
                 .done(function (response) {
                     var certificates, index, html,
@@ -398,8 +411,11 @@
                     /* Update navigation badge. */
                     $('#sidebar-certificate').find('span').html(certificates.length);
 
-                    if (!certificates.length)
+                    if (!certificates.length) {
+                        $('#no-certificates').show();
                         return;
+                    }
+
                     html = '<tbody>';
                     for (index = 0; index < certificates.length; index++) {
                         html += that.createCertificateTableRow(certificates[index]);

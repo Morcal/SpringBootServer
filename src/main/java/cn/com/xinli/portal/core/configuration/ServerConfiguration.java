@@ -66,6 +66,9 @@ public class ServerConfiguration {
     @JsonProperty("apps")
     private AppConfiguration appConfiguration;
 
+    @JsonProperty("credentials")
+    private CredentialsConfiguration credentialsConfiguration;
+
     public boolean isEnableCluster() {
         return enableCluster;
     }
@@ -194,6 +197,14 @@ public class ServerConfiguration {
         this.appConfiguration = appConfiguration;
     }
 
+    public CredentialsConfiguration getCredentialsConfiguration() {
+        return credentialsConfiguration;
+    }
+
+    public void setCredentialsConfiguration(CredentialsConfiguration credentialsConfiguration) {
+        this.credentialsConfiguration = credentialsConfiguration;
+    }
+
     @Override
     public String toString() {
         return "ServerConfiguration{" +
@@ -213,6 +224,7 @@ public class ServerConfiguration {
                 ", restConfiguration=" + restConfiguration +
                 ", sessionConfiguration=" + sessionConfiguration +
                 ", redirectConfiguration=" + redirectConfiguration +
+                ", credentialsConfiguration=" + credentialsConfiguration +
                 '}';
     }
 }

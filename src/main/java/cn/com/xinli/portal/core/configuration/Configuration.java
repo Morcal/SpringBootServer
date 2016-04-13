@@ -84,6 +84,11 @@ public class Configuration {
     public static final String DOWNLOAD_LINUX_APP = "app.download.linux";
     public static final String DOWNLOAD_WINDOWS_APP = "app.download.windows";
 
+    /** PIN code configurations. */
+    public static final String PIN_REQUIRED = "credentials.pin.required";
+    public static final String PIN_PREFIX = "credentials.pin.prefix";
+    public static final String PIN_SHARED_KEY = "credentials.pin.shared-key";
+
     /** Internal configuration entries. */
     private final Map<String, ConfigurationEntry> entries = new HashMap<>();
 
@@ -142,6 +147,10 @@ public class Configuration {
             EntryMetadata.of(DOWNLOAD_MAC_APP, ValueType.STRING),
             EntryMetadata.of(DOWNLOAD_LINUX_APP, ValueType.STRING),
             EntryMetadata.of(DOWNLOAD_WINDOWS_APP, ValueType.STRING),
+            /* PIN code configurations. */
+            EntryMetadata.of(PIN_REQUIRED, ValueType.BOOLEAN),
+            EntryMetadata.of(PIN_PREFIX, ValueType.STRING),
+            EntryMetadata.of(PIN_SHARED_KEY, ValueType.STRING),
     };
 
     public static Collection<String> keys() {

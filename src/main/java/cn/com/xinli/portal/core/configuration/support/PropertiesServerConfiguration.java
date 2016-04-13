@@ -96,5 +96,12 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
         app.setMacAppFileName(config.getEntryValue(Configuration.DOWNLOAD_MAC_APP));
         app.setWindowsAppFileName(config.getEntryValue(Configuration.DOWNLOAD_WINDOWS_APP));
         setAppConfiguration(app);
+
+        /* Credentials configuration. */
+        CredentialsConfiguration cred = new CredentialsConfiguration();
+        cred.setPinRequired(config.getEntryValue(Configuration.PIN_REQUIRED));
+        cred.setPinPrefix(config.getEntryValue(Configuration.PIN_PREFIX));
+        cred.setPinSharedKey(config.getEntryValue(Configuration.PIN_SHARED_KEY));
+        setCredentialsConfiguration(cred);
     }
 }

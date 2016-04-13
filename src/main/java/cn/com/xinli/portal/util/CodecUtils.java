@@ -70,4 +70,26 @@ public class CodecUtils {
             return new byte[0];
         }
     }
+
+    /**
+     * Unescape string.
+     * @param text text.
+     * @return unescaped string.
+     */
+    public static String unescapeString(String text) {
+        final char b = 'a';
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\\' && i < text.length() - 1) {
+                char v = text.charAt(i + 1);
+                builder.append((char) (v - b));
+                i++;
+            } else {
+                builder.append(text.charAt(i));
+            }
+        }
+
+        return builder.toString();
+    }
 }

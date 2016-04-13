@@ -1,117 +1,404 @@
+<div class="row">
+    <h5 class="config-section-label">Server Configuration</h5>
+    <p>Generic server configurations.</p>
 
-<div class="form-group">
-    <label for="private-key" class="control-label">Server Private Key</label>
-    <input type="text" id="private-key"
-           class="form-control" placeholder="server private key" data-toggle="tooltip" data-container="body"
-           data-title="server private key can not be empty."/>
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="server-allow-nat">
-            Allow user login in NATed environment
-        </label>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Server Private Key</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input type="text" id="private-key"
+                       class="form-control" placeholder="server private key" data-toggle="tooltip" data-container="body"
+                       data-title="server private key can not be empty."/>
+                <p>Private key server used for authentication/authorization. If private key has been
+                <em>changed</em>, server console need to re-login.</p>
+            </div>
+        </div>
     </div>
 
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="server-check-redirect-url">
-            Check redirect url when connect. (If checked, server will reject user when login in NATed environment)
-        </label>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>NAT</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="server-allow-nat">
+                        Allow user login in NATed environment
+                    </label>
+                    <p>If leave this unchecked, user from NATed environment will be rejected by server
+                        when attempting to connect server in <em>authorize</em> phase.</p>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="form-group">
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="enable-session-ttl">
-            Enable session TTL. (if checked, session while be removed when TTL reached)
-        </label>
-    </div>
-    <label for="session-ttl-value" class="control-label">Session TTL (seconds)</label>
-    <input type="text" id="session-ttl-value"
-           class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
-           data-title="Username can not be empty."/>
-    <label for="session-token-ttl" class="control-label">Session Token TTL (seconds)</label>
-    <input type="text" id="session-token-ttl"
-           class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
-           data-title="Username can not be empty."/>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Redirect url</span>
+            </div>
+        </div>
 
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="enable-session-heartbeat">
-            Enable session heartbeat. (if enabled, session while be removed when TTL reached)
-        </label>
-    </div>
-    <label for="session-heartbeat-interval" class="control-label">Session heartbeat interval (seconds)</label>
-    <input type="text" id="session-heartbeat-interval"
-           class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
-           data-title="Username can not be empty."/>
-</div>
-
-<div class="form-group">
-    <label for="portal-server-version" class="control-label">Portal Server Version</label>
-    <select id="portal-server-version">
-        <option>V1</option>
-        <option>V2</option>
-    </select>
-</div>
-
-<div class="form-group">
-    <label for="portal-server-listen-port" class="control-label">Portal Server Listen Port</label>
-    <input id="portal-server-listen-port"
-           class="form-control" placeholder="Listen port"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <label for="portal-server-shared-secret" class="control-label">Portal Server Shared secret</label>
-    <input id="portal-server-shared-secret"
-           class="form-control" placeholder="shared secret"
-           data-toggle="tooltip" data-container="body"/>
-</div>
-
-<div class="form-group">
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="enable-rate-limiting">
-            Enable rate limiting.
-        </label>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="server-check-redirect-url">
+                        Check redirect url when connect.
+                    </label>
+                    <p>If checked, user in a NATed environment will be rejected by server
+                        when attempting to connect server in <em>connect</em> phase.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="form-group">
-    <div class="form-group">
-        <label for="activity-most-recent" class="control-label">Keep activity log for most recent of days</label>
-        <input id="activity-most-recent"
-               class="form-control" placeholder="most recent days"
-               data-toggle="tooltip" data-container="body"/>
+<div class="row">
+    <h5 class="config-section-label">PIN Code Configuration</h5>
+    <p>By default, server will not modify user's credentials. If PIN code is required,
+        server will generate PIN Code and modify user's credentials according to
+        PIN code configurations.</p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>PIN</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="pin-required">
+                        Authentication requires PIN
+                    </label>
+                    <p>If checked, server will generate PIN Code and modify user's
+                        credentials according to PIN code configurations.</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="min-activity-severity" class="control-label">Minimum Activity severity</label>
-        <select id="min-activity-severity">
-            <option>FATAL</option>
-            <option>ERROR</option>
-            <option>WARN</option>
-            <option>INFO</option>
-            <option>DEBUG</option>
-            <option>TRACE</option>
-        </select>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Prefix</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="pin-prefix" type="text" class="form-control" placeholder="PIN prefix"/>
+                <p>PIN prefix, control characters must use backslash<code>\</code>.
+                Example prefix, <code>\r\2</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>PIN</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="pin-shared-key" type="text" class="form-control" placeholder="PIN shared key"/>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="form-group">
-    <div class="checkbox">
-        <label>
-            <input type="checkbox" id="enable-cluster">
-            Enable cluster.
-        </label>
+<div class="row">
+    <h5 class="config-section-label">Session Configuration</h5>
+    <p>Sessions represent client-NAS connections.<br/>
+    This section includes all session/connection configurations.</p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Enable TTL</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="enable-session-ttl">
+                        Enable session TTL.
+                    </label>
+                    <p>If checked, session while be removed when TTL reached without
+                        a single heartbeat notification. This option enables session
+                    TTL on the server side.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>TTL (in seconds)</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input type="text" id="session-ttl-value"
+                       class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
+                       data-title="Session TTL can not be empty."/>
+                <p>If client has not send any heartbeat notification to server in specific
+                time range, established session will be removed.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Token TTL (in seconds)</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input type="text" id="session-token-ttl"
+                       class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
+                       data-title="Username can not be empty."/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Heartbeat</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="enable-session-heartbeat">
+                        Enable session heartbeat.
+                    </label>
+                    <p>If checked, Server will notify clients to enable heartbeats. If server
+                        enabled session ttl and clients dis not send heartbeat notifications to
+                        server after a amount of time (session ttl), established sessions will
+                        be disconnected by server. This option enables session heartbeat on
+                    the client side.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Heartbeat Interval (in seconds)</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input type="text" id="session-heartbeat-interval"
+                       class="form-control" placeholder="Session heartbeat interval in seconds"
+                       data-toggle="tooltip" data-container="body" data-title="Username can not be empty."/>
+                <p>Server suggested user agent (app) heartbeat notification rate.</p>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="form-group">
-    <label for="cluster-redis-sentinels" class="control-label">REDIS sentinels, if cluster enabled.</label>
-    <input id="cluster-redis-sentinels"
-           class="form-control" placeholder="REDIS cluster sentinels, ip:port,ip:port"
-           data-toggle="tooltip" data-container="body"/>
+<div class="row">
+    <h5 class="config-section-label">Portal Server Configuration</h5>
+    <p>Xinli Portal Server starts a Portal Server listen on local network
+        adapter.<br/> The internal portal server interacts with remote NAS device
+        based on HUAWEI portal protocol. </p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Portal Server Version</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-inline">
+                <label for="portal-server-version" class="sr-only"></label>
+                <select id="portal-server-version" class="form-control">
+                    <option>V1</option>
+                    <option>V2</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Portal Server Listen Port</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="portal-server-listen-port"
+                       class="form-control" placeholder="Listen port"
+                       data-toggle="tooltip" data-container="body"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Portal Server Shared secret</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="portal-server-shared-secret"
+                       class="form-control" placeholder="shared secret"
+                       data-toggle="tooltip" data-container="body"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <h5 class="config-section-label">Rate Limiting Configuration</h5>
+    <p>By default, server will limit clients requests in a amount of time.
+    If clients sent more requests than server limited, those requests will be
+    ignored by server.</p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Rate Limiting</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="enable-rate-limiting">
+                        Enable rate limiting.
+                    </label>
+                    <p>If checked, server will limit requests sending from single client
+                    within a mount of time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <h5 class="config-section-label">Activity (audit logging) Configuration</h5>
+    <p>Activities represent system wide audit logging. All system operations
+    (include server console and clients) which needs authentications will be
+    logged.</p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Logging</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="activity-most-recent"
+                       class="form-control" placeholder="most recent days"
+                       data-toggle="tooltip" data-container="body"/>
+                <p>Keep activity log for most recent of days</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Severity Level</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-inline">
+                <label for="min-activity-severity" class="sr-only"></label>
+                <select id="min-activity-severity" class="form-control">
+                    <option>FATAL</option>
+                    <option>ERROR</option>
+                    <option>WARN</option>
+                    <option>INFO</option>
+                    <option>DEBUG</option>
+                    <option>TRACE</option>
+                </select>
+                <p>Activity audit logging level equals configured or with higher level
+                will be logged in system.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <h5 class="config-section-label">Cluster Configuration</h5>
+    <p>Configure server runs in cluster mode. Cluster mode need REDIS cluster
+    be configured and running.</p>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>Cluster</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="enable-cluster">
+                        Enable cluster.
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>REDIS Sentinels</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="form-group">
+                <input id="cluster-redis-sentinels"
+                       class="form-control" placeholder="REDIS cluster sentinels, ip:port,ip:port"
+                       data-toggle="tooltip" data-container="body"/>
+                <p>Configure REDIS sentinels, if cluster enabled. REDIS sentinels must be configured
+                with format of <code>ip:port,ip:port,...</code>, for example
+                    <code>192.168.3.92:8001,192.168.3.93:8001</code></p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script language="javascript">
@@ -124,67 +411,79 @@
     }
 
     $('#private-key').change(function () {
-        saveConfiguration(['server.private-key', $(this).val() ]);
+        saveConfiguration(['server.private-key', $(this).val()]);
     });
 
     $('#server-allow-nat').change(function () {
-        saveConfiguration(['nat.allowed', $(this).is(':checked') ]);
+        saveConfiguration(['nat.allowed', $(this).is(':checked')]);
     });
 
     $('#server-check-redirect-url').change(function () {
         saveConfiguration(['server.check-redirect-url', $(this).is(':checked')]);
     });
 
+    $('#pin-required').change(function () {
+        saveConfiguration(['credentials.pin.required', $(this).is(':checked')]);
+    });
+
+    $('#pin-prefix').change(function () {
+        saveConfiguration(['credentials.pin.prefix', $(this).val()]);
+    });
+
+    $('#pin-shared-key').change(function () {
+        saveConfiguration(['credentials.pin.shared-key', $(this).val()]);
+    });
+
     $('#enable-session-ttl').change(function () {
-        saveConfiguration(['session.ttl.enabled', $(this).is(':checked') ]);
+        saveConfiguration(['session.ttl.enabled', $(this).is(':checked')]);
     });
 
     $('#session-ttl-value').change(function () {
-        saveConfiguration(['session.ttl.value', $(this).val() ]);
+        saveConfiguration(['session.ttl.value', $(this).val()]);
     });
 
     $('#session-token-ttl').change(function () {
-        saveConfiguration(['session.token.ttl', $(this).val() ]);
+        saveConfiguration(['session.token.ttl', $(this).val()]);
     });
 
     $('#enable-session-heartbeat').change(function () {
-        saveConfiguration(['session.heartbeat.enabled', $(this).is(':checked') ]);
+        saveConfiguration(['session.heartbeat.enabled', $(this).is(':checked')]);
     });
 
     $('#session-heartbeat-interval').change(function () {
-        saveConfiguration(['session.heartbeat.interval', $(this).val() ]);
+        saveConfiguration(['session.heartbeat.interval', $(this).val()]);
     });
 
     $('#portal-server-version').change(function () {
-        saveConfiguration(['portal-server.protocol.version', $(this).val() ]);
+        saveConfiguration(['portal-server.protocol.version', $(this).val()]);
     });
 
     $('#portal-server-listen-port').change(function () {
-        saveConfiguration(['portal-server.listen.port', $(this).val() ]);
+        saveConfiguration(['portal-server.listen.port', $(this).val()]);
     });
 
     $('#portal-server-shared-secret').change(function () {
-        saveConfiguration(['portal-server.shared-secret', $(this).val() ]);
+        saveConfiguration(['portal-server.shared-secret', $(this).val()]);
     });
 
     $('#enable-rate-limiting').change(function () {
-        saveConfiguration(['rate-limiting.enabled', $(this).is(':checked') ]);
+        saveConfiguration(['rate-limiting.enabled', $(this).is(':checked')]);
     });
 
     $('#activity-most-recent').change(function () {
-        saveConfiguration(['activity.most-recent', $(this).val() ]);
+        saveConfiguration(['activity.most-recent', $(this).val()]);
     });
 
     $('#min-activity-severity').change(function () {
-        saveConfiguration(['activity.logging.minimum.severity', $(this).val() ]);
+        saveConfiguration(['activity.logging.minimum.severity', $(this).val()]);
     });
 
     $('#enable-cluster').change(function () {
-        saveConfiguration(['cluster.enabled', $(this).is(':checked') ]);
+        saveConfiguration(['cluster.enabled', $(this).is(':checked')]);
     });
 
     $('#cluster-redis-sentinels').change(function () {
-        saveConfiguration(['cluster.redis.sentinels', $(this).val() ]);
+        saveConfiguration(['cluster.redis.sentinels', $(this).val()]);
     });
 
 </script>

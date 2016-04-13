@@ -85,6 +85,18 @@ public class AppController {
                 path = appConfiguration.getiOSAppFileName();
                 break;
 
+            case "mac":
+                path = appConfiguration.getMacAppFileName();
+                break;
+
+            case "windows":
+                path = appConfiguration.getWindowsAppFileName();
+                break;
+
+            case "linux":
+                path = appConfiguration.getLinuxAppFileName();
+                break;
+
             default:
                 break;
         }
@@ -154,6 +166,12 @@ public class AppController {
         }
 
         final String filepath = "apps/" + filename;
+        File apps = new File("apps");
+        if (!apps.exists() || !apps.isDirectory()) {
+            if (!apps.mkdir()) {
+                throw new RuntimeException("create directory: apps failed.");
+            }
+        }
 
         try {
             BufferedOutputStream stream =

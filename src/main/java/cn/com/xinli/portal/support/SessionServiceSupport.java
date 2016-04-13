@@ -5,6 +5,7 @@ import cn.com.xinli.portal.core.PortalException;
 import cn.com.xinli.portal.core.RemoteException;
 import cn.com.xinli.portal.core.ServerException;
 import cn.com.xinli.portal.core.certificate.Certificate;
+import cn.com.xinli.portal.core.configuration.CredentialsConfiguration;
 import cn.com.xinli.portal.core.configuration.ServerConfigurationService;
 import cn.com.xinli.portal.core.credentials.Credentials;
 import cn.com.xinli.portal.core.credentials.CredentialsTranslation;
@@ -13,6 +14,8 @@ import cn.com.xinli.portal.core.nas.NasLocator;
 import cn.com.xinli.portal.core.nas.NasNotFoundException;
 import cn.com.xinli.portal.core.nas.NasService;
 import cn.com.xinli.portal.core.session.*;
+import cn.com.xinli.portal.util.CodecUtils;
+import cn.com.xinli.portal.util.PinCodeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +76,9 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
 
     @Autowired
     private List<SessionProvider> sessionProviders;
+
+    @Autowired
+    private ServerConfigurationService serverConfigurationService;
 
     /** Session update minimum interval. */
     private int updateMinInterval;
@@ -151,6 +157,28 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
         throw new ServerException(PortalError.UNSUPPORTED_NAS, "not supported nas");
     }
 
+    private Credentials translate(Credentials credentials) throws ServerException {
+        CredentialsConfiguration configuration = serverConfigurationService.getServerConfiguration()
+                .getCredentialsConfiguration();
+        if (configuration.isPinRequired()) {
+            Credentials cred = new Credentials();
+            cred.setId(credentials.getId());
+            cred.setIp(credentials.getIp());
+            cred.setMac(credentials.getMac());
+            cred.setPassword(credentials.getPassword());
+            cred.setUsername(
+                    CodecUtils.unescapeString(configuration.getPinPrefix()) +
+                            PinCodeUtil.generatePIN(
+                                    credentials.getUsername(),
+                                    configuration.getPinSharedKey(),
+                                    System.currentTimeMillis()) +
+                            credentials.getUsername());
+            return cred;
+        } else {
+            return credentials;
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -203,8 +231,10 @@ public class SessionServiceSupport implements SessionService, SessionManager, In
             logger.trace("authenticating: {}", credentials);
         }
 
+        Credentials cred = translate(credentials);
+
         SessionProvider provider = getSessionProvider(nas);
-        Session session = provider.authenticate(nas, credentials);
+        Session session = provider.authenticate(nas, cred);
 
         /* Populate certificate. */
         session.setStartTime(Calendar.getInstance().getTime());

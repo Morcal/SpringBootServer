@@ -169,3 +169,36 @@ body > div.doc {
 #dashboard .table > thead > tr > th {
     border-bottom-width: 1px;
 }
+
+#configuration-system {
+    background-color: #fafafa;
+}
+
+#configuration-system>div.row {
+    /*margin-bottom: 20px;*/
+    font-size: 13px;
+}
+
+#configuration-system>div.row>p {
+    width: 90%;
+    color: #a1a1a1;
+}
+
+#configuration-system div.form-inline p, #configuration-system div.form-group p {
+    color: #a1a1a1;
+}
+
+.config-section-label {
+    font-weight: bold;
+    display: inline-block;
+    max-width: 90%;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    width: 90%;
+    border-bottom: solid 1px #eee;
+}
+
+.config-label {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

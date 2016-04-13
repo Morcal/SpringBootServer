@@ -34,44 +34,47 @@
                 <input type="hidden"/>
             </div>
 
-            <div class="form-inline">
-                <div id="translation-modifier" class="form-group">
-                    <label for="translation-modifier-target" class="control-label">Target</label>
-                    <select id="translation-modifier-target" class="form-control">
-                        <option>USERNAME</option>
-                        <option>PASSWORD</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="translation-modifier-position" class="control-label">Position</label>
-                    <select id="translation-modifier-position" class="form-control">
-                        <option>HEAD</option>
-                        <option>TAIL</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="translation-modifier-value" class="control-label">Value</label>
-                    <input id="translation-modifier-value"
-                           class="form-control" placeholder="Modifier Value"
-                           data-toggle="tooltip" data-container="body"/>
-                </div>
-
-                <div class="form-group">
-                    <button id="translation-add-modifier" type="button" class="btn btn-default">
-                        <span class="glyphicon glyphicon-plus" aria-hidden="true" style="padding-right: 8px;"></span>Add
-                    </button>
-                </div>
-            </div>
-
             <div class="form-group">
-                <div class="form-group">
-                    <label for="translation-modifier-table" class="control-label">Modifiers</label>
-                    <table id="translation-modifier-table" class="table table-bordered">
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <label for="translation-modifier-table" class="control-label">Modifiers</label>
+                <table id="translation-modifier-table" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Target</th>
+                            <th>Position</th>
+                            <th>Value</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="warning">
+                            <td>
+                                    <label for="translation-modifier-target" class="sr-only">Target</label>
+                                    <select id="translation-modifier-target" class="form-control">
+                                        <option>USERNAME</option>
+                                        <option>PASSWORD</option>
+                                    </select>
+                            </td>
+                            <td>
+                                    <label for="translation-modifier-position" class="sr-only">Position</label>
+                                    <select id="translation-modifier-position" class="form-control">
+                                        <option>HEAD</option>
+                                        <option>TAIL</option>
+                                    </select>
+                            </td>
+                            <td>
+                                    <label for="translation-modifier-value" class="sr-only">Value</label>
+                                    <input id="translation-modifier-value"
+                                           class="form-control" placeholder="Modifier Value"
+                                           data-toggle="tooltip" data-container="body"/>
+                            </td>
+                            <td>
+                                    <button id="translation-add-modifier" type="button" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true" style="padding-right: 8px;"></span>Add
+                                    </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -85,6 +88,9 @@
 </div>
 
 <script language="javascript">
+    function removeModifier(e) {
+        $(e).parent().parent().remove();
+    }
 
     function addModifier() {
         var html, p = $('#nas-translation-dialog').find('div.modal-body'),
@@ -100,9 +106,12 @@
 
         html = '<tr><td>' + target.val() + '</td>' +
                 '<td>' + position.val() + '</td>' +
-                '<td>' + value.val() + '</td></tr>';
+                '<td>' + value.val() + '</td>' +
+                '<td style="padding:3px;"><button class="btn btn-danger" onclick="removeModifier(this);">' +
+                '<span class="glyphicon glyphicon-remove" aria-hidden="true" style="padding-right: 8px;"></span>' +
+                'Remove</button></td></tr>';
 
-        $('#translation-modifier-table').find('tbody').append(html);
+        $('#translation-modifier-table').find('tbody').prepend(html);
     }
 
     $('#save-translation-btn').click(function () {});
