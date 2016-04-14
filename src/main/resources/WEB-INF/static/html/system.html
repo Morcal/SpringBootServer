@@ -15,7 +15,7 @@
                        class="form-control" placeholder="server private key" data-toggle="tooltip" data-container="body"
                        data-title="server private key can not be empty."/>
                 <p>Private key server used for authentication/authorization. If private key has been
-                <em>changed</em>, server console need to re-login.</p>
+                <em>changed</em>, server console need to <code>re-login</code>.</p>
             </div>
         </div>
     </div>
@@ -23,7 +23,7 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>NAT</span>
+                <span>NAS NAT</span>
             </div>
         </div>
 
@@ -32,10 +32,12 @@
                 <div class="checkbox">
                     <label>
                         <input type="checkbox" id="server-allow-nat">
-                        Allow user login in NATed environment
+                        Users login from within NATed NAS devices
                     </label>
                     <p>If leave this unchecked, user from NATed environment will be rejected by server
-                        when attempting to connect server in <em>authorize</em> phase.</p>
+                        when attempting to connect server in <em>authorize</em> phase.
+                    If NAS device allocates LAN ip addresses to user clients, this option <code>should</code>
+                    be checked.</p>
                 </div>
             </div>
         </div>
@@ -53,7 +55,7 @@
                 <div class="checkbox">
                     <label>
                         <input type="checkbox" id="server-check-redirect-url">
-                        Check redirect url when connect.
+                        Check redirect url when connect
                     </label>
                     <p>If checked, user in a NATed environment will be rejected by server
                         when attempting to connect server in <em>connect</em> phase.</p>
@@ -65,9 +67,9 @@
 
 <div class="row">
     <h5 class="config-section-label">PIN Code Configuration</h5>
-    <p>By default, server will not modify user's credentials. If PIN code is required,
-        server will generate PIN Code and modify user's credentials according to
-        PIN code configurations.</p>
+    <p>By default, server will not modify user's credentials. <br/>
+        If PIN code is required, server will generate PIN Code and modify user's credentials
+        according to PIN code configurations.</p>
 
     <div class="row">
         <div class="col-sm-4">
@@ -101,7 +103,7 @@
             <div class="form-group">
                 <input id="pin-prefix" type="text" class="form-control" placeholder="PIN prefix"/>
                 <p>PIN prefix, control characters must use backslash<code>\</code>.
-                Example prefix, <code>\r2</code></p>
+                <br/>Example prefix, <code>\r2</code></p>
             </div>
         </div>
     </div>
@@ -109,13 +111,14 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>PIN</span>
+                <span>Shared Key</span>
             </div>
         </div>
 
         <div class="col-sm-6">
             <div class="form-group">
                 <input id="pin-shared-key" type="text" class="form-control" placeholder="PIN shared key"/>
+                <p>Server uses this shared key to generate PIN for users.</p>
             </div>
         </div>
     </div>
@@ -151,15 +154,18 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>TTL (in seconds)</span>
+                <span>TTL</span>
             </div>
         </div>
 
         <div class="col-sm-6">
             <div class="form-group">
-                <input type="text" id="session-ttl-value"
-                       class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
-                       data-title="Session TTL can not be empty."/>
+                <div class="input-group">
+                    <input type="text" id="session-ttl-value"
+                           class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
+                           data-title="Session TTL can not be empty."/>
+                    <span class="input-group-addon">Seconds</span>
+                </div>
                 <p>If client has not send any heartbeat notification to server in specific
                 time range, established session will be removed.</p>
             </div>
@@ -169,15 +175,18 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>Token TTL (in seconds)</span>
+                <span>Token TTL</span>
             </div>
         </div>
 
         <div class="col-sm-6">
             <div class="form-group">
-                <input type="text" id="session-token-ttl"
-                       class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
-                       data-title="Username can not be empty."/>
+                <div class="input-group">
+                    <input type="text" id="session-token-ttl"
+                           class="form-control" placeholder="ttl in seconds" data-toggle="tooltip" data-container="body"
+                           data-title="Username can not be empty."/>
+                    <span class="input-group-addon">Seconds</span>
+                </div>
             </div>
         </div>
     </div>
@@ -209,15 +218,18 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>Heartbeat Interval (in seconds)</span>
+                <span>Heartbeat Interval</span>
             </div>
         </div>
 
         <div class="col-sm-6">
             <div class="form-group">
-                <input type="text" id="session-heartbeat-interval"
-                       class="form-control" placeholder="Session heartbeat interval in seconds"
-                       data-toggle="tooltip" data-container="body" data-title="Username can not be empty."/>
+                <div class="input-group">
+                    <input type="text" id="session-heartbeat-interval"
+                           class="form-control" placeholder="Session heartbeat interval in seconds"
+                           data-toggle="tooltip" data-container="body" data-title="Username can not be empty."/>
+                    <span class="input-group-addon">Seconds</span>
+                </div>
                 <p>Server suggested user agent (app) heartbeat notification rate.</p>
             </div>
         </div>
@@ -228,12 +240,13 @@
     <h5 class="config-section-label">Portal Server Configuration</h5>
     <p>Xinli Portal Server starts a Portal Server listen on local network
         adapter.<br/> The internal portal server interacts with remote NAS device
-        based on HUAWEI portal protocol. </p>
+        based on HUAWEI portal protocol.<br/>To apply portal server configurations
+        changes, server must <code>restart</code>.</p>
 
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>Portal Server Version</span>
+                <span>HUAWEI Version</span>
             </div>
         </div>
 
@@ -244,6 +257,7 @@
                     <option>V1</option>
                     <option>V2</option>
                 </select>
+                <p>To apply version change, server must restart.</p>
             </div>
         </div>
     </div>
@@ -251,15 +265,20 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>Portal Server Listen Port</span>
+                <span>Listen Port</span>
             </div>
         </div>
 
         <div class="col-sm-6">
             <div class="form-group">
-                <input id="portal-server-listen-port"
-                       class="form-control" placeholder="Listen port"
-                       data-toggle="tooltip" data-container="body"/>
+                <div class="input-group">
+                    <span class="input-group-addon">UDP Port</span>
+                    <input id="portal-server-listen-port"
+                           class="form-control" placeholder="Listen port"
+                           data-toggle="tooltip" data-container="body"/>
+                </div>
+                <p>Please ensure provided port not being used by other programs.
+                    <br/>To apply listen port change, server must restart.</p>
             </div>
         </div>
     </div>
@@ -267,7 +286,7 @@
     <div class="row">
         <div class="col-sm-4">
             <div class="config-label">
-                <span>Portal Server Shared secret</span>
+                <span>Shared secret</span>
             </div>
         </div>
 
@@ -324,10 +343,15 @@
 
         <div class="col-sm-6">
             <div class="form-group">
-                <input id="activity-most-recent"
-                       class="form-control" placeholder="most recent days"
-                       data-toggle="tooltip" data-container="body"/>
-                <p>Keep activity log for most recent of days</p>
+                <div class="input-group">
+                    <input id="activity-most-recent"
+                           class="form-control" placeholder="most recent days"
+                           data-toggle="tooltip" data-container="body"/>
+                    <span class="input-group-addon">Days</span>
+                </div>
+                <p>Keep activity log for most recent of days.<br/>
+                Server deletes activity audit logs generated older than configured days
+                at 4:00 AM every day.</p>
             </div>
         </div>
     </div>
@@ -360,7 +384,7 @@
 <div class="row">
     <h5 class="config-section-label">Cluster Configuration</h5>
     <p>Configure server runs in cluster mode. Cluster mode need REDIS cluster
-    be configured and running.</p>
+    be configured and running.<br/>This version works only with REDIS sentinels.</p>
 
     <div class="row">
         <div class="col-sm-4">
@@ -376,6 +400,9 @@
                         <input type="checkbox" id="enable-cluster">
                         Enable cluster.
                     </label>
+                    <p>If checked, server will run in <em>cluster</em> mode.<br/>
+                    <em>Cluster</em> mode works with a set of Portal Web Server and
+                    a set of REDIS server.</p>
                 </div>
             </div>
         </div>

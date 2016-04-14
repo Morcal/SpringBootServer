@@ -98,7 +98,7 @@ public class PinCodeUtil {
      * @return hash in form of byte 6.
      */
     private static byte[] generateHashBasedOnTimeStamp(long timestamp) {
-        long base = timestamp / 5L;
+        long base = (timestamp / 1000L) / 5L;
         return Special4To6(naturalSeqToSwapSeq(longToBytes(base)));
     }
 

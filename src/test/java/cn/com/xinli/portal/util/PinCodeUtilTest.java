@@ -29,7 +29,7 @@ public class PinCodeUtilTest {
 
     @Test
     public void testEscape() {
-        final String prefix = "\\r\\2";
+        final String prefix = "\\r2";
 
         logger.debug("prefix: {}", prefix);
 
