@@ -48,20 +48,21 @@ public class ApiConfiguration {
 
     /** API path. */
     public static final String API_PATH = "/portal/api";
-    public static final String ADMIN_API_PATH = "/portal/admin/api";
+    //public static final String ADMIN_API_PATH = "/portal/admin/api";
     public static final String API_TYPE = "REST";
     public static final String ADMIN_API_TYPE = "ADMIN";
     public static final String REST_API_VERSION = "v1.0";
     public static final String REST_API_SESSION = "sessions";
     public static final String REST_API_FIND = "sessions/find";
     public static final String REST_API_AUTHORIZE = "authorize";
+    //public static final String REST_API_CHECK_FOR_UPDATE = "check-for-update";
     public static final String REST_ADMIN_API_AUTHORIZE = "authorize";
     public static final String REST_ADMIN_API_LOGIN = "login";
     public static final String ADMIN_API_VERSION = "v1.0";
     public static final String ADMIN_API_NAS = "nas";
     public static final String ADMIN_API_SEARCH_NAS = "search/nas";
-    public static final String ADMIN_API_TRANSLATION = "translations";
-    public static final String ADMIN_API_MODIFIER = "modifiers";
+    //public static final String ADMIN_API_TRANSLATION = "translations";
+    //public static final String ADMIN_API_MODIFIER = "modifiers";
     public static final String ADMIN_API_ACTIVITY = "activities";
     public static final String ADMIN_API_CONFIGURE = "configuration";
     public static final String ADMIN_API_CERTIFICATE = "certificates";
@@ -440,7 +441,7 @@ public class ApiConfiguration {
     private EntryPoint uploadApp() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
-                Activity.SystemAction.UPLOAD_APP.alias(),
+                Activity.AppAction.UPLOAD_APP.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_APP),
                 RequestMethod.POST.name(),
                 "JSON",
@@ -456,7 +457,7 @@ public class ApiConfiguration {
     private EntryPoint deleteApp() {
         EntryPoint api = new EntryPoint(
                 TokenScope.SYSTEM_ADMIN_TOKEN_SCOPE.alias(),
-                Activity.SystemAction.DELETE_APP.alias(),
+                Activity.AppAction.DELETE_APP.alias(),
                 url("/portal/admin", ADMIN_API_VERSION, ADMIN_API_APP),
                 RequestMethod.DELETE.name(),
                 "JSON",
@@ -480,6 +481,7 @@ public class ApiConfiguration {
         registration.registerApi(get());
         registration.registerApi(update());
         registration.registerApi(find());
+        registration.registerApi(checkForUpdate());
 
         return registration;
     }
@@ -576,6 +578,23 @@ public class ApiConfiguration {
                 RequestMethod.POST.name(),
                 "JSON",
                 true);
+        logger.info("Creating: {}.", api);
+        return api;
+    }
+
+
+    /**
+     * Define find entry point.
+     * @return find entry point.
+     */
+    private EntryPoint checkForUpdate() {
+        EntryPoint api = new EntryPoint(
+                TokenScope.PORTAL_ACCESS_TOKEN_SCOPE.alias(),
+                Activity.AppAction.CHECK_FOR_UPDATE.alias(),
+                url("/portal", REST_API_VERSION, ADMIN_API_APP),
+                RequestMethod.GET.name(),
+                "JSON",
+                false);
         logger.info("Creating: {}.", api);
         return api;
     }

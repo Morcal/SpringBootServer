@@ -10,33 +10,33 @@
             <form>
                 <div class="form-group">
                     <label for="certificate-app-id" class="control-label">App Id</label>
-                    <input type="text" id="certificate-app-id" name="certificate-app-id"
+                    <input type="text" id="certificate-app-id"
                            class="form-control" placeholder="app id" data-toggle="tooltip" data-container="body"/>
                     <input type="hidden"/>
                 </div>
 
-                <div class="form-group collapse">
+                <div class="form-group">
                     <label for="certificate-shared-secret" class="control-label">Shared secret</label>
-                    <input type="text" id="certificate-shared-secret" name="certificate-shared-secret"
-                           class="form-control" data-toggle="tooltip" data-container="body" readonly/>
+                    <input type="text" id="certificate-shared-secret"
+                           class="form-control" data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group">
                     <label for="certificate-vendor" class="control-label">Vendor</label>
-                    <input type="text" id="certificate-vendor" name="certificate-vendor"
+                    <input type="text" id="certificate-vendor"
                            class="form-control" placeholder="vendor name" data-toggle="tooltip" data-container="body"/>
                 </div>
 
                 <div class="form-group">
                     <label for="certificate-os" class="control-label">Operating system name</label>
-                    <input type="text" id="certificate-os" name="certificate-os"
+                    <input type="text" id="certificate-os"
                            class="form-control" placeholder="operating system name" data-toggle="tooltip"
                            data-container="body"/>
                 </div>
 
                 <div class="form-group">
                     <label for="certificate-version" class="control-label">Version</label>
-                    <input type="text" id="certificate-version" name="certificate-version"
+                    <input type="text" id="certificate-version"
                            class="form-control" placeholder="version" data-toggle="tooltip" data-container="body"/>
                 </div>
             </form>
@@ -71,6 +71,7 @@
         var dialog = $('#certificate-dialog'),
                 app = $('#certificate-app-id'),
                 vendor = $('#certificate-vendor'),
+                shared_secret = $('#certificate-shared-secret'),
                 os = $('#certificate-os'),
                 version = $('#certificate-version');
 
@@ -82,6 +83,7 @@
         return {
             app_id: app.val(),
             vendor: vendor.val(),
+            shared_secret: shared_secret.val(),
             os: os.val(),
             version: version.val()
         };
@@ -127,7 +129,7 @@
         return $.application.load({
             function: $.portal.configuration.createCertificate,
             object: $.portal.configuration,
-            args: [ certificate.app_id, certificate.vendor, certificate.os, certificate.version ]
+            args: [ certificate ]
         }).done(function () {
             btn.button('reset');
             $('#certificate-dialog').modal('hide');

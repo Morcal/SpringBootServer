@@ -74,6 +74,7 @@ public class CertificateController {
     @PreAuthorize("hasRole('ADMIN')")
     public RestResponse createCertificate(@RequestParam("app_id") String appId,
                                           @RequestParam("vendor") String vendor,
+                                          @RequestParam("shared_secret") String sharedSecret,
                                           @RequestParam("os") String os,
                                           @RequestParam("version") String version) {
         Certificate certificate = new Certificate();
@@ -82,6 +83,7 @@ public class CertificateController {
         certificate.setOs(os);
         certificate.setVersion(version);
         certificate.setVendor(vendor);
+        certificate.setSharedSecret(sharedSecret);
 
         certificate = certificateService.create(certificate);
 
@@ -108,6 +110,7 @@ public class CertificateController {
         c.setOs(certificate.getOs());
         c.setVersion(certificate.getVersion());
         c.setVendor(certificate.getVendor());
+        c.setSharedSecret(certificate.getSharedSecret());
         certificateService.save(c);
 
         return AdminResponseBuilders.certificateResponseBuilder(Stream.of(c))

@@ -14,7 +14,7 @@ import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.util.Calendar;
@@ -30,7 +30,7 @@ import java.util.Calendar;
  * @author zhoupeng 2016/1/8.
  */
 @Aspect
-@Service
+@Component
 public class SessionActivityAspect {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(SessionActivityAspect.class);
@@ -78,10 +78,16 @@ public class SessionActivityAspect {
      * @param action action.
      * @param result result.
      */
-    private void saveActivity(Session session, Activity.SessionAction action, String result) {
-        Credentials credentials = session.getCredentials();
-        saveActivity(credentials.getIp(), credentials.getUsername(), buildInfo(session), result,
-                action, Activity.Severity.INFO);
+    private void saveActivity(Session session, Activity.SessionAction action, Principal principal, String result) {
+        final String name = principal.getName();
+        if (!StringUtils.isEmpty(name) && name.equals("admin")) {
+            saveActivity("127.0.0.1", "ADMIN", buildInfo(session), result,
+                    action, Activity.Severity.INFO);
+        } else {
+            Credentials credentials = session.getCredentials();
+            saveActivity(credentials.getIp(), credentials.getUsername(), buildInfo(session), result,
+                    action, Activity.Severity.INFO);
+        }
     }
 
     /**
@@ -90,10 +96,10 @@ public class SessionActivityAspect {
      * @param action sessionAction.
      * @param result result text.
      */
-    private void saveActivity(long id, Activity.SessionAction action, String result) {
+    private void saveActivity(long id, Activity.SessionAction action, Principal principal, String result) {
         try {
             Session session = sessionService.getSession(id);
-            saveActivity(session, action, result);
+            saveActivity(session, action, principal, result);
         } catch (SessionNotFoundException e) {
             if (logger.isTraceEnabled()) {
                 logger.trace("session not found {}", id);
@@ -165,7 +171,7 @@ public class SessionActivityAspect {
             argNames = "id,timestamp,principal,returning",
             returning = "returning")
     public void recordUpdate(long id, long timestamp, Principal principal, RestResponse returning) {
-        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, returning.toString());
+        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, principal, returning.toString());
     }
 
     /**
@@ -181,7 +187,7 @@ public class SessionActivityAspect {
             argNames = "id,timestamp,principal,cause",
             throwing = "cause")
     public void recordUpdate(long id, long timestamp, Principal principal, Throwable cause) {
-        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, cause.getMessage());
+        saveActivity(id, Activity.SessionAction.UPDATE_SESSION, principal, cause.getMessage());
     }
 
     /**
@@ -230,7 +236,7 @@ public class SessionActivityAspect {
             argNames = "id,principal,returning",
             returning = "returning")
     public void recordGet(long id, Principal principal, RestResponse returning) {
-        saveActivity(id, Activity.SessionAction.GET_SESSION, returning.toString());
+        saveActivity(id, Activity.SessionAction.GET_SESSION, principal, returning.toString());
     }
 
     /**
@@ -246,7 +252,7 @@ public class SessionActivityAspect {
             argNames = "id,principal,cause",
             throwing = "cause")
     public void recordGet(long id, Principal principal, Throwable cause) {
-        saveActivity(id, Activity.SessionAction.GET_SESSION, cause.getMessage());
+        saveActivity(id, Activity.SessionAction.GET_SESSION, principal, cause.getMessage());
     }
 
     /**
@@ -260,14 +266,19 @@ public class SessionActivityAspect {
     @Around(value = "inSessionController() && disconnect() && args(id,principal)",
             argNames = "point,id,principal")
     public Object recordLogout(ProceedingJoinPoint point, long id, Principal principal) throws Throwable {
+        Session session = null;
         try {
-            Session session = sessionService.getSession(id);
+            session = sessionService.getSession(id);
             RestResponse response = (RestResponse) point.proceed(new Object[]{id, principal});
-            saveActivity(session, Activity.SessionAction.DELETE_SESSION, response.toString());
+            saveActivity(session, Activity.SessionAction.DELETE_SESSION, principal, response.toString());
             return response;
         } catch (Throwable cause) {
-            saveActivity("unknown", "unknown", "remove session: " + id, cause.getMessage(),
-                    Activity.SessionAction.DELETE_SESSION, Activity.Severity.WARN);
+            if (session == null) {
+                saveActivity("unknown", "unknown", "remove session: " + id, cause.getMessage(),
+                        Activity.SessionAction.DELETE_SESSION, Activity.Severity.WARN);
+            } else {
+                saveActivity(session.getId(), Activity.SessionAction.DELETE_SESSION, principal, cause.getMessage());
+            }
             throw cause;
         }
     }

@@ -78,11 +78,18 @@ public class Configuration {
     public static final String REDIRECT_NAS_IP = "redirect.nas.ip";
 
     /** App download configurations. */
-    public static final String DOWNLOAD_IOS_APP = "app.download.ios";
-    public static final String DOWNLOAD_ANDROID_APP = "app.download.android";
-    public static final String DOWNLOAD_MAC_APP = "app.download.mac";
-    public static final String DOWNLOAD_LINUX_APP = "app.download.linux";
-    public static final String DOWNLOAD_WINDOWS_APP = "app.download.windows";
+    public static final String APP_IOS_FILEPATH = "ios.app.filepath";
+    public static final String APP_ANDROID_FILEPATH = "android.app.filepath";
+    public static final String APP_MAC_FILEPATH = "mac.app.filepath";
+    public static final String APP_LINUX_FILEPATH = "linux.app.filepath";
+    public static final String APP_WINDOWS_FILEPATH = "windows.app.filepath";
+
+    /** App configurations. */
+    public static final String APP_IOS_VERSION = "ios.app.version";
+    public static final String APP_ANDROID_VERSION = "android.app.version";
+    public static final String APP_MAC_VERSION = "mac.app.version";
+    public static final String APP_LINUX_VERSION = "linux.app.version";
+    public static final String APP_WINDOWS_VERSION = "windows.app.version";
 
     /** PIN code configurations. */
     public static final String PIN_REQUIRED = "credentials.pin.required";
@@ -142,11 +149,17 @@ public class Configuration {
             EntryMetadata.of(REDIRECT_USER_MAC, ValueType.STRING),
             EntryMetadata.of(REDIRECT_NAS_IP, ValueType.STRING),
             /* App download configurations. */
-            EntryMetadata.of(DOWNLOAD_ANDROID_APP, ValueType.STRING),
-            EntryMetadata.of(DOWNLOAD_IOS_APP, ValueType.STRING),
-            EntryMetadata.of(DOWNLOAD_MAC_APP, ValueType.STRING),
-            EntryMetadata.of(DOWNLOAD_LINUX_APP, ValueType.STRING),
-            EntryMetadata.of(DOWNLOAD_WINDOWS_APP, ValueType.STRING),
+            EntryMetadata.of(APP_ANDROID_FILEPATH, ValueType.STRING),
+            EntryMetadata.of(APP_IOS_FILEPATH, ValueType.STRING),
+            EntryMetadata.of(APP_MAC_FILEPATH, ValueType.STRING),
+            EntryMetadata.of(APP_LINUX_FILEPATH, ValueType.STRING),
+            EntryMetadata.of(APP_WINDOWS_FILEPATH, ValueType.STRING),
+            /* App configurations. */
+            EntryMetadata.of(APP_ANDROID_VERSION, ValueType.STRING),
+            EntryMetadata.of(APP_IOS_VERSION, ValueType.STRING),
+            EntryMetadata.of(APP_MAC_VERSION, ValueType.STRING),
+            EntryMetadata.of(APP_LINUX_VERSION, ValueType.STRING),
+            EntryMetadata.of(APP_WINDOWS_VERSION, ValueType.STRING),
             /* PIN code configurations. */
             EntryMetadata.of(PIN_REQUIRED, ValueType.BOOLEAN),
             EntryMetadata.of(PIN_PREFIX, ValueType.STRING),

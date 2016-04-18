@@ -208,12 +208,31 @@ public class Activity {
         TRACE
     }
 
+    public enum AppAction {
+        UPLOAD_APP("upload-app"),
+        DELETE_APP("delete-app"),
+        CHECK_FOR_UPDATE("app-check-for-update");
+
+        /**
+         * Action name alias.
+         * <p>Alias may be used in system modules like REST APIs.
+         */
+        private String alias;
+
+        AppAction(String alias) {
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return this.alias;
+        }
+    }
+
     /** System action. */
     public enum SystemAction {
         GET_SYSTEM_STATISTICS("get-statistics"),
         DELETE_OLD_ACTIVITIES("delete-activities"),
-        UPLOAD_APP("upload-app"),
-        DELETE_APP("delete-app"),
+        DELETE_INACTIVE_SESSION("delete-inactive"),
         NTF_LOGOUT("ntf-logout");
 
         /**

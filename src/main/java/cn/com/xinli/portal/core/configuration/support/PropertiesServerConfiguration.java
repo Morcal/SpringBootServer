@@ -90,11 +90,17 @@ public class PropertiesServerConfiguration extends ServerConfiguration {
 
         /* Create app configuration. */
         AppConfiguration app = new AppConfiguration();
-        app.setiOSAppFileName(config.getEntryValue(Configuration.DOWNLOAD_IOS_APP));
-        app.setAndroidAppFileName(config.getEntryValue(Configuration.DOWNLOAD_ANDROID_APP));
-        app.setLinuxAppFileName(config.getEntryValue(Configuration.DOWNLOAD_LINUX_APP));
-        app.setMacAppFileName(config.getEntryValue(Configuration.DOWNLOAD_MAC_APP));
-        app.setWindowsAppFileName(config.getEntryValue(Configuration.DOWNLOAD_WINDOWS_APP));
+        app.setiOSAppFileName(config.getEntryValue(Configuration.APP_IOS_FILEPATH));
+        app.setAndroidAppFileName(config.getEntryValue(Configuration.APP_ANDROID_FILEPATH));
+        app.setLinuxAppFileName(config.getEntryValue(Configuration.APP_LINUX_FILEPATH));
+        app.setMacAppFileName(config.getEntryValue(Configuration.APP_MAC_FILEPATH));
+        app.setWindowsAppFileName(config.getEntryValue(Configuration.APP_WINDOWS_FILEPATH));
+
+        app.setiOSAppVersion(config.getEntryValue(Configuration.APP_IOS_VERSION));
+        app.setAndroidAppVersion(config.getEntryValue(Configuration.APP_ANDROID_VERSION));
+        app.setMacAppVersion(config.getEntryValue(Configuration.APP_MAC_VERSION));
+        app.setLinuxAppVersion(config.getEntryValue(Configuration.APP_LINUX_VERSION));
+        app.setWindowsAppVersion(config.getEntryValue(Configuration.APP_WINDOWS_VERSION));
         setAppConfiguration(app);
 
         /* Credentials configuration. */

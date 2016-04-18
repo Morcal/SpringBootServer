@@ -61,6 +61,10 @@ public class AdminResponseBuilders {
         return new SystemStatisticsBuilder();
     }
 
+    public static AppCheckForUpdateResponseBuilder checkForUpdateBuilder() {
+        return new AppCheckForUpdateResponseBuilder();
+    }
+
     /**
      * Abstract administration response builder.
      * @param <T>
@@ -362,6 +366,42 @@ public class AdminResponseBuilders {
                 Long diff = o1.getNasId() - o2.getNasId();
                 return diff.intValue();
             }
+        }
+    }
+
+    public static class AppCheckForUpdateResponseBuilder extends AdminResponseBuilder<AppCheckForUpdateResponse> {
+        private boolean upToDate;
+        private String os;
+        private String version;
+
+        AppCheckForUpdateResponseBuilder() {
+            super(false);
+        }
+
+        public AppCheckForUpdateResponseBuilder setUpToDate(boolean upToDate) {
+            this.upToDate = upToDate;
+            return this;
+        }
+
+        public AppCheckForUpdateResponseBuilder setOs(String os) {
+            this.os = os;
+            return this;
+        }
+
+        public AppCheckForUpdateResponseBuilder setVersion(String version) {
+            this.version = version;
+            return this;
+        }
+
+        @Override
+        protected AppCheckForUpdateResponse buildInternal() {
+            AppCheckForUpdateResponse response = new AppCheckForUpdateResponse();
+            response.setUpToDate(upToDate);
+            if (!upToDate) {
+                response.setOs(os);
+                response.setVersion(version);
+            }
+            return response;
         }
     }
 }

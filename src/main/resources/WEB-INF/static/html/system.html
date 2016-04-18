@@ -63,6 +63,25 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="config-label">
+                <span>REST token TTL</span>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" id="rest-token-ttl-value" class="form-control"
+                           placeholder="TTL in seconds" data-toggle="tooltip"/>
+                    <span class="input-group-addon">Seconds</span>
+                </div>
+                <p>REST authentication token issued by portal web server will
+                    expire after TTL reached.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row">
@@ -447,6 +466,10 @@
 
     $('#server-check-redirect-url').change(function () {
         saveConfiguration(['server.check-redirect-url', $(this).is(':checked')]);
+    });
+
+    $('#rest-token-ttl-value').change(function () {
+        saveConfiguration(['rest.token.ttl', $(this).val()]);
     });
 
     $('#pin-required').change(function () {

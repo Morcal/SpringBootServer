@@ -113,6 +113,7 @@
             return $.portal.connector.request('delete-app', os)
                 .done(function () {
                     $('#' + os + '-app').val('');
+                    $('#' + os + '-app-version').val('');
                 }).fail(function (xhr, status, err) {
                     $.application.displayRemoteError(xhr.responseText, status, err);
                 });
@@ -180,6 +181,7 @@
                     parent.find('#private-key').val(config['private_key']);
                     parent.find('#server-allow-nat').prop('checked', config['allow_nat']);
                     parent.find('#server-check-redirect-url').prop('checked', config['check_redirect_url']);
+                    parent.find('#rest-token-ttl-value').val(rest['token_ttl']);
                     parent.find('#enable-session-ttl').prop('checked', session['enable_ttl']);
                     parent.find('#session-ttl-value').val(session['ttl']);
                     parent.find('#session-token-ttl').val(session['token_ttl']);
@@ -216,6 +218,11 @@
                     parent.find('#mac-app').val(apps['mac_app']);
                     parent.find('#linux-app').val(apps['linux_app']);
                     parent.find('#windows-app').val(apps['windows_app']);
+                    parent.find('#ios-app-version').val(apps['ios_app_version']);
+                    parent.find('#android-app-version').val(apps['android_app_version']);
+                    parent.find('#mac-app-version').val(apps['mac_app_version']);
+                    parent.find('#linux-app-version').val(apps['linux_app_version']);
+                    parent.find('#windows-app-version').val(apps['windows_app_version']);
                 }).fail(function (xhr, status, err) {
                     $.application.displayRemoteError(xhr.responseText, status ,err);
                 });
@@ -478,7 +485,7 @@
                     dialog.find('#certificate-version').val(certificate['version']);
                     dialog.find('#certificate-app-id').val(certificate['app_id']);
                     secret.val(certificate['shared_secret']);
-                    secret.parent().show();
+                    //secret.parent().show();
 
                     if (certificate['disabled']) {
                         dialog.find('#enable-certificate').show().prop('disabled', false);
@@ -507,7 +514,7 @@
             dialog.find('#save-certificate').hide();
             dialog.find('#enable-certificate').show().prop('disabled', true);
             dialog.find('#disable-certificate').hide();
-            dialog.find('#certificate-shared-secret').parent().hide();
+            //dialog.find('#certificate-shared-secret').parent().hide();
             dialog.modal('show');
         },
 
@@ -526,18 +533,16 @@
 
         /**
          * Create certificate.
-         * @param app
-         * @param vendor
-         * @param os
-         * @param version
+         * @param certificate
          * @returns {*}
          */
-        createCertificate: function (app, vendor, os, version) {
+        createCertificate: function (certificate) {
             return $.portal.connector.request('create-certificate', null, {
-                app_id: app,
-                vendor: vendor,
-                os: os,
-                version: version
+                app_id: certificate.app_id,
+                vendor: certificate.vendor,
+                shared_secret: certificate.shared_secret,
+                os: certificate.os,
+                version: certificate.version
             });
         },
 

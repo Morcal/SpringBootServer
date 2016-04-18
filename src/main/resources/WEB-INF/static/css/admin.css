@@ -202,3 +202,8 @@ body > div.doc {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+#configuration-app p {
+    margin-bottom: 0;
+    margin-top: 15px;
+}

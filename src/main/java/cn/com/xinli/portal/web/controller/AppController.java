@@ -178,7 +178,7 @@ public class AppController {
                     new BufferedOutputStream(new FileOutputStream(new File(filepath)));
             FileCopyUtils.copy(file.getInputStream(), stream);
 
-            final String key = "app.download." + os,
+            final String key = os + ".app.filepath",
                     value = "apps/" + filename;
 
             serverConfigurationService.updateConfigurationEntry(key, value);
@@ -209,9 +209,11 @@ public class AppController {
         );
 
         final String path = getAppPath(os);
-        final String key = "app.download." + os, value = "";
+        final String key = os + ".app.filepath";
+        final String version = os + ".app.version";
 
-        serverConfigurationService.updateConfigurationEntry(key, value);
+        serverConfigurationService.updateConfigurationEntry(key, null);
+        serverConfigurationService.updateConfigurationEntry(version, null);
 
         if (!StringUtils.isEmpty(path)) {
             File file = new File(path);
@@ -223,5 +225,63 @@ public class AppController {
         }
 
         return AdminResponseBuilders.successResponseBuilder().build();
+    }
+
+    /**
+     * Check server side app version.
+     * @param os target operating system name.
+     * @param version client app local version.
+     * @return REST response.
+     * @throws RemoteException if target os not exists.
+     */
+    @RequestMapping(value = "/portal/v1.0/apps/{os}/{version}", method = RequestMethod.GET)
+    @ResponseBody
+    public RestResponse checkForUpdate(@PathVariable("os") String os,
+                                       @PathVariable("version") String version)
+            throws RemoteException, ServerException {
+        final String ver;
+        final AppConfiguration appConfiguration =
+                serverConfigurationService.getServerConfiguration().getAppConfiguration();
+
+        os = os.toLowerCase();
+
+        switch (os) {
+            case "ios":
+                ver = appConfiguration.getiOSAppVersion();
+                break;
+
+            case "android":
+                ver = appConfiguration.getAndroidAppVersion();
+                break;
+
+            case "mac":
+                ver = appConfiguration.getMacAppVersion();
+                break;
+            case "linux":
+                ver = appConfiguration.getLinuxAppVersion();
+                break;
+
+            case "windows":
+                ver = appConfiguration.getWindowsAppVersion();
+                break;
+
+            default:
+                throw new RemoteException(PortalError.APP_NOT_AVAILABLE);
+        }
+
+        if (StringUtils.isEmpty(ver)) {
+            throw new ServerException(PortalError.APP_NOT_AVAILABLE);
+        }
+
+        if (StringUtils.equalsIgnoreCase(ver, version)) {
+            /* Client app version is the same as server side. */
+            return AdminResponseBuilders.checkForUpdateBuilder().setUpToDate(true).build();
+        } else {
+            return AdminResponseBuilders.checkForUpdateBuilder()
+                    .setUpToDate(false)
+                    .setOs(os)
+                    .setVersion(version)
+                    .build();
+        }
     }
 }

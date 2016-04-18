@@ -91,7 +91,8 @@ public class CertificateServiceSupport implements CertificateService, Certificat
 
     @Override
     public Certificate create(Certificate certificate) {
-        final String sharedSecret = secureRandomStringGenerator.generateUniqueRandomString(16);
+        String sharedSecret = StringUtils.isEmpty(certificate.getSharedSecret()) ?
+                secureRandomStringGenerator.generateUniqueRandomString(16) : certificate.getSharedSecret();
         return create(certificate.getAppId(), certificate.getVendor(), certificate.getOs(),
                 certificate.getVersion(), sharedSecret);
     }
