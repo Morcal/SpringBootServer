@@ -22,9 +22,15 @@ public class AppResponse extends RestResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class App {
+        /** Target operating system name. */
         @JsonProperty
         private String os;
 
+        /** Server side current version. */
+        @JsonProperty
+        private String version;
+
+        /** Server file path. */
         @JsonProperty
         private String filepath;
 
@@ -42,6 +48,14 @@ public class AppResponse extends RestResponse {
 
         public void setFilepath(String filepath) {
             this.filepath = filepath;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
         }
     }
 }

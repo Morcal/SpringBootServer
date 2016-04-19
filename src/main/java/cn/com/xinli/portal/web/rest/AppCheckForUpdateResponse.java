@@ -9,32 +9,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppCheckForUpdateResponse extends RestResponse {
-    /** Target operating system name. */
-    @JsonProperty
-    private String os;
-
-    /** Server side current version. */
-    @JsonProperty
-    private String version;
-
     /** If client app is up-to-date. */
     @JsonProperty("up_to_date")
     private boolean upToDate;
 
-    public String getOs() {
-        return os;
+    /** Target app. */
+    @JsonProperty
+    private AppResponse.App app;
+
+    public AppResponse.App getApp() {
+        return app;
     }
 
-    public void setOs(String os) {
-        this.os = os;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
+    public void setApp(AppResponse.App app) {
+        this.app = app;
     }
 
     public boolean isUpToDate() {

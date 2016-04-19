@@ -396,11 +396,11 @@ public class AdminResponseBuilders {
         @Override
         protected AppCheckForUpdateResponse buildInternal() {
             AppCheckForUpdateResponse response = new AppCheckForUpdateResponse();
+            AppResponse.App app = new AppResponse.App();
             response.setUpToDate(upToDate);
-            if (!upToDate) {
-                response.setOs(os);
-                response.setVersion(version);
-            }
+            app.setOs(os);
+            app.setVersion(version);
+            response.setApp(app);
             return response;
         }
     }

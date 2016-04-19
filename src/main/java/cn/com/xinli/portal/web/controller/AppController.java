@@ -273,15 +273,10 @@ public class AppController {
             throw new ServerException(PortalError.APP_NOT_AVAILABLE);
         }
 
-        if (StringUtils.equalsIgnoreCase(ver, version)) {
-            /* Client app version is the same as server side. */
-            return AdminResponseBuilders.checkForUpdateBuilder().setUpToDate(true).build();
-        } else {
-            return AdminResponseBuilders.checkForUpdateBuilder()
-                    .setUpToDate(false)
-                    .setOs(os)
-                    .setVersion(version)
-                    .build();
-        }
+        return AdminResponseBuilders.checkForUpdateBuilder()
+                .setUpToDate(StringUtils.equalsIgnoreCase(ver, version))
+                .setOs(os)
+                .setVersion(version)
+                .build();
     }
 }
