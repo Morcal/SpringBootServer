@@ -273,10 +273,10 @@ public class AppController {
             throw new ServerException(PortalError.APP_NOT_AVAILABLE);
         }
 
-        return AdminResponseBuilders.checkForUpdateBuilder()
+        return AdminResponseBuilders.appResponseBuilder()
                 .setUpToDate(StringUtils.equalsIgnoreCase(ver, version))
                 .setOs(os)
-                .setVersion(version)
+                .setVersion(ver)
                 .build();
     }
 }

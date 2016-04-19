@@ -61,10 +61,6 @@ public class AdminResponseBuilders {
         return new SystemStatisticsBuilder();
     }
 
-    public static AppCheckForUpdateResponseBuilder checkForUpdateBuilder() {
-        return new AppCheckForUpdateResponseBuilder();
-    }
-
     /**
      * Abstract administration response builder.
      * @param <T>
@@ -285,6 +281,8 @@ public class AdminResponseBuilders {
     public static class AppResponseBuilder extends AdminResponseBuilder<AppResponse> {
         private String os;
         private String filepath;
+        private boolean upToDate;
+        private String version;
 
         AppResponseBuilder() {
             super(false);
@@ -300,12 +298,24 @@ public class AdminResponseBuilders {
             return this;
         }
 
+        public AppResponseBuilder setUpToDate(boolean upToDate) {
+            this.upToDate = upToDate;
+            return this;
+        }
+
+        public AppResponseBuilder setVersion(String version) {
+            this.version = version;
+            return this;
+        }
+
         @Override
         protected AppResponse buildInternal() {
             AppResponse response = new AppResponse();
             AppResponse.App app = new AppResponse.App();
             app.setOs(os);
             app.setFilepath(filepath);
+            app.setUpToDate(upToDate);
+            app.setVersion(version);
             response.setApp(app);
             return response;
         }
@@ -366,42 +376,6 @@ public class AdminResponseBuilders {
                 Long diff = o1.getNasId() - o2.getNasId();
                 return diff.intValue();
             }
-        }
-    }
-
-    public static class AppCheckForUpdateResponseBuilder extends AdminResponseBuilder<AppCheckForUpdateResponse> {
-        private boolean upToDate;
-        private String os;
-        private String version;
-
-        AppCheckForUpdateResponseBuilder() {
-            super(false);
-        }
-
-        public AppCheckForUpdateResponseBuilder setUpToDate(boolean upToDate) {
-            this.upToDate = upToDate;
-            return this;
-        }
-
-        public AppCheckForUpdateResponseBuilder setOs(String os) {
-            this.os = os;
-            return this;
-        }
-
-        public AppCheckForUpdateResponseBuilder setVersion(String version) {
-            this.version = version;
-            return this;
-        }
-
-        @Override
-        protected AppCheckForUpdateResponse buildInternal() {
-            AppCheckForUpdateResponse response = new AppCheckForUpdateResponse();
-            AppResponse.App app = new AppResponse.App();
-            response.setUpToDate(upToDate);
-            app.setOs(os);
-            app.setVersion(version);
-            response.setApp(app);
-            return response;
         }
     }
 }

@@ -34,6 +34,10 @@ public class AppResponse extends RestResponse {
         @JsonProperty
         private String filepath;
 
+        /** If client app is up-to-date. */
+        @JsonProperty("up_to_date")
+        private boolean upToDate;
+
         public String getOs() {
             return os;
         }
@@ -56,6 +60,14 @@ public class AppResponse extends RestResponse {
 
         public void setVersion(String version) {
             this.version = version;
+        }
+
+        public boolean isUpToDate() {
+            return upToDate;
+        }
+
+        public void setUpToDate(boolean upToDate) {
+            this.upToDate = upToDate;
         }
     }
 }
